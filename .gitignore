@@ -1,0 +1,16 @@
+# Secrets
+.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Cache
+flight_deal_finder/cache/
+
+# IDE / OS
+.claude/
+.DS_Store
+Thumbs.db
+*.swp

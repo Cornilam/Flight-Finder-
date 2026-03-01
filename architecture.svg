@@ -1,0 +1,365 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" font-family="'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif">
+  <defs>
+    <!-- Background gradient -->
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+    <!-- Card gradient -->
+    <linearGradient id="cardGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#162032"/>
+    </linearGradient>
+    <!-- Blue accent gradient -->
+    <linearGradient id="blueGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#2563eb"/>
+    </linearGradient>
+    <!-- Purple accent gradient -->
+    <linearGradient id="purpleGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#8b5cf6"/>
+      <stop offset="100%" stop-color="#7c3aed"/>
+    </linearGradient>
+    <!-- Green accent gradient -->
+    <linearGradient id="greenGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#10b981"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+    <!-- Orange accent gradient -->
+    <linearGradient id="orangeGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+    <!-- Cyan accent gradient -->
+    <linearGradient id="cyanGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#06b6d4"/>
+      <stop offset="100%" stop-color="#0891b2"/>
+    </linearGradient>
+    <!-- Arrow marker -->
+    <marker id="arrow" viewBox="0 0 10 7" refX="10" refY="3.5" markerWidth="10" markerHeight="7" orient="auto-start-auto">
+      <path d="M 0 0 L 10 3.5 L 0 7 z" fill="#475569"/>
+    </marker>
+    <marker id="arrowBlue" viewBox="0 0 10 7" refX="10" refY="3.5" markerWidth="10" markerHeight="7" orient="auto-start-auto">
+      <path d="M 0 0 L 10 3.5 L 0 7 z" fill="#3b82f6"/>
+    </marker>
+    <marker id="arrowGreen" viewBox="0 0 10 7" refX="10" refY="3.5" markerWidth="10" markerHeight="7" orient="auto-start-auto">
+      <path d="M 0 0 L 10 3.5 L 0 7 z" fill="#10b981"/>
+    </marker>
+    <marker id="arrowOrange" viewBox="0 0 10 7" refX="10" refY="3.5" markerWidth="10" markerHeight="7" orient="auto-start-auto">
+      <path d="M 0 0 L 10 3.5 L 0 7 z" fill="#f59e0b"/>
+    </marker>
+    <!-- Glow filter -->
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#000" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="900" fill="url(#bgGrad)"/>
+
+  <!-- Subtle grid pattern -->
+  <g opacity="0.03">
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#fff" stroke-width="0.5"/>
+    </pattern>
+    <rect width="1200" height="900" fill="url(#grid)"/>
+  </g>
+
+  <!-- Title -->
+  <text x="600" y="46" text-anchor="middle" fill="#f1f5f9" font-size="22" font-weight="700" letter-spacing="0.5">Hacker Fare Engine</text>
+  <text x="600" y="68" text-anchor="middle" fill="#64748b" font-size="12" font-weight="500" letter-spacing="2" text-transform="uppercase">HIGH-LEVEL ARCHITECTURE</text>
+
+  <!-- ================================================================== -->
+  <!-- ROW 1: USER + DASHBOARD -->
+  <!-- ================================================================== -->
+
+  <!-- User Icon -->
+  <g transform="translate(100, 120)" filter="url(#shadow)">
+    <rect width="140" height="90" rx="12" fill="url(#cardGrad)" stroke="#334155" stroke-width="1"/>
+    <circle cx="70" cy="32" r="14" fill="url(#blueGrad)" opacity="0.9"/>
+    <text x="70" y="37" text-anchor="middle" fill="#fff" font-size="14">U</text>
+    <text x="70" y="62" text-anchor="middle" fill="#e2e8f0" font-size="12" font-weight="600">User</text>
+    <text x="70" y="78" text-anchor="middle" fill="#64748b" font-size="10">Browser</text>
+  </g>
+
+  <!-- Arrow: User -> Dashboard -->
+  <line x1="240" y1="165" x2="310" y2="165" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)" stroke-dasharray="6,3"/>
+  <text x="275" y="158" text-anchor="middle" fill="#64748b" font-size="9">clicks search</text>
+
+  <!-- Dashboard Card -->
+  <g transform="translate(320, 105)" filter="url(#shadow)">
+    <rect width="280" height="120" rx="12" fill="url(#cardGrad)" stroke="#334155" stroke-width="1"/>
+    <!-- Header bar -->
+    <rect width="280" height="32" rx="12" fill="url(#blueGrad)" opacity="0.15"/>
+    <rect y="20" width="280" height="12" fill="url(#cardGrad)"/>
+    <circle cx="18" cy="16" r="4" fill="#ef4444" opacity="0.7"/>
+    <circle cx="32" cy="16" r="4" fill="#f59e0b" opacity="0.7"/>
+    <circle cx="46" cy="16" r="4" fill="#22c55e" opacity="0.7"/>
+    <text x="140" y="20" text-anchor="middle" fill="#94a3b8" font-size="9">localhost:5000</text>
+    <text x="140" y="52" text-anchor="middle" fill="#e2e8f0" font-size="13" font-weight="700">Dashboard UI</text>
+    <text x="140" y="68" text-anchor="middle" fill="#94a3b8" font-size="10">dashboard_serp.html</text>
+    <!-- Mini buttons -->
+    <rect x="40" y="82" width="80" height="24" rx="6" fill="url(#blueGrad)" opacity="0.8"/>
+    <text x="80" y="98" text-anchor="middle" fill="#fff" font-size="9" font-weight="600">Search MKE</text>
+    <rect x="160" y="82" width="80" height="24" rx="6" fill="url(#purpleGrad)" opacity="0.8"/>
+    <text x="200" y="98" text-anchor="middle" fill="#fff" font-size="9" font-weight="600">Search ORD</text>
+  </g>
+
+  <!-- Arrow: Dashboard -> Flask -->
+  <line x1="600" y1="165" x2="680" y2="165" stroke="#3b82f6" stroke-width="1.5" marker-end="url(#arrowBlue)"/>
+  <text x="640" y="155" text-anchor="middle" fill="#3b82f6" font-size="9" font-weight="500">POST /search</text>
+  <text x="640" y="178" text-anchor="middle" fill="#475569" font-size="9">SSE /stream</text>
+
+  <!-- Flask Server Card -->
+  <g transform="translate(690, 105)" filter="url(#shadow)">
+    <rect width="220" height="120" rx="12" fill="url(#cardGrad)" stroke="#334155" stroke-width="1"/>
+    <rect x="60" y="14" width="100" height="22" rx="6" fill="url(#greenGrad)" opacity="0.2"/>
+    <text x="110" y="30" text-anchor="middle" fill="#10b981" font-size="10" font-weight="600">Flask Server</text>
+    <text x="110" y="56" text-anchor="middle" fill="#e2e8f0" font-size="13" font-weight="700">app_serp.py</text>
+    <text x="110" y="74" text-anchor="middle" fill="#94a3b8" font-size="10">Search Pipeline</text>
+    <text x="110" y="90" text-anchor="middle" fill="#64748b" font-size="9">Thread-per-search</text>
+    <text x="110" y="106" text-anchor="middle" fill="#64748b" font-size="9">SSE event streaming</text>
+  </g>
+
+  <!-- ================================================================== -->
+  <!-- ROW 2: SEARCH PIPELINE (center of diagram) -->
+  <!-- ================================================================== -->
+
+  <!-- Pipeline title -->
+  <text x="600" y="272" text-anchor="middle" fill="#94a3b8" font-size="11" font-weight="600" letter-spacing="1.5">SEARCH PIPELINE</text>
+  <line x1="200" y1="280" x2="1000" y2="280" stroke="#334155" stroke-width="0.5"/>
+
+  <!-- Step 1: Baseline -->
+  <g transform="translate(60, 300)" filter="url(#shadow)">
+    <rect width="170" height="100" rx="10" fill="url(#cardGrad)" stroke="#334155" stroke-width="1"/>
+    <rect x="10" y="10" width="24" height="24" rx="6" fill="url(#blueGrad)"/>
+    <text x="22" y="27" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">1</text>
+    <text x="100" y="27" text-anchor="middle" fill="#e2e8f0" font-size="11" font-weight="600">Baseline</text>
+    <text x="85" y="52" text-anchor="middle" fill="#94a3b8" font-size="10">Direct round-trip</text>
+    <text x="85" y="66" text-anchor="middle" fill="#64748b" font-size="9">MKE -> ATH</text>
+    <rect x="30" y="76" width="110" height="16" rx="4" fill="#1e3a5f" opacity="0.7"/>
+    <text x="85" y="88" text-anchor="middle" fill="#3b82f6" font-size="9" font-weight="500">1 API call</text>
+  </g>
+
+  <!-- Arrow 1->2 -->
+  <path d="M 230 350 L 262 350" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)" fill="none"/>
+
+  <!-- Step 2: Outbound Positioning -->
+  <g transform="translate(272, 300)" filter="url(#shadow)">
+    <rect width="170" height="100" rx="10" fill="url(#cardGrad)" stroke="#334155" stroke-width="1"/>
+    <rect x="10" y="10" width="24" height="24" rx="6" fill="url(#blueGrad)"/>
+    <text x="22" y="27" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">2</text>
+    <text x="105" y="27" text-anchor="middle" fill="#e2e8f0" font-size="11" font-weight="600">Outbound Legs</text>
+    <text x="85" y="50" text-anchor="middle" fill="#94a3b8" font-size="10">Positioning + Int'l</text>
+    <text x="85" y="64" text-anchor="middle" fill="#64748b" font-size="9">MKE->hubs  hubs->ATH</text>
+    <rect x="30" y="76" width="110" height="16" rx="4" fill="#1e3a5f" opacity="0.7"/>
+    <text x="85" y="88" text-anchor="middle" fill="#3b82f6" font-size="9" font-weight="500">10 API calls (5 hubs x2)</text>
+  </g>
+
+  <!-- Arrow 2->3 -->
+  <path d="M 442 350 L 474 350" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)" fill="none"/>
+
+  <!-- Step 3: Return Legs -->
+  <g transform="translate(484, 300)" filter="url(#shadow)">
+    <rect width="170" height="100" rx="10" fill="url(#cardGrad)" stroke="#334155" stroke-width="1"/>
+    <rect x="10" y="10" width="24" height="24" rx="6" fill="url(#blueGrad)"/>
+    <text x="22" y="27" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">3</text>
+    <text x="105" y="27" text-anchor="middle" fill="#e2e8f0" font-size="11" font-weight="600">Return Legs</text>
+    <text x="85" y="50" text-anchor="middle" fill="#94a3b8" font-size="10">Int'l + Positioning</text>
+    <text x="85" y="64" text-anchor="middle" fill="#64748b" font-size="9">ATH->hubs  hubs->MKE</text>
+    <rect x="30" y="76" width="110" height="16" rx="4" fill="#1e3a5f" opacity="0.7"/>
+    <text x="85" y="88" text-anchor="middle" fill="#3b82f6" font-size="9" font-weight="500">10 API calls (5 hubs x2)</text>
+  </g>
+
+  <!-- Arrow 3->4 -->
+  <path d="M 654 350 L 686 350" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)" fill="none"/>
+
+  <!-- Step 4: Assembly -->
+  <g transform="translate(696, 300)" filter="url(#shadow)">
+    <rect width="170" height="100" rx="10" fill="url(#cardGrad)" stroke="#334155" stroke-width="1"/>
+    <rect x="10" y="10" width="24" height="24" rx="6" fill="url(#orangeGrad)"/>
+    <text x="22" y="27" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">4</text>
+    <text x="105" y="27" text-anchor="middle" fill="#e2e8f0" font-size="11" font-weight="600">Assemble</text>
+    <text x="85" y="50" text-anchor="middle" fill="#94a3b8" font-size="10">Validate connections</text>
+    <text x="85" y="64" text-anchor="middle" fill="#64748b" font-size="9">Min 2hr hub layover</text>
+    <rect x="30" y="76" width="110" height="16" rx="4" fill="#3b2a14" opacity="0.7"/>
+    <text x="85" y="88" text-anchor="middle" fill="#f59e0b" font-size="9" font-weight="500">Cross-combine top 3</text>
+  </g>
+
+  <!-- Arrow 4->5 -->
+  <path d="M 866 350 L 898 350" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)" fill="none"/>
+
+  <!-- Step 5: Results -->
+  <g transform="translate(908, 300)" filter="url(#shadow)">
+    <rect width="170" height="100" rx="10" fill="url(#cardGrad)" stroke="#10b981" stroke-width="1.5"/>
+    <rect x="10" y="10" width="24" height="24" rx="6" fill="url(#greenGrad)"/>
+    <text x="22" y="27" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">5</text>
+    <text x="105" y="27" text-anchor="middle" fill="#e2e8f0" font-size="11" font-weight="600">Results</text>
+    <text x="85" y="50" text-anchor="middle" fill="#94a3b8" font-size="10">Rank by total price</text>
+    <text x="85" y="64" text-anchor="middle" fill="#64748b" font-size="9">Compare vs baseline</text>
+    <rect x="30" y="76" width="110" height="16" rx="4" fill="#0f3a2a" opacity="0.7"/>
+    <text x="85" y="88" text-anchor="middle" fill="#10b981" font-size="9" font-weight="500">Stream to browser</text>
+  </g>
+
+  <!-- ================================================================== -->
+  <!-- ROW 3: EXTERNAL API + CACHING -->
+  <!-- ================================================================== -->
+
+  <line x1="200" y1="430" x2="1000" y2="430" stroke="#334155" stroke-width="0.5"/>
+
+  <!-- SerpAPI Card -->
+  <g transform="translate(60, 470)" filter="url(#shadow)">
+    <rect width="260" height="130" rx="12" fill="url(#cardGrad)" stroke="#06b6d4" stroke-width="1"/>
+    <rect x="10" y="10" width="70" height="22" rx="6" fill="url(#cyanGrad)" opacity="0.2"/>
+    <text x="45" y="26" text-anchor="middle" fill="#06b6d4" font-size="10" font-weight="600">EXTERNAL</text>
+    <text x="130" y="50" text-anchor="middle" fill="#e2e8f0" font-size="14" font-weight="700">SerpAPI</text>
+    <text x="130" y="68" text-anchor="middle" fill="#94a3b8" font-size="10">Google Flights Data</text>
+    <text x="130" y="88" text-anchor="middle" fill="#64748b" font-size="10">serp_flights.py</text>
+    <line x1="20" y1="98" x2="240" y2="98" stroke="#1e293b" stroke-width="1"/>
+    <text x="130" y="115" text-anchor="middle" fill="#94a3b8" font-size="9">search_one_way() | search_round_trip()</text>
+  </g>
+
+  <!-- Arrow: Pipeline -> SerpAPI -->
+  <path d="M 400 400 L 400 432 Q 400 442 390 442 L 250 442 Q 240 442 240 452 L 240 470" stroke="#06b6d4" stroke-width="1.5" marker-end="url(#arrow)" fill="none" stroke-dasharray="6,3"/>
+  <text x="310" y="456" text-anchor="middle" fill="#06b6d4" font-size="9">API requests</text>
+
+  <!-- ================================================================== -->
+  <!-- CACHING SECTION -->
+  <!-- ================================================================== -->
+
+  <text x="730" y="462" text-anchor="middle" fill="#94a3b8" font-size="11" font-weight="600" letter-spacing="1.5">THREE-LAYER CACHE</text>
+
+  <!-- Cache Layer 1: localStorage -->
+  <g transform="translate(440, 480)" filter="url(#shadow)">
+    <rect width="190" height="120" rx="10" fill="url(#cardGrad)" stroke="#8b5cf6" stroke-width="1"/>
+    <rect x="10" y="10" width="58" height="20" rx="5" fill="#8b5cf6" opacity="0.2"/>
+    <text x="39" y="24" text-anchor="middle" fill="#a78bfa" font-size="9" font-weight="600">LAYER 1</text>
+    <text x="95" y="52" text-anchor="middle" fill="#e2e8f0" font-size="12" font-weight="700">localStorage</text>
+    <text x="95" y="68" text-anchor="middle" fill="#94a3b8" font-size="10">Full results per origin</text>
+    <line x1="15" y1="78" x2="175" y2="78" stroke="#1e293b" stroke-width="1"/>
+    <text x="95" y="94" text-anchor="middle" fill="#a78bfa" font-size="9">Instant page-load render</text>
+    <text x="95" y="108" text-anchor="middle" fill="#64748b" font-size="9">Survives page reload</text>
+  </g>
+
+  <!-- Cache Layer 2: In-Memory -->
+  <g transform="translate(660, 480)" filter="url(#shadow)">
+    <rect width="190" height="120" rx="10" fill="url(#cardGrad)" stroke="#f59e0b" stroke-width="1"/>
+    <rect x="10" y="10" width="58" height="20" rx="5" fill="#f59e0b" opacity="0.2"/>
+    <text x="39" y="24" text-anchor="middle" fill="#fbbf24" font-size="9" font-weight="600">LAYER 2</text>
+    <text x="95" y="52" text-anchor="middle" fill="#e2e8f0" font-size="12" font-weight="700">In-Memory Dict</text>
+    <text x="95" y="68" text-anchor="middle" fill="#94a3b8" font-size="10">Per-route API responses</text>
+    <line x1="15" y1="78" x2="175" y2="78" stroke="#1e293b" stroke-width="1"/>
+    <text x="95" y="94" text-anchor="middle" fill="#fbbf24" font-size="9">Shared legs reused</text>
+    <text x="95" y="108" text-anchor="middle" fill="#64748b" font-size="9">MKE+ORD share int'l legs</text>
+  </g>
+
+  <!-- Cache Layer 3: JSON File -->
+  <g transform="translate(880, 480)" filter="url(#shadow)">
+    <rect width="190" height="120" rx="10" fill="url(#cardGrad)" stroke="#10b981" stroke-width="1"/>
+    <rect x="10" y="10" width="58" height="20" rx="5" fill="#10b981" opacity="0.2"/>
+    <text x="39" y="24" text-anchor="middle" fill="#34d399" font-size="9" font-weight="600">LAYER 3</text>
+    <text x="95" y="52" text-anchor="middle" fill="#e2e8f0" font-size="12" font-weight="700">JSON File</text>
+    <text x="95" y="68" text-anchor="middle" fill="#94a3b8" font-size="10">serp_cache.json</text>
+    <line x1="15" y1="78" x2="175" y2="78" stroke="#1e293b" stroke-width="1"/>
+    <text x="95" y="94" text-anchor="middle" fill="#34d399" font-size="9">Survives server restart</text>
+    <text x="95" y="108" text-anchor="middle" fill="#64748b" font-size="9">24-hour expiry</text>
+  </g>
+
+  <!-- Arrows between cache layers -->
+  <line x1="630" y1="540" x2="660" y2="540" stroke="#475569" stroke-width="1" marker-end="url(#arrow)"/>
+  <line x1="850" y1="540" x2="880" y2="540" stroke="#475569" stroke-width="1" marker-end="url(#arrow)"/>
+
+  <!-- ================================================================== -->
+  <!-- ROW 4: FLIGHT ROUTE VISUALIZATION -->
+  <!-- ================================================================== -->
+
+  <line x1="200" y1="640" x2="1000" y2="640" stroke="#334155" stroke-width="0.5"/>
+  <text x="600" y="668" text-anchor="middle" fill="#94a3b8" font-size="11" font-weight="600" letter-spacing="1.5">HACKER FARE ROUTE EXAMPLE</text>
+
+  <!-- Standard ticket -->
+  <g transform="translate(60, 690)">
+    <rect width="440" height="70" rx="10" fill="url(#cardGrad)" stroke="#334155" stroke-width="1" filter="url(#shadow)"/>
+    <text x="20" y="22" fill="#64748b" font-size="10" font-weight="500">STANDARD ROUND-TRIP</text>
+    <!-- Route line -->
+    <circle cx="60" cy="48" r="8" fill="url(#blueGrad)"/>
+    <text x="60" y="52" text-anchor="middle" fill="#fff" font-size="7" font-weight="700">MKE</text>
+    <line x1="68" y1="48" x2="352" y2="48" stroke="#3b82f6" stroke-width="2" stroke-dasharray="8,4"/>
+    <circle cx="360" cy="48" r="8" fill="url(#blueGrad)"/>
+    <text x="360" y="52" text-anchor="middle" fill="#fff" font-size="7" font-weight="700">ATH</text>
+    <text x="210" y="42" text-anchor="middle" fill="#3b82f6" font-size="10" font-weight="500">1 ticket</text>
+    <rect x="380" y="36" width="50" height="24" rx="6" fill="#1e3a5f"/>
+    <text x="405" y="52" text-anchor="middle" fill="#94a3b8" font-size="11" font-weight="600">$1,681</text>
+  </g>
+
+  <!-- Hacker fare -->
+  <g transform="translate(560, 690)">
+    <rect width="540" height="70" rx="10" fill="url(#cardGrad)" stroke="#10b981" stroke-width="1" filter="url(#shadow)"/>
+    <text x="20" y="22" fill="#10b981" font-size="10" font-weight="600">HACKER FARE (4 TICKETS)</text>
+    <!-- Route with hub -->
+    <circle cx="50" cy="48" r="8" fill="url(#blueGrad)"/>
+    <text x="50" y="52" text-anchor="middle" fill="#fff" font-size="7" font-weight="700">MKE</text>
+    <!-- Leg 1 -->
+    <line x1="58" y1="48" x2="142" y2="48" stroke="#f59e0b" stroke-width="2"/>
+    <text x="100" y="40" text-anchor="middle" fill="#f59e0b" font-size="8">$199</text>
+    <!-- Hub -->
+    <circle cx="150" cy="48" r="10" fill="url(#orangeGrad)" filter="url(#glow)"/>
+    <text x="150" y="52" text-anchor="middle" fill="#fff" font-size="7" font-weight="700">EWR</text>
+    <!-- Leg 2 -->
+    <line x1="160" y1="48" x2="244" y2="48" stroke="#06b6d4" stroke-width="2"/>
+    <text x="202" y="40" text-anchor="middle" fill="#06b6d4" font-size="8">$470</text>
+    <!-- Destination -->
+    <circle cx="252" cy="48" r="8" fill="url(#cyanGrad)"/>
+    <text x="252" y="52" text-anchor="middle" fill="#fff" font-size="7" font-weight="700">ATH</text>
+    <!-- Return leg 1 -->
+    <line x1="260" y1="48" x2="334" y2="48" stroke="#06b6d4" stroke-width="2"/>
+    <text x="297" y="40" text-anchor="middle" fill="#06b6d4" font-size="8">$552</text>
+    <!-- Hub return -->
+    <circle cx="342" cy="48" r="10" fill="url(#orangeGrad)" filter="url(#glow)"/>
+    <text x="342" y="52" text-anchor="middle" fill="#fff" font-size="7" font-weight="700">EWR</text>
+    <!-- Return leg 2 -->
+    <line x1="352" y1="48" x2="436" y2="48" stroke="#f59e0b" stroke-width="2"/>
+    <text x="394" y="40" text-anchor="middle" fill="#f59e0b" font-size="8">$154</text>
+    <!-- Home -->
+    <circle cx="444" cy="48" r="8" fill="url(#blueGrad)"/>
+    <text x="444" y="52" text-anchor="middle" fill="#fff" font-size="7" font-weight="700">MKE</text>
+    <!-- Total -->
+    <rect x="470" y="30" width="60" height="36" rx="6" fill="#0f3a2a"/>
+    <text x="500" y="48" text-anchor="middle" fill="#10b981" font-size="11" font-weight="700">$1,375</text>
+    <text x="500" y="60" text-anchor="middle" fill="#34d399" font-size="8">-$306</text>
+  </g>
+
+  <!-- Legend -->
+  <g transform="translate(60, 800)">
+    <rect width="1080" height="60" rx="10" fill="url(#cardGrad)" stroke="#334155" stroke-width="1" filter="url(#shadow)" opacity="0.8"/>
+    <text x="20" y="24" fill="#64748b" font-size="10" font-weight="600" letter-spacing="1">LEGEND</text>
+    <!-- Positioning -->
+    <line x1="20" y1="44" x2="50" y2="44" stroke="#f59e0b" stroke-width="2"/>
+    <text x="56" y="48" fill="#fbbf24" font-size="10">Positioning (domestic)</text>
+    <!-- International -->
+    <line x1="220" y1="44" x2="250" y2="44" stroke="#06b6d4" stroke-width="2"/>
+    <text x="256" y="48" fill="#22d3ee" font-size="10">International</text>
+    <!-- Hub -->
+    <circle cx="400" cy="44" r="6" fill="url(#orangeGrad)"/>
+    <text x="412" y="48" fill="#fbbf24" font-size="10">Hub Airport</text>
+    <!-- SSE -->
+    <line x1="540" y1="44" x2="570" y2="44" stroke="#475569" stroke-width="1.5" stroke-dasharray="6,3"/>
+    <text x="576" y="48" fill="#94a3b8" font-size="10">SSE / Async</text>
+    <!-- Cache -->
+    <rect x="700" y="38" width="12" height="12" rx="3" fill="none" stroke="#8b5cf6" stroke-width="1.5"/>
+    <text x="718" y="48" fill="#a78bfa" font-size="10">Cached</text>
+    <!-- API -->
+    <rect x="810" y="38" width="12" height="12" rx="3" fill="none" stroke="#06b6d4" stroke-width="1.5"/>
+    <text x="828" y="48" fill="#22d3ee" font-size="10">External API</text>
+    <!-- Result -->
+    <rect x="940" y="38" width="12" height="12" rx="3" fill="none" stroke="#10b981" stroke-width="1.5"/>
+    <text x="958" y="48" fill="#34d399" font-size="10">Final Output</text>
+  </g>
+
+</svg>

@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hacker Fare Engine - SerpAPI</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1500px;
+            margin: 0 auto;
+            padding: 24px 16px;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+        header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #f8fafc;
+            letter-spacing: -0.5px;
+        }
+        header .subtitle {
+            color: #4ade80;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 4px;
+        }
+        header .trip-info {
+            color: #94a3b8;
+            margin-top: 8px;
+            font-size: 15px;
+        }
+        header .trip-route {
+            font-size: 20px;
+            color: #38bdf8;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+        header .trip-meta {
+            color: #64748b;
+            font-size: 13px;
+            margin-top: 6px;
+        }
+
+        /* Search Buttons */
+        .search-section {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+        .search-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        .search-group-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .btn-search {
+            padding: 14px 36px;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+        }
+        .btn-search:active { transform: scale(0.98); }
+        .btn-search:disabled {
+            background: #334155 !important;
+            color: #64748b;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .btn-mke { background: #3b82f6; }
+        .btn-mke:hover:not(:disabled) { background: #2563eb; }
+        .btn-ord { background: #8b5cf6; }
+        .btn-ord:hover:not(:disabled) { background: #7c3aed; }
+        .btn-subtext {
+            display: block;
+            font-size: 11px;
+            font-weight: 400;
+            opacity: 0.8;
+            margin-top: 3px;
+        }
+
+        .cache-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #4ade80;
+            margin-left: 6px;
+            vertical-align: middle;
+        }
+        .cache-time-label {
+            display: block;
+            font-size: 10px;
+            font-weight: 400;
+            color: #94a3b8;
+            margin-top: 2px;
+        }
+        .btn-search.active-origin {
+            outline: 2px solid #4ade80;
+            outline-offset: 2px;
+        }
+        .btn-rerun {
+            padding: 8px 20px;
+            background: #3b82f6;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .btn-rerun:hover { background: #2563eb; }
+
+        .tier-divider {
+            width: 1px;
+            background: #334155;
+            align-self: stretch;
+            margin: 0 4px;
+        }
+
+        /* API budget indicator */
+        .budget-note {
+            text-align: center;
+            font-size: 11px;
+            color: #475569;
+            margin-bottom: 20px;
+        }
+
+        /* Live Status Log */
+        .status-panel {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+            display: none;
+        }
+        .status-panel.visible { display: block; }
+        .status-panel h3 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+        .status-log {
+            font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+            font-size: 13px;
+            line-height: 1.8;
+            max-height: 320px;
+            overflow-y: auto;
+        }
+        .status-log .entry {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 2px 0;
+        }
+        .status-log .timestamp { color: #475569; flex-shrink: 0; }
+        .status-log .msg { color: #94a3b8; }
+        .status-log .msg.success { color: #4ade80; }
+        .status-log .msg.error { color: #f87171; }
+        .status-log .msg.searching { color: #38bdf8; }
+        .status-log .msg.done { color: #a78bfa; }
+
+        .spinner {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid #334155;
+            border-top-color: #3b82f6;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Results */
+        .results-panel { display: none; }
+        .results-panel.visible { display: block; }
+
+        /* Origin Label */
+        .origin-label {
+            text-align: center;
+            font-size: 16px;
+            font-weight: 600;
+            color: #94a3b8;
+            margin-bottom: 16px;
+            padding: 10px;
+            background: #1a2332;
+            border-radius: 8px;
+            border: 1px solid #334155;
+        }
+        .origin-label .airport { color: #38bdf8; font-size: 18px; }
+        .origin-label .ground-note { color: #a78bfa; font-size: 13px; display: block; margin-top: 4px; }
+
+        /* Price Insights */
+        .price-insights {
+            text-align: center;
+            padding: 10px;
+            margin-bottom: 16px;
+            border-radius: 8px;
+            font-size: 13px;
+        }
+        .price-low { background: rgba(74, 222, 128, 0.1); border: 1px solid rgba(74, 222, 128, 0.2); color: #4ade80; }
+        .price-typical { background: rgba(148, 163, 184, 0.1); border: 1px solid rgba(148, 163, 184, 0.2); color: #94a3b8; }
+        .price-high { background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.2); color: #fbbf24; }
+
+        /* Baseline Card */
+        .baseline-card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .baseline-card .label {
+            font-size: 14px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+        .baseline-card .route {
+            font-size: 13px;
+            color: #64748b;
+            margin-top: 4px;
+        }
+        .baseline-card .price {
+            font-size: 28px;
+            font-weight: 700;
+            color: #f8fafc;
+        }
+        .baseline-card .price-breakdown {
+            font-size: 12px;
+            color: #64748b;
+            text-align: right;
+            margin-top: 4px;
+        }
+        .baseline-card .detail {
+            font-size: 12px;
+            color: #64748b;
+            text-align: right;
+            margin-top: 2px;
+        }
+
+        /* Airline logo */
+        .airline-logo {
+            width: 20px;
+            height: 20px;
+            vertical-align: middle;
+            margin-right: 4px;
+            border-radius: 2px;
+        }
+
+        /* Hacker Fare Table */
+        .hf-table-wrap {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            overflow-x: auto;
+            margin-bottom: 24px;
+        }
+        .hf-table-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid #334155;
+        }
+        .hf-table-header h3 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        table.hf-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table.hf-table thead th {
+            padding: 12px 16px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            text-align: left;
+            border-bottom: 1px solid #334155;
+            background: #1a2332;
+        }
+        table.hf-table thead th.right { text-align: right; }
+
+        table.hf-table tbody tr {
+            border-bottom: 1px solid #1e293b;
+            transition: background 0.15s;
+        }
+        table.hf-table tbody tr:hover { background: #1a2332; }
+        table.hf-table tbody tr.best-row {
+            background: rgba(16, 185, 129, 0.08);
+        }
+        table.hf-table tbody tr.best-row:hover {
+            background: rgba(16, 185, 129, 0.14);
+        }
+
+        table.hf-table td {
+            padding: 14px 16px;
+            font-size: 14px;
+            vertical-align: top;
+        }
+        table.hf-table td.right { text-align: right; }
+
+        .rank-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            font-size: 13px;
+            font-weight: 700;
+        }
+        .rank-1 { background: #10b981; color: #064e3b; }
+        .rank-2 { background: #334155; color: #94a3b8; }
+        .rank-3 { background: #334155; color: #94a3b8; }
+        .rank-other { background: #1e293b; color: #64748b; border: 1px solid #334155; }
+
+        .hub-name { font-weight: 600; color: #f8fafc; }
+        .leg-price { color: #94a3b8; font-size: 14px; }
+        .leg-detail { color: #64748b; font-size: 12px; margin-top: 2px; }
+
+        .total-price { font-size: 18px; font-weight: 700; color: #f8fafc; }
+        .total-ground { font-size: 11px; color: #a78bfa; margin-top: 2px; }
+
+        .savings-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+        .savings-positive { background: rgba(16, 185, 129, 0.15); color: #4ade80; }
+        .savings-negative { background: rgba(248, 113, 113, 0.15); color: #f87171; }
+        .savings-neutral { background: rgba(148, 163, 184, 0.15); color: #94a3b8; }
+
+        /* Layover display */
+        .connection-info { font-size: 12px; }
+        .connection-info .time { font-weight: 600; }
+        .layover-short { color: #4ade80; }
+        .layover-medium { color: #fbbf24; }
+        .layover-long { color: #f87171; }
+        .layover-tag {
+            display: inline-block;
+            font-size: 10px;
+            font-weight: 600;
+            padding: 1px 5px;
+            border-radius: 3px;
+            margin-top: 2px;
+        }
+        .layover-tag-overnight { background: rgba(251, 191, 36, 0.15); color: #fbbf24; }
+        .layover-tag-warning { background: rgba(248, 113, 113, 0.15); color: #f87171; }
+
+        /* Google Flights links */
+        .gf-link {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 600;
+            color: #38bdf8;
+            text-decoration: none;
+            margin-top: 4px;
+            padding: 2px 6px;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            border-radius: 4px;
+            transition: background 0.15s, color 0.15s;
+        }
+        .gf-link:hover {
+            background: rgba(56, 189, 248, 0.15);
+            color: #7dd3fc;
+        }
+        .gf-link-baseline {
+            font-size: 12px;
+            padding: 4px 10px;
+            margin-top: 6px;
+        }
+
+        /* Warnings */
+        .warnings-section { margin-bottom: 24px; }
+        .warning-card {
+            background: #451a03;
+            border: 1px solid #f59e0b;
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 13px;
+            color: #fcd34d;
+            margin-bottom: 8px;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            color: #64748b;
+            font-size: 15px;
+        }
+
+        .error-banner {
+            background: #450a0a;
+            border: 1px solid #f87171;
+            border-radius: 12px;
+            padding: 16px 20px;
+            color: #fca5a5;
+            font-size: 14px;
+            margin-bottom: 24px;
+            display: none;
+        }
+        .error-banner.visible { display: block; }
+
+        @media (max-width: 768px) {
+            .baseline-card { flex-direction: column; gap: 12px; text-align: center; }
+            .baseline-card .price-breakdown, .baseline-card .detail { text-align: center; }
+            table.hf-table { font-size: 12px; }
+            table.hf-table td, table.hf-table thead th { padding: 10px 8px; }
+            .search-section { flex-direction: column; align-items: center; }
+            .tier-divider { width: 80%; height: 1px; margin: 4px 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Hacker Fare Engine</h1>
+            <div class="subtitle">Powered by SerpAPI / Google Flights</div>
+            <div class="trip-info">Split-Ticket Search</div>
+            <div class="trip-route">{{ origin }} -> {{ destination }}</div>
+            <div class="trip-meta">
+                {{ depart_date }} to {{ return_date }}
+                &nbsp;|&nbsp;
+                Min connection: {{ min_connection }} min
+                &nbsp;|&nbsp;
+                Hubs: {{ hubs | join(', ') }}
+            </div>
+        </header>
+
+        <!-- Search Buttons -->
+        <div class="search-section">
+            <div class="search-group">
+                <div class="search-group-label">Fly from {{ origin }}</div>
+                <button class="btn-search btn-mke" id="searchBtnMKE" onclick="startSearch('{{ origin }}', false)">
+                    Search from {{ origin }}
+                    <span class="btn-subtext">{{ hubs | length }} hubs | ~{{ 1 + hubs|length * 4 }} API calls</span>
+                </button>
+            </div>
+
+            <div class="tier-divider"></div>
+
+            <div class="search-group">
+                <div class="search-group-label">Drive to {{ hub_airport }} + ${{ "%.0f"|format(driving_cost + parking_rate * trip_days) }}</div>
+                <button class="btn-search btn-ord" id="searchBtnORD" onclick="startSearch('{{ hub_airport }}', false)">
+                    Search from {{ hub_airport }}
+                    <span class="btn-subtext">{{ hubs | length }} hubs | ~{{ 1 + hubs|length * 4 }} API calls</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="budget-note">
+            SerpAPI: 250 searches/month | Each search uses ~{{ 1 + hubs|length * 4 }} calls
+        </div>
+
+        <!-- Live Status Panel -->
+        <div class="status-panel" id="statusPanel">
+            <h3><span class="spinner" id="statusSpinner"></span> Live Status</h3>
+            <div class="status-log" id="statusLog"></div>
+        </div>
+
+        <!-- Error Banner -->
+        <div class="error-banner" id="errorBanner"></div>
+
+        <!-- Results Panel -->
+        <div class="results-panel" id="resultsPanel">
+            <div id="originLabel"></div>
+            <div id="priceInsights"></div>
+            <div id="baselineCard"></div>
+            <div id="hackerFareTable"></div>
+            <div class="warnings-section" id="warnings"></div>
+        </div>
+    </div>
+
+    <script>
+        var resultsCache = {};
+        var lastRenderedOrigin = null;
+        var LS_KEY = 'hackerFareCache';
+
+        function saveToLocalStorage() {
+            try {
+                var toStore = {};
+                for (var origin in resultsCache) {
+                    toStore[origin] = {
+                        results: resultsCache[origin],
+                        cached_at: resultsCache[origin]._cached_at || new Date().toISOString()
+                    };
+                }
+                localStorage.setItem(LS_KEY, JSON.stringify(toStore));
+            } catch(e) {
+                console.warn('Could not save to localStorage:', e);
+            }
+        }
+
+        function loadFromLocalStorage() {
+            try {
+                var raw = localStorage.getItem(LS_KEY);
+                if (!raw) return;
+                var stored = JSON.parse(raw);
+                for (var origin in stored) {
+                    var entry = stored[origin];
+                    entry.results._cached_at = entry.cached_at;
+                    resultsCache[origin] = entry.results;
+                }
+            } catch(e) {
+                console.warn('Could not load from localStorage:', e);
+            }
+        }
+
+        function formatRelativeTime(isoString) {
+            if (!isoString) return '';
+            var then = new Date(isoString);
+            var now = new Date();
+            var diffMs = now - then;
+            var diffMins = Math.floor(diffMs / 60000);
+            if (diffMins < 1) return 'just now';
+            if (diffMins < 60) return diffMins + ' min' + (diffMins !== 1 ? 's' : '') + ' ago';
+            var diffHours = Math.floor(diffMins / 60);
+            if (diffHours < 24) return diffHours + ' hour' + (diffHours !== 1 ? 's' : '') + ' ago';
+            var diffDays = Math.floor(diffHours / 24);
+            return diffDays + ' day' + (diffDays !== 1 ? 's' : '') + ' ago';
+        }
+
+        function formatTimestamp(isoString) {
+            if (!isoString) return '';
+            var d = new Date(isoString);
+            return d.toLocaleDateString('en-US', {
+                year: 'numeric', month: 'long', day: 'numeric'
+            }) + ' ' + d.toLocaleTimeString('en-US', {
+                hour: 'numeric', minute: '2-digit', hour12: true
+            });
+        }
+
+        function updateButtonBadges() {
+            var origins = ['{{ origin }}', '{{ hub_airport }}'];
+            var btnIds = ['searchBtnMKE', 'searchBtnORD'];
+            for (var i = 0; i < origins.length; i++) {
+                var btn = document.getElementById(btnIds[i]);
+                // Remove existing badges
+                var existing = btn.querySelector('.cache-dot');
+                if (existing) existing.remove();
+                var existingTime = btn.querySelector('.cache-time-label');
+                if (existingTime) existingTime.remove();
+                btn.classList.remove('active-origin');
+
+                if (resultsCache[origins[i]]) {
+                    var dot = document.createElement('span');
+                    dot.className = 'cache-dot';
+                    dot.title = 'Cached data available';
+                    btn.appendChild(dot);
+
+                    var cachedAt = resultsCache[origins[i]]._cached_at;
+                    if (cachedAt) {
+                        var timeLabel = document.createElement('span');
+                        timeLabel.className = 'cache-time-label';
+                        timeLabel.textContent = formatRelativeTime(cachedAt);
+                        btn.appendChild(timeLabel);
+                    }
+                }
+                if (origins[i] === lastRenderedOrigin) {
+                    btn.classList.add('active-origin');
+                }
+            }
+        }
+
+        function formatMinutes(min) {
+            if (!min || min <= 0) return "N/A";
+            var h = Math.floor(min / 60);
+            var m = min % 60;
+            if (h > 0 && m > 0) return h + "h " + m + "m";
+            if (h > 0) return h + "h";
+            return m + "m";
+        }
+
+        function formatTime(timeStr) {
+            // SerpAPI time format: "2026-05-22 14:30"
+            if (!timeStr) return "??:??";
+            try {
+                var parts = timeStr.split(" ");
+                if (parts.length >= 2) {
+                    var timeParts = parts[1].split(":");
+                    var h = parseInt(timeParts[0]);
+                    var m = timeParts[1];
+                    var ampm = h >= 12 ? "PM" : "AM";
+                    if (h > 12) h -= 12;
+                    if (h === 0) h = 12;
+                    return h + ":" + m + " " + ampm;
+                }
+            } catch(e) {}
+            return timeStr;
+        }
+
+        function stopsLabel(n, connections) {
+            if (n === 0) return "Nonstop";
+            var s = n + " stop" + (n !== 1 ? "s" : "");
+            if (connections && connections.length > 0) s += " (" + connections.join(", ") + ")";
+            return s;
+        }
+
+        function googleFlightsUrl(from, to, departDate, returnDate) {
+            var q = "Flights from " + from + " to " + to + " on " + departDate;
+            if (returnDate) q += " return " + returnDate;
+            return "https://www.google.com/travel/flights?q=" + encodeURIComponent(q);
+        }
+
+        function formatLayoverDetails(details) {
+            if (!details || details.length === 0) return "";
+            var html = "";
+            for (var i = 0; i < details.length; i++) {
+                var d = details[i];
+                var mins = d.minutes;
+                var cls = "layover-short";
+                var tag = "";
+                if (d.overnight || mins >= 480) {
+                    if (mins >= 720) {
+                        cls = "layover-long";
+                        tag = ' <span class="layover-tag layover-tag-warning">Very long</span>';
+                    } else {
+                        cls = "layover-medium";
+                        tag = ' <span class="layover-tag layover-tag-overnight">Overnight</span>';
+                    }
+                } else if (mins >= 360) {
+                    cls = "layover-medium";
+                }
+                var name = d.airport_name || d.airport;
+                html += '<div class="leg-detail"><span class="' + cls + '">' + formatMinutes(mins) + '</span> in ' + name + tag + '</div>';
+            }
+            return html;
+        }
+
+        function airlineLogoHtml(logos, airlines) {
+            if (!logos || logos.length === 0) return "";
+            var html = "";
+            for (var i = 0; i < Math.min(logos.length, 2); i++) {
+                html += '<img class="airline-logo" src="' + logos[i] + '" alt="' + (airlines[i] || '') + '" title="' + (airlines[i] || '') + '">';
+            }
+            return html;
+        }
+
+        function addLog(message, type) {
+            var log = document.getElementById("statusLog");
+            var now = new Date();
+            var ts = now.toLocaleTimeString("en-US", { hour12: false });
+            var entry = document.createElement("div");
+            entry.className = "entry";
+            entry.innerHTML =
+                '<span class="timestamp">' + ts + '</span>' +
+                '<span class="msg ' + (type || "") + '">' + message + '</span>';
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function setButtonsDisabled(disabled) {
+            document.getElementById("searchBtnMKE").disabled = disabled;
+            document.getElementById("searchBtnORD").disabled = disabled;
+        }
+
+        function startSearch(origin, forceRefresh) {
+            // Client-side cache: show instantly if we have results for this origin
+            if (!forceRefresh && resultsCache[origin]) {
+                document.getElementById("statusPanel").classList.remove("visible");
+                document.getElementById("errorBanner").classList.remove("visible");
+                renderResults(resultsCache[origin], true);
+                return;
+            }
+
+            setButtonsDisabled(true);
+
+            var statusPanel = document.getElementById("statusPanel");
+            statusPanel.classList.add("visible");
+            document.getElementById("statusLog").innerHTML = "";
+            document.getElementById("statusSpinner").style.display = "inline-block";
+
+            document.getElementById("resultsPanel").classList.remove("visible");
+            document.getElementById("errorBanner").classList.remove("visible");
+            document.getElementById("originLabel").innerHTML = "";
+            document.getElementById("priceInsights").innerHTML = "";
+            document.getElementById("baselineCard").innerHTML = "";
+            document.getElementById("hackerFareTable").innerHTML = "";
+            document.getElementById("warnings").innerHTML = "";
+
+            addLog("Starting SerpAPI hacker fare search from " + origin + "...", "searching");
+
+            fetch("/search", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ origin: origin }),
+            })
+            .then(function(resp) { return resp.json(); })
+            .then(function(data) {
+                if (data.error) {
+                    addLog(data.error, "error");
+                    setButtonsDisabled(false);
+                    return;
+                }
+                listenForUpdates(data.search_id);
+            })
+            .catch(function(err) {
+                addLog("Failed to start search: " + err, "error");
+                setButtonsDisabled(false);
+            });
+        }
+
+        function listenForUpdates(searchId) {
+            var evtSource = new EventSource("/stream/" + searchId);
+
+            evtSource.addEventListener("status", function(e) {
+                var data = JSON.parse(e.data);
+                var type = "searching";
+                if (data.step && data.step.endsWith("_done")) type = "success";
+                if (data.step === "done") type = "done";
+                addLog(data.message, type);
+            });
+
+            evtSource.addEventListener("error", function(e) {
+                try {
+                    var data = JSON.parse(e.data);
+                    addLog(data.message, "error");
+                    var banner = document.getElementById("errorBanner");
+                    banner.textContent = data.message;
+                    banner.classList.add("visible");
+                } catch(err) {}
+            });
+
+            evtSource.addEventListener("results", function(e) {
+                var results = JSON.parse(e.data);
+                results._cached_at = results.searched_at || new Date().toISOString();
+                resultsCache[results.search_origin] = results;
+                saveToLocalStorage();
+                renderResults(results, false);
+            });
+
+            evtSource.addEventListener("done", function(e) {
+                evtSource.close();
+                document.getElementById("statusSpinner").style.display = "none";
+                setButtonsDisabled(false);
+            });
+        }
+
+        function renderResults(r, fromCache) {
+            document.getElementById("resultsPanel").classList.add("visible");
+            lastRenderedOrigin = r.search_origin;
+
+            // Origin label
+            var labelHtml = '<div class="origin-label">';
+            labelHtml += '<span class="airport">' + r.search_origin + '</span>';
+
+            // Cache / API stats line
+            var statsLine = r.hubs_searched.length + ' hubs searched';
+            if (fromCache) {
+                statsLine += ' | <span style="color:#4ade80;">Cached results</span>';
+                var cachedAt = r._cached_at || '';
+                if (cachedAt) {
+                    statsLine += '<span style="display:block; font-size:11px; color:#94a3b8; margin-top:2px;">' +
+                        'Last searched: ' + formatTimestamp(cachedAt) + ' (' + formatRelativeTime(cachedAt) + ')' +
+                        '</span>';
+                }
+            } else if (r.cache_stats) {
+                statsLine += ' | ' + r.cache_stats.search_misses + ' new API calls';
+                if (r.cache_stats.search_hits > 0) {
+                    statsLine += ', ' + r.cache_stats.search_hits + ' cached';
+                }
+            } else {
+                statsLine += ' | ' + (r.api_calls_used || "?") + ' SerpAPI calls used';
+            }
+            labelHtml += '<span style="display:block; font-size:12px; color:#64748b; margin-top:4px;">' + statsLine + '</span>';
+
+            if (r.is_hub_search && r.ground_cost > 0) {
+                labelHtml += '<span class="ground-note">Includes $' + r.ground_cost.toFixed(2) + ' ground transit (driving + parking) in all totals</span>';
+            }
+            labelHtml += '</div>';
+            if (fromCache) {
+                labelHtml += '<div style="text-align:center; margin-top:10px;">' +
+                    '<button class="btn-rerun" onclick="startSearch(\'' + r.search_origin + '\', true)">' +
+                    'Rerun Search from ' + r.search_origin +
+                    '</button></div>';
+            }
+            document.getElementById("originLabel").innerHTML = labelHtml;
+
+            // Price insights
+            var piHtml = "";
+            if (r.price_insights && r.price_insights.price_level) {
+                var pi = r.price_insights;
+                var piClass = "price-typical";
+                var piLabel = "Prices are typical";
+                if (pi.price_level === "low") { piClass = "price-low"; piLabel = "Prices are currently low"; }
+                else if (pi.price_level === "high") { piClass = "price-high"; piLabel = "Prices are currently high"; }
+                var rangeStr = "";
+                if (pi.typical_price_range && pi.typical_price_range.length === 2) {
+                    rangeStr = " | Typical range: $" + pi.typical_price_range[0] + " - $" + pi.typical_price_range[1];
+                }
+                piHtml = '<div class="price-insights ' + piClass + '">' + piLabel + rangeStr + '</div>';
+            }
+            document.getElementById("priceInsights").innerHTML = piHtml;
+
+            // Baseline card
+            var baseHtml = "";
+            if (r.baseline) {
+                var b = r.baseline;
+                var bStops = stopsLabel(b.stops, b.connections);
+                var displayPrice = b.price;
+                var breakdownHtml = "";
+                if (r.is_hub_search && b.total_with_ground) {
+                    displayPrice = b.total_with_ground;
+                    breakdownHtml = '<div class="price-breakdown">Flight: $' + b.price.toFixed(2) + ' + Ground: $' + b.ground_cost.toFixed(2) + '</div>';
+                }
+                var baseGfUrl = googleFlightsUrl(r.search_origin, r.destination, r.depart_date, r.return_date);
+                var logoHtml = airlineLogoHtml(b.airline_logos, b.airlines);
+                var layoverHtml = formatLayoverDetails(b.layover_details);
+
+                baseHtml =
+                    '<div class="baseline-card">' +
+                        '<div>' +
+                            '<div class="label">Baseline: Standard Round-Trip</div>' +
+                            '<div class="route">' + r.search_origin + ' &#8594; ' + r.destination + ' (single ticket)</div>' +
+                            layoverHtml +
+                            '<div style="margin-top:8px;">' +
+                                '<a class="gf-link gf-link-baseline" href="' + baseGfUrl + '" target="_blank" rel="noopener">View on Google Flights</a>' +
+                            '</div>' +
+                        '</div>' +
+                        '<div>' +
+                            '<div class="price">$' + displayPrice.toFixed(2) + '</div>' +
+                            breakdownHtml +
+                            '<div class="detail">' + logoHtml + b.carrier_display + ' | ' + bStops + ' | ' + formatMinutes(b.total_duration) + '</div>' +
+                        '</div>' +
+                    '</div>';
+            } else {
+                baseHtml =
+                    '<div class="baseline-card">' +
+                        '<div>' +
+                            '<div class="label">Baseline: No Direct Flights Found</div>' +
+                            '<div class="route">' + r.search_origin + ' &#8594; ' + r.destination + '</div>' +
+                        '</div>' +
+                        '<div><div class="price">N/A</div></div>' +
+                    '</div>';
+            }
+            document.getElementById("baselineCard").innerHTML = baseHtml;
+
+            // Hacker fare table
+            var tableHtml = "";
+            if (r.hacker_fares && r.hacker_fares.length > 0) {
+                var totalLabel = r.is_hub_search ? "Total (incl. ground)" : "Total";
+                tableHtml =
+                    '<div class="hf-table-wrap">' +
+                        '<div class="hf-table-header"><h3>Hacker Fare Routes - ranked by total price (live Google Flights prices)</h3></div>' +
+                        '<table class="hf-table">' +
+                            '<thead>' +
+                            '<tr>' +
+                                '<th rowspan="2">#</th>' +
+                                '<th rowspan="2">Hub</th>' +
+                                '<th colspan="3" style="text-align:center; border-bottom:1px solid #334155;">Outbound (' + r.depart_date + ')</th>' +
+                                '<th colspan="3" style="text-align:center; border-bottom:1px solid #334155;">Return (' + r.return_date + ')</th>' +
+                                '<th rowspan="2" class="right">' + totalLabel + '</th>' +
+                                '<th rowspan="2" class="right">vs Baseline</th>' +
+                            '</tr>' +
+                            '<tr>' +
+                                '<th>Positioning</th>' +
+                                '<th>International</th>' +
+                                '<th>Hub Layover</th>' +
+                                '<th>International</th>' +
+                                '<th>Positioning</th>' +
+                                '<th>Hub Layover</th>' +
+                            '</tr>' +
+                            '</thead>' +
+                            '<tbody>';
+
+                for (var i = 0; i < r.hacker_fares.length; i++) {
+                    var hf = r.hacker_fares[i];
+                    var dom = hf.domestic;
+                    var intl = hf.international;
+                    var retIntl = hf.ret_international;
+                    var retDom = hf.ret_domestic;
+                    var rowClass = (i === 0) ? ' class="best-row"' : '';
+                    var rankClass = "rank-other";
+                    if (hf.rank === 1) rankClass = "rank-1";
+                    else if (hf.rank === 2) rankClass = "rank-2";
+                    else if (hf.rank === 3) rankClass = "rank-3";
+
+                    var savingsHtml = "";
+                    if (hf.savings_vs_baseline !== null && hf.savings_vs_baseline !== undefined) {
+                        if (hf.savings_vs_baseline > 0) {
+                            savingsHtml = '<div class="savings-badge savings-positive">Save $' + hf.savings_vs_baseline.toFixed(2) + '</div>';
+                        } else if (hf.savings_vs_baseline < 0) {
+                            savingsHtml = '<div class="savings-badge savings-negative">+$' + Math.abs(hf.savings_vs_baseline).toFixed(2) + ' more</div>';
+                        } else {
+                            savingsHtml = '<div class="savings-badge savings-neutral">Same price</div>';
+                        }
+                    } else {
+                        savingsHtml = '<span style="color:#64748b">N/A</span>';
+                    }
+
+                    var domStops = stopsLabel(dom.stops, dom.connections);
+                    var intlStops = stopsLabel(intl.stops, intl.connections);
+                    var retIntlStops = stopsLabel(retIntl.stops, retIntl.connections);
+                    var retDomStops = stopsLabel(retDom.stops, retDom.connections);
+
+                    var displayTotal = hf.total_with_ground;
+                    var groundNote = "";
+                    if (r.is_hub_search && hf.ground_cost > 0) {
+                        groundNote = '<div class="total-ground">Flights: $' + hf.total.toFixed(2) + ' + Ground: $' + hf.ground_cost.toFixed(2) + '</div>';
+                    }
+
+                    var domGfUrl = googleFlightsUrl(r.search_origin, hf.hub, r.depart_date);
+                    var intlGfUrl = googleFlightsUrl(hf.hub, r.destination, r.depart_date);
+                    var retIntlGfUrl = googleFlightsUrl(r.destination, hf.hub, r.return_date);
+                    var retDomGfUrl = googleFlightsUrl(hf.hub, r.search_origin, r.return_date);
+
+                    var domLogoHtml = airlineLogoHtml(dom.airline_logos, dom.airlines);
+                    var intlLogoHtml = airlineLogoHtml(intl.airline_logos, intl.airlines);
+                    var retIntlLogoHtml = airlineLogoHtml(retIntl.airline_logos, retIntl.airlines);
+                    var retDomLogoHtml = airlineLogoHtml(retDom.airline_logos, retDom.airlines);
+
+                    // Outbound hub layover
+                    var outHubLayoverHtml = (function(mins) {
+                        var cls = "layover-short";
+                        var tag = "";
+                        if (mins >= 720) {
+                            cls = "layover-long";
+                            tag = '<div class="layover-tag layover-tag-warning">Very long</div>';
+                        } else if (mins >= 480) {
+                            cls = "layover-medium";
+                            tag = '<div class="layover-tag layover-tag-overnight">Overnight likely</div>';
+                        } else if (mins >= 360) {
+                            cls = "layover-medium";
+                        }
+                        return '<div class="connection-info">' +
+                            '<span class="time ' + cls + '">' + formatMinutes(mins) + '</span>' +
+                            ' at ' + hf.hub +
+                            '</div>' + tag;
+                    })(hf.outbound_connection_minutes);
+
+                    // Return hub layover
+                    var retHubLayoverHtml = (function(mins) {
+                        var cls = "layover-short";
+                        var tag = "";
+                        if (mins >= 720) {
+                            cls = "layover-long";
+                            tag = '<div class="layover-tag layover-tag-warning">Very long</div>';
+                        } else if (mins >= 480) {
+                            cls = "layover-medium";
+                            tag = '<div class="layover-tag layover-tag-overnight">Overnight likely</div>';
+                        } else if (mins >= 360) {
+                            cls = "layover-medium";
+                        }
+                        return '<div class="connection-info">' +
+                            '<span class="time ' + cls + '">' + formatMinutes(mins) + '</span>' +
+                            ' at ' + hf.hub +
+                            '</div>' + tag;
+                    })(hf.return_connection_minutes);
+
+                    tableHtml +=
+                        '<tr' + rowClass + '>' +
+                            '<td><span class="rank-badge ' + rankClass + '">' + hf.rank + '</span></td>' +
+                            '<td><span class="hub-name">' + hf.hub + '</span></td>' +
+                            // Outbound positioning
+                            '<td>' +
+                                '<div class="leg-price">' + domLogoHtml + '$' + dom.price.toFixed(2) + '</div>' +
+                                '<div class="leg-detail">' + dom.carrier_display + ' | ' + domStops + '</div>' +
+                                '<div class="leg-detail">Dep: ' + formatTime(dom.departure_time) + ' | Arr: ' + formatTime(dom.arrival_time) + '</div>' +
+                                formatLayoverDetails(dom.layover_details) +
+                                '<a class="gf-link" href="' + domGfUrl + '" target="_blank" rel="noopener">Google Flights</a>' +
+                            '</td>' +
+                            // Outbound international
+                            '<td>' +
+                                '<div class="leg-price">' + intlLogoHtml + '$' + intl.price.toFixed(2) + '</div>' +
+                                '<div class="leg-detail">' + intl.carrier_display + ' | ' + intlStops + '</div>' +
+                                '<div class="leg-detail">Dep: ' + formatTime(intl.departure_time) + ' | Arr: ' + formatTime(intl.arrival_time) + '</div>' +
+                                formatLayoverDetails(intl.layover_details) +
+                                '<a class="gf-link" href="' + intlGfUrl + '" target="_blank" rel="noopener">Google Flights</a>' +
+                            '</td>' +
+                            // Outbound hub layover
+                            '<td>' + outHubLayoverHtml + '</td>' +
+                            // Return international
+                            '<td>' +
+                                '<div class="leg-price">' + retIntlLogoHtml + '$' + retIntl.price.toFixed(2) + '</div>' +
+                                '<div class="leg-detail">' + retIntl.carrier_display + ' | ' + retIntlStops + '</div>' +
+                                '<div class="leg-detail">Dep: ' + formatTime(retIntl.departure_time) + ' | Arr: ' + formatTime(retIntl.arrival_time) + '</div>' +
+                                formatLayoverDetails(retIntl.layover_details) +
+                                '<a class="gf-link" href="' + retIntlGfUrl + '" target="_blank" rel="noopener">Google Flights</a>' +
+                            '</td>' +
+                            // Return positioning
+                            '<td>' +
+                                '<div class="leg-price">' + retDomLogoHtml + '$' + retDom.price.toFixed(2) + '</div>' +
+                                '<div class="leg-detail">' + retDom.carrier_display + ' | ' + retDomStops + '</div>' +
+                                '<div class="leg-detail">Dep: ' + formatTime(retDom.departure_time) + ' | Arr: ' + formatTime(retDom.arrival_time) + '</div>' +
+                                formatLayoverDetails(retDom.layover_details) +
+                                '<a class="gf-link" href="' + retDomGfUrl + '" target="_blank" rel="noopener">Google Flights</a>' +
+                            '</td>' +
+                            // Return hub layover
+                            '<td>' + retHubLayoverHtml + '</td>' +
+                            // Total
+                            '<td class="right">' +
+                                '<div class="total-price">$' + displayTotal.toFixed(2) + '</div>' +
+                                '<div class="leg-detail">Out: $' + hf.outbound_total.toFixed(2) + ' | Ret: $' + hf.return_total.toFixed(2) + '</div>' +
+                                groundNote +
+                            '</td>' +
+                            // Savings
+                            '<td class="right">' + savingsHtml + '</td>' +
+                        '</tr>';
+                }
+
+                tableHtml += '</tbody></table></div>';
+            } else {
+                tableHtml =
+                    '<div class="hf-table-wrap">' +
+                        '<div class="no-results">No valid hacker fare routes found. The hubs may not have compatible flight times for the minimum connection window.</div>' +
+                    '</div>';
+            }
+            document.getElementById("hackerFareTable").innerHTML = tableHtml;
+
+            // Warnings
+            var warnHtml = "";
+            if (r.global_warnings && r.global_warnings.length > 0) {
+                for (var w = 0; w < r.global_warnings.length; w++) {
+                    warnHtml += '<div class="warning-card">! ' + r.global_warnings[w] + '</div>';
+                }
+            }
+            document.getElementById("warnings").innerHTML = warnHtml;
+
+            updateButtonBadges();
+        }
+
+        // Page load: hydrate from localStorage and render most recent cached results
+        (function() {
+            loadFromLocalStorage();
+            updateButtonBadges();
+
+            var mostRecent = null;
+            var mostRecentTime = null;
+            for (var origin in resultsCache) {
+                var t = resultsCache[origin]._cached_at;
+                if (t && (!mostRecentTime || t > mostRecentTime)) {
+                    mostRecentTime = t;
+                    mostRecent = origin;
+                }
+            }
+            if (mostRecent) {
+                renderResults(resultsCache[mostRecent], true);
+            }
+        })();
+    </script>
+</body>
+</html>
