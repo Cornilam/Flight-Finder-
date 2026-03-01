@@ -91,16 +91,13 @@ The caching system reduces this significantly:
 flight_deal_finder/
   app_serp.py          # Flask web app (SerpAPI / Google Flights)
   serp_flights.py      # SerpAPI search module with persistent caching
-  app.py               # Alternative Flask app (Amadeus API)
-  flight_finder.py     # CLI comparison tool (Amadeus API)
   requirements.txt     # Python dependencies
   .env                 # Configuration and API keys (not committed)
   .env.example         # Template for .env
   cache/
     serp_cache.json    # Persistent API response cache (auto-generated)
   templates/
-    dashboard_serp.html  # SerpAPI dashboard UI
-    dashboard.html       # Amadeus dashboard UI
+    dashboard_serp.html  # Dashboard UI
 ```
 
 ## Environment Variables
@@ -131,14 +128,6 @@ Browser (localStorage)          Server (Python)              Disk
 - **Layer 1 — localStorage**: Full search results per origin. Renders instantly on page load.
 - **Layer 2 — In-memory dict**: Individual API responses keyed by route+date. Shared legs between MKE and ORD searches are cached.
 - **Layer 3 — JSON file**: Persists Layer 2 to disk. Loaded on server startup. Entries older than 24 hours are discarded.
-
-## Search Engines
-
-| Engine | File | API | Best For |
-|--------|------|-----|----------|
-| SerpAPI | `app_serp.py` | Google Flights via SerpAPI | Primary use — real pricing, simple setup |
-| Amadeus | `app.py` | Amadeus Flight Offers | Alternative — supports price confirmation |
-| CLI | `flight_finder.py` | Amadeus Flight Offers | Quick terminal comparisons |
 
 ## Important Warnings
 

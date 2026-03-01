@@ -12,7 +12,6 @@ import os
 import json
 import queue
 import threading
-import webbrowser
 from datetime import datetime
 
 from flask import Flask, render_template, request, jsonify, Response
@@ -538,7 +537,6 @@ if __name__ == "__main__":
     print(f"  Hubs ({len(SERP_HUBS)}): {', '.join(SERP_HUBS)}")
     print(f"  API calls per search: ~{1 + len(SERP_HUBS) * 4}")
     print(f"  Drive option: {HUB_AIRPORT} (+${DRIVING_COST + PARKING_RATE_PER_DAY * TRIP_DAYS:.0f} ground)")
-    print("  Opening http://localhost:5000 in your browser...\n")
+    print("  Server starting at http://localhost:5000\n")
 
-    webbrowser.open("http://localhost:5000")
     app.run(debug=False, port=5000)
