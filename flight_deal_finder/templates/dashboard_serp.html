@@ -89,6 +89,9 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
+        .airport-field-wrap {
+            position: relative;
+        }
         .airport-input {
             width: 80px;
             padding: 10px 12px;
@@ -101,11 +104,70 @@
             text-align: center;
             letter-spacing: 1px;
             text-transform: uppercase;
+            transition: width 0.2s ease;
         }
         .airport-input:focus {
             outline: none;
             border-color: #38bdf8;
             box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+            width: 200px;
+            text-align: left;
+            letter-spacing: normal;
+            text-transform: none;
+        }
+        .autocomplete-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            min-width: 300px;
+            max-height: 240px;
+            overflow-y: auto;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            margin-top: 4px;
+            z-index: 1000;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+        }
+        .autocomplete-dropdown.visible {
+            display: block;
+        }
+        .ac-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid #1a2332;
+        }
+        .ac-item:last-child {
+            border-bottom: none;
+        }
+        .ac-item:hover, .ac-item.active {
+            background: #334155;
+        }
+        .ac-iata {
+            font-weight: 700;
+            font-size: 14px;
+            color: #4ade80;
+            min-width: 36px;
+        }
+        .ac-detail {
+            font-size: 13px;
+            color: #94a3b8;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .ac-city {
+            color: #e2e8f0;
+            font-weight: 500;
+        }
+        .ac-empty {
+            padding: 10px 12px;
+            color: #64748b;
+            font-size: 13px;
         }
         .date-input {
             padding: 10px 12px;
@@ -211,55 +273,165 @@
         }
 
         /* Live Status Log */
-        .status-panel {
+        /* Search Animation Panel */
+        .search-animation {
             background: #1e293b;
             border: 1px solid #334155;
             border-radius: 12px;
-            padding: 20px;
+            padding: 24px 24px 16px;
             margin-bottom: 24px;
             display: none;
+            text-align: center;
         }
-        .status-panel.visible { display: block; }
-        .status-panel h3 {
+        .search-animation.visible { display: block; }
+
+        .flight-arc {
+            width: 100%;
+            max-width: 600px;
+            height: 120px;
+            margin: 0 auto 16px;
+            display: block;
+        }
+        .arc-label {
+            fill: #e2e8f0;
+            font-family: inherit;
             font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        .arc-path {
+            fill: none;
+            stroke: #334155;
+            stroke-width: 2;
+            stroke-dasharray: 8 6;
+        }
+        .arc-path-glow {
+            fill: none;
+            stroke: #38bdf8;
+            stroke-width: 2;
+            stroke-dasharray: 8 6;
+            opacity: 0.3;
+        }
+        .plane-icon {
+            fill: #f8fafc;
+            font-size: 18px;
+        }
+        .origin-dot, .dest-dot {
+            fill: #4ade80;
+        }
+
+        /* Hub Tracker */
+        .hub-tracker {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+        .hub-dot {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            min-width: 48px;
+        }
+        .hub-dot-indicator {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 2px solid #334155;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            transition: all 0.3s ease;
+            background: #0f172a;
+        }
+        .hub-dot.pending .hub-dot-indicator {
+            border-color: #334155;
+            color: #475569;
+        }
+        .hub-dot.searching .hub-dot-indicator {
+            border-color: #38bdf8;
+            color: #38bdf8;
+            box-shadow: 0 0 8px rgba(56, 189, 248, 0.4);
+            animation: hubPulse 1.2s ease-in-out infinite;
+        }
+        .hub-dot.done .hub-dot-indicator {
+            border-color: #4ade80;
+            background: #166534;
+            color: #4ade80;
+        }
+        .hub-dot-label {
+            font-size: 11px;
             font-weight: 600;
-            color: #94a3b8;
-            text-transform: uppercase;
+            color: #64748b;
             letter-spacing: 0.5px;
+        }
+        .hub-dot.searching .hub-dot-label { color: #38bdf8; }
+        .hub-dot.done .hub-dot-label { color: #4ade80; }
+
+        @keyframes hubPulse {
+            0%, 100% { box-shadow: 0 0 4px rgba(56, 189, 248, 0.3); }
+            50% { box-shadow: 0 0 16px rgba(56, 189, 248, 0.6); }
+        }
+
+        /* Progress Bar */
+        .search-progress {
             margin-bottom: 12px;
         }
+        .progress-bar {
+            height: 6px;
+            background: #0f172a;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #38bdf8, #4ade80);
+            border-radius: 3px;
+            transition: width 0.4s ease;
+        }
+        .progress-text {
+            font-size: 13px;
+            color: #94a3b8;
+        }
+
+        /* Details Toggle */
+        .details-toggle {
+            font-size: 12px;
+            color: #475569;
+            cursor: pointer;
+            padding: 4px 0;
+            user-select: none;
+        }
+        .details-toggle:hover { color: #94a3b8; }
+
         .status-log {
             font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
-            font-size: 13px;
-            line-height: 1.8;
-            max-height: 320px;
+            font-size: 12px;
+            line-height: 1.6;
+            max-height: 200px;
             overflow-y: auto;
+            text-align: left;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #1a2332;
         }
         .status-log .entry {
             display: flex;
             align-items: flex-start;
             gap: 10px;
-            padding: 2px 0;
+            padding: 1px 0;
         }
         .status-log .timestamp { color: #475569; flex-shrink: 0; }
-        .status-log .msg { color: #94a3b8; }
+        .status-log .msg { color: #64748b; }
         .status-log .msg.success { color: #4ade80; }
         .status-log .msg.error { color: #f87171; }
         .status-log .msg.searching { color: #38bdf8; }
         .status-log .msg.done { color: #a78bfa; }
-
-        .spinner {
-            display: inline-block;
-            width: 12px;
-            height: 12px;
-            border: 2px solid #334155;
-            border-top-color: #3b82f6;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            margin-right: 8px;
-            vertical-align: middle;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
 
         /* Results */
         .results-panel { display: none; }
@@ -532,17 +704,27 @@
         <!-- Config Bar -->
         <div class="config-bar">
             <div class="config-row">
-                <div class="config-field">
+                <div class="config-field airport-field-wrap">
                     <label for="inputOrigin">From</label>
                     <input type="text" id="inputOrigin" value="{{ origin }}"
-                           maxlength="3" placeholder="MKE" class="airport-input"
-                           oninput="this.value = this.value.toUpperCase(); updateHeaderDisplay();">
+                           placeholder="City or code" class="airport-input"
+                           autocomplete="off"
+                           onfocus="onAirportFocus(this, 'acOrigin')"
+                           oninput="onAirportInput(this, 'acOrigin')"
+                           onblur="onAirportBlur(this, 'acOrigin')"
+                           onkeydown="onAirportKeydown(event, this, 'acOrigin')">
+                    <div class="autocomplete-dropdown" id="acOrigin"></div>
                 </div>
-                <div class="config-field">
+                <div class="config-field airport-field-wrap">
                     <label for="inputDestination">To</label>
                     <input type="text" id="inputDestination" value="{{ destination }}"
-                           maxlength="3" placeholder="ATH" class="airport-input"
-                           oninput="this.value = this.value.toUpperCase(); updateHeaderDisplay();">
+                           placeholder="City or code" class="airport-input"
+                           autocomplete="off"
+                           onfocus="onAirportFocus(this, 'acDest')"
+                           oninput="onAirportInput(this, 'acDest')"
+                           onblur="onAirportBlur(this, 'acDest')"
+                           onkeydown="onAirportKeydown(event, this, 'acDest')">
+                    <div class="autocomplete-dropdown" id="acDest"></div>
                 </div>
                 <div class="config-field">
                     <label for="inputDepart">Depart</label>
@@ -566,11 +748,16 @@
                     <span>Also compare: drive to hub</span>
                 </label>
                 <div class="hub-compare-fields" id="hubCompareFields" style="display:none;">
-                    <div class="config-field">
+                    <div class="config-field airport-field-wrap">
                         <label for="inputHubAirport">Hub</label>
                         <input type="text" id="inputHubAirport" value="{{ hub_airport }}"
-                               maxlength="3" placeholder="ORD" class="airport-input"
-                               oninput="this.value = this.value.toUpperCase();">
+                               placeholder="City or code" class="airport-input"
+                               autocomplete="off"
+                               onfocus="onAirportFocus(this, 'acHub')"
+                               oninput="onAirportInput(this, 'acHub')"
+                               onblur="onAirportBlur(this, 'acHub')"
+                               onkeydown="onAirportKeydown(event, this, 'acHub')">
+                        <div class="autocomplete-dropdown" id="acHub"></div>
                     </div>
                     <div class="config-field">
                         <label for="inputDrivingCost">Drive $</label>
@@ -591,10 +778,43 @@
             <span id="hubBudgetNote"></span>
         </div>
 
-        <!-- Live Status Panel -->
-        <div class="status-panel" id="statusPanel">
-            <h3><span class="spinner" id="statusSpinner"></span> Live Status</h3>
-            <div class="status-log" id="statusLog"></div>
+        <!-- Search Animation Panel -->
+        <div class="search-animation" id="searchAnimation">
+            <svg class="flight-arc" viewBox="0 0 600 120" xmlns="http://www.w3.org/2000/svg">
+                <!-- Origin/Destination dots -->
+                <circle class="origin-dot" cx="40" cy="80" r="5" />
+                <circle class="dest-dot" cx="560" cy="80" r="5" />
+                <!-- Labels -->
+                <text class="arc-label" id="arcOrigin" x="40" y="105" text-anchor="middle">MKE</text>
+                <text class="arc-label" id="arcDest" x="560" y="105" text-anchor="middle">ATH</text>
+                <!-- Dotted arc path -->
+                <path class="arc-path" d="M 40,80 Q 300,5 560,80" />
+                <path class="arc-path-glow" d="M 40,80 Q 300,5 560,80" />
+                <!-- Animated plane -->
+                <g class="plane-icon">
+                    <text font-size="18" dy="5">&#9992;</text>
+                    <animateMotion dur="3.5s" repeatCount="indefinite"
+                                   rotate="auto"
+                                   path="M 40,80 Q 300,5 560,80" />
+                </g>
+            </svg>
+
+            <!-- Hub tracker dots -->
+            <div class="hub-tracker" id="hubTracker"></div>
+
+            <!-- Progress bar + current step -->
+            <div class="search-progress">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="progress-text" id="progressText">Preparing search...</div>
+            </div>
+
+            <!-- Collapsible details log -->
+            <div class="details-toggle" onclick="toggleDetails()">
+                <span id="detailsArrow">&#9656;</span> Show details
+            </div>
+            <div class="status-log" id="statusLog" style="display:none;"></div>
         </div>
 
         <!-- Error Banner -->
@@ -611,6 +831,181 @@
     </div>
 
     <script>
+        /* ── Airport Autocomplete ─────────────────────────────── */
+        var AIRPORTS = [];
+        var acActiveIdx = -1;
+
+        fetch('/static/airports.json')
+            .then(function(r) { return r.json(); })
+            .then(function(data) { AIRPORTS = data; })
+            .catch(function(e) { console.warn('Could not load airport data:', e); });
+
+        // Top ~60 busiest airports worldwide for ranking boost
+        var MAJOR = {};
+        ['ATL','DXB','DFW','DEN','ORD','LHR','LAX','IST','CDG','AMS',
+         'JFK','SIN','CAN','PEK','PVG','DEL','ICN','HND','NRT','BKK',
+         'FRA','SFO','MIA','SEA','EWR','MCO','BOS','PHX','IAH','MSP',
+         'DTW','JNB','FCO','MAD','BCN','LGW','MUC','SYD','MEL','HKG',
+         'TPE','MNL','KUL','DOH','YYZ','YUL','YVR','MEX','GRU','SCL',
+         'BOG','LIM','CLT','IAD','PHL','SAN','TPA','FLL','BWI','DCA'].forEach(
+            function(c) { MAJOR[c] = true; }
+        );
+
+        function airportRank(a) {
+            if (MAJOR[a.iata]) return 0;
+            if (a.name.toLowerCase().indexOf('international') !== -1) return 1;
+            return 2;
+        }
+        function sortByRank(arr) {
+            return arr.sort(function(a, b) { return airportRank(a) - airportRank(b); });
+        }
+
+        function filterAirports(query) {
+            if (!query || !AIRPORTS.length) return [];
+            var q = query.toLowerCase();
+            var exact = [];
+            var startsWith = [];
+            var contains = [];
+            for (var i = 0; i < AIRPORTS.length; i++) {
+                var a = AIRPORTS[i];
+                if (a.iata.toLowerCase() === q) {
+                    exact.push(a);
+                } else if (a.iata.toLowerCase().indexOf(q) === 0) {
+                    startsWith.push(a);
+                } else if (a.city.toLowerCase().indexOf(q) === 0) {
+                    startsWith.push(a);
+                } else if (a.city.toLowerCase().indexOf(q) > 0 ||
+                           a.name.toLowerCase().indexOf(q) !== -1 ||
+                           a.country.toLowerCase().indexOf(q) === 0) {
+                    contains.push(a);
+                }
+                if (exact.length + startsWith.length + contains.length > 50) break;
+            }
+            return sortByRank(exact).concat(sortByRank(startsWith)).concat(sortByRank(contains)).slice(0, 8);
+        }
+
+        function renderDropdown(dropdownId, matches) {
+            var dd = document.getElementById(dropdownId);
+            if (!matches.length) {
+                dd.innerHTML = '<div class="ac-empty">No airports found</div>';
+                dd.classList.add('visible');
+                return;
+            }
+            var html = '';
+            for (var i = 0; i < matches.length; i++) {
+                var a = matches[i];
+                html += '<div class="ac-item' + (i === acActiveIdx ? ' active' : '') +
+                    '" data-iata="' + a.iata + '" data-idx="' + i + '">' +
+                    '<span class="ac-iata">' + a.iata + '</span>' +
+                    '<span class="ac-detail"><span class="ac-city">' + a.city + '</span>, ' +
+                    a.country + ' — ' + a.name + '</span></div>';
+            }
+            dd.innerHTML = html;
+            dd.classList.add('visible');
+        }
+
+        function hideDropdown(dropdownId) {
+            var dd = document.getElementById(dropdownId);
+            dd.classList.remove('visible');
+            dd.innerHTML = '';
+            acActiveIdx = -1;
+        }
+
+        function selectAirport(input, dropdownId, iata) {
+            input.value = iata;
+            input.dataset.selectedIata = iata;
+            hideDropdown(dropdownId);
+            updateHeaderDisplay();
+        }
+
+        function onAirportFocus(input, dropdownId) {
+            acActiveIdx = -1;
+            var val = input.value.trim();
+            if (val.length >= 1) {
+                var matches = filterAirports(val);
+                renderDropdown(dropdownId, matches);
+            }
+        }
+
+        function onAirportInput(input, dropdownId) {
+            acActiveIdx = -1;
+            var val = input.value.trim();
+            if (val.length === 0) {
+                hideDropdown(dropdownId);
+                return;
+            }
+            var matches = filterAirports(val);
+            renderDropdown(dropdownId, matches);
+            updateHeaderDisplay();
+        }
+
+        function onAirportBlur(input, dropdownId) {
+            setTimeout(function() {
+                var dd = document.getElementById(dropdownId);
+                if (!dd.classList.contains('visible')) return;
+                // If the current value is a valid IATA code, keep it
+                var val = input.value.trim().toUpperCase();
+                if (val.length === 3 && /^[A-Z]{3}$/.test(val)) {
+                    input.value = val;
+                    input.dataset.selectedIata = val;
+                } else if (input.dataset.selectedIata) {
+                    // Revert to last valid selection
+                    input.value = input.dataset.selectedIata;
+                }
+                hideDropdown(dropdownId);
+                updateHeaderDisplay();
+            }, 200);
+        }
+
+        function onAirportKeydown(e, input, dropdownId) {
+            var dd = document.getElementById(dropdownId);
+            var items = dd.querySelectorAll('.ac-item');
+            if (!items.length) return;
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                acActiveIdx = Math.min(acActiveIdx + 1, items.length - 1);
+                updateActiveItem(items);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                acActiveIdx = Math.max(acActiveIdx - 1, 0);
+                updateActiveItem(items);
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                if (acActiveIdx >= 0 && acActiveIdx < items.length) {
+                    selectAirport(input, dropdownId, items[acActiveIdx].dataset.iata);
+                } else if (items.length > 0) {
+                    selectAirport(input, dropdownId, items[0].dataset.iata);
+                }
+            } else if (e.key === 'Escape') {
+                hideDropdown(dropdownId);
+                input.blur();
+            }
+        }
+
+        function updateActiveItem(items) {
+            for (var i = 0; i < items.length; i++) {
+                items[i].classList.toggle('active', i === acActiveIdx);
+            }
+            if (acActiveIdx >= 0 && items[acActiveIdx]) {
+                items[acActiveIdx].scrollIntoView({ block: 'nearest' });
+            }
+        }
+
+        // Delegate click events on dropdown items
+        document.addEventListener('click', function(e) {
+            var item = e.target.closest('.ac-item');
+            if (!item) return;
+            var dd = item.closest('.autocomplete-dropdown');
+            if (!dd) return;
+            var input = dd.previousElementSibling;
+            if (input && input.classList.contains('airport-input')) {
+                selectAirport(input, dd.id, item.dataset.iata);
+            }
+        });
+
+        /* ── End Airport Autocomplete ─────────────────────────── */
+
         var resultsCache = {};
         var lastRenderedOrigin = null;
         var LS_KEY = 'hackerFareCache_v2';
@@ -688,8 +1083,10 @@
         }
 
         function updateHeaderDisplay() {
-            var o = document.getElementById('inputOrigin').value || '{{ origin }}';
-            var d = document.getElementById('inputDestination').value || '{{ destination }}';
+            var oEl = document.getElementById('inputOrigin');
+            var dEl = document.getElementById('inputDestination');
+            var o = (oEl.dataset.selectedIata || oEl.value || '{{ origin }}').toUpperCase();
+            var d = (dEl.dataset.selectedIata || dEl.value || '{{ destination }}').toUpperCase();
             document.getElementById('tripRoute').textContent = o + ' \u2192 ' + d;
         }
 
@@ -781,6 +1178,115 @@
             return html;
         }
 
+        /* ── Animation Control ─────────────────────────────── */
+        var searchHubs = [];
+        var hubPhases = {};   // { "JFK": {domestic:false, intl:false, ret_intl:false, ret_dom:false} }
+        var completedSteps = 0;
+        var totalSteps = 0;
+
+        function initAnimation(origin, destination, hubs) {
+            searchHubs = hubs || [];
+            hubPhases = {};
+            completedSteps = 0;
+            totalSteps = 1 + (searchHubs.length * 4) + 1; // baseline + 4 phases/hub + assembly
+
+            // Set arc labels
+            document.getElementById('arcOrigin').textContent = origin;
+            document.getElementById('arcDest').textContent = destination;
+
+            // Build hub tracker dots
+            var tracker = document.getElementById('hubTracker');
+            tracker.innerHTML = '';
+            for (var i = 0; i < searchHubs.length; i++) {
+                var h = searchHubs[i];
+                hubPhases[h] = { domestic: false, intl: false, ret_intl: false, ret_dom: false };
+                var dot = document.createElement('div');
+                dot.className = 'hub-dot pending';
+                dot.id = 'hubDot_' + h;
+                dot.innerHTML = '<div class="hub-dot-indicator"></div>' +
+                                '<div class="hub-dot-label">' + h + '</div>';
+                tracker.appendChild(dot);
+            }
+
+            // Reset progress
+            document.getElementById('progressFill').style.width = '0%';
+            document.getElementById('progressText').textContent = 'Preparing search...';
+        }
+
+        function updateProgress(message) {
+            var pct = totalSteps > 0 ? Math.min((completedSteps / totalSteps) * 100, 100) : 0;
+            document.getElementById('progressFill').style.width = pct + '%';
+            if (message) {
+                document.getElementById('progressText').textContent = message;
+            }
+        }
+
+        function setHubState(hub, state) {
+            var dot = document.getElementById('hubDot_' + hub);
+            if (!dot) return;
+            dot.className = 'hub-dot ' + state;
+            var indicator = dot.querySelector('.hub-dot-indicator');
+            if (state === 'done') {
+                indicator.textContent = '✓';
+            } else if (state === 'searching') {
+                indicator.textContent = '';
+            } else {
+                indicator.textContent = '';
+            }
+        }
+
+        function handleStatusEvent(data) {
+            var step = data.step || '';
+            var hub = data.hub;
+            var phase = data.phase;
+            var isDone = step.endsWith('_done');
+
+            // Update hub dot state
+            if (hub && phase && !isDone) {
+                setHubState(hub, 'searching');
+            }
+
+            if (hub && phase && isDone && hubPhases[hub]) {
+                hubPhases[hub][phase] = true;
+                completedSteps++;
+
+                // Check if all 4 phases done for this hub
+                var hp = hubPhases[hub];
+                if (hp.domestic && hp.intl && hp.ret_intl && hp.ret_dom) {
+                    setHubState(hub, 'done');
+                }
+            }
+
+            // Track non-hub steps
+            if (step === 'baseline_done') completedSteps++;
+            if (step === 'assembly_done') completedSteps++;
+
+            // Build progress message
+            var msg = data.message || 'Searching...';
+            if (hub && !isDone) {
+                var doneCount = 0;
+                for (var h in hubPhases) {
+                    var hp2 = hubPhases[h];
+                    if (hp2.domestic && hp2.intl && hp2.ret_intl && hp2.ret_dom) doneCount++;
+                }
+                msg = doneCount + '/' + searchHubs.length + ' hubs · ' + data.message;
+            }
+
+            updateProgress(msg);
+        }
+
+        function toggleDetails() {
+            var log = document.getElementById('statusLog');
+            var arrow = document.getElementById('detailsArrow');
+            if (log.style.display === 'none') {
+                log.style.display = 'block';
+                arrow.innerHTML = '&#9662;';
+            } else {
+                log.style.display = 'none';
+                arrow.innerHTML = '&#9656;';
+            }
+        }
+
         function addLog(message, type) {
             var log = document.getElementById("statusLog");
             var now = new Date();
@@ -799,13 +1305,16 @@
         }
 
         function getSearchParams() {
+            var oEl = document.getElementById('inputOrigin');
+            var dEl = document.getElementById('inputDestination');
+            var hEl = document.getElementById('inputHubAirport');
             return {
-                origin: (document.getElementById('inputOrigin').value || '').trim().toUpperCase(),
-                destination: (document.getElementById('inputDestination').value || '').trim().toUpperCase(),
+                origin: (oEl.dataset.selectedIata || oEl.value || '').trim().toUpperCase(),
+                destination: (dEl.dataset.selectedIata || dEl.value || '').trim().toUpperCase(),
                 depart_date: document.getElementById('inputDepart').value,
                 return_date: document.getElementById('inputReturn').value,
                 hub_compare: document.getElementById('hubCompare').checked,
-                hub_airport: (document.getElementById('inputHubAirport').value || '').trim().toUpperCase(),
+                hub_airport: (hEl.dataset.selectedIata || hEl.value || '').trim().toUpperCase(),
                 driving_cost: parseFloat(document.getElementById('inputDrivingCost').value) || 0,
                 parking_rate: parseFloat(document.getElementById('inputParkingRate').value) || 0,
             };
@@ -834,7 +1343,7 @@
             var cacheKey = makeCacheKey(params.origin, params.destination, params.depart_date, params.return_date);
 
             if (!forceRefresh && resultsCache[cacheKey]) {
-                document.getElementById("statusPanel").classList.remove("visible");
+                document.getElementById("searchAnimation").classList.remove("visible");
                 document.getElementById("errorBanner").classList.remove("visible");
                 renderResults(resultsCache[cacheKey], true);
                 return;
@@ -842,10 +1351,15 @@
 
             setButtonsDisabled(true);
 
-            var statusPanel = document.getElementById("statusPanel");
-            statusPanel.classList.add("visible");
+            // Show animation panel
+            var animPanel = document.getElementById("searchAnimation");
+            animPanel.classList.add("visible");
             document.getElementById("statusLog").innerHTML = "";
-            document.getElementById("statusSpinner").style.display = "inline-block";
+            document.getElementById("statusLog").style.display = "none";
+            document.getElementById("detailsArrow").innerHTML = "&#9656;";
+
+            // Initialize animation (hubs will be updated when start event arrives)
+            initAnimation(params.origin, params.destination, []);
 
             document.getElementById("resultsPanel").classList.remove("visible");
             document.getElementById("errorBanner").classList.remove("visible");
@@ -889,6 +1403,18 @@
                 if (data.step && data.step.endsWith("_done")) type = "success";
                 if (data.step === "done") type = "done";
                 addLog(data.message, type);
+
+                // Initialize hub tracker when we get the start event with hubs list
+                if (data.step === "start" && data.hubs) {
+                    initAnimation(
+                        document.getElementById('arcOrigin').textContent,
+                        document.getElementById('arcDest').textContent,
+                        data.hubs
+                    );
+                }
+
+                // Drive the animation
+                handleStatusEvent(data);
             });
 
             evtSource.addEventListener("error", function(e) {
@@ -912,7 +1438,16 @@
 
             evtSource.addEventListener("done", function(e) {
                 evtSource.close();
-                document.getElementById("statusSpinner").style.display = "none";
+
+                // Fill progress to 100%
+                completedSteps = totalSteps;
+                updateProgress("Search complete!");
+
+                // Hide animation after a brief moment
+                setTimeout(function() {
+                    document.getElementById("searchAnimation").classList.remove("visible");
+                }, 1500);
+
                 setButtonsDisabled(false);
 
                 if (pendingHubSearch) {
@@ -1209,6 +1744,11 @@
 
         // Page load: hydrate from localStorage and render most recent cached results
         (function() {
+            // Set initial selectedIata for pre-filled airport inputs
+            document.getElementById('inputOrigin').dataset.selectedIata = '{{ origin }}';
+            document.getElementById('inputDestination').dataset.selectedIata = '{{ destination }}';
+            document.getElementById('inputHubAirport').dataset.selectedIata = '{{ hub_airport }}';
+
             loadFromLocalStorage();
 
             var mostRecent = null;

@@ -227,13 +227,17 @@ def run_hacker_fare_search(q, params):
         if is_hub_search:
             origin_label = f"{search_origin} (drive to hub)"
 
+        hub_total = len(active_hubs)
+
         emit(q, "status", {
             "step": "start",
             "message": f"Starting SerpAPI hacker fare search from {origin_label}",
+            "hub_total": hub_total,
+            "hubs": active_hubs,
         })
         emit(q, "status", {
             "step": "info",
-            "message": f"Searching {len(active_hubs)} hubs: {', '.join(active_hubs)}",
+            "message": f"Searching {hub_total} hubs: {', '.join(active_hubs)}",
         })
 
         # ---------------------------------------------------------------
@@ -242,6 +246,7 @@ def run_hacker_fare_search(q, params):
         emit(q, "status", {
             "step": "baseline",
             "message": f"Searching baseline: {search_origin} -> {destination} (round-trip)...",
+            "phase": "baseline",
         })
 
         baseline_results = search_round_trip(
@@ -290,10 +295,11 @@ def run_hacker_fare_search(q, params):
         # Step 2: Search positioning flights (origin -> each hub)
         # ---------------------------------------------------------------
         domestic_offers = {}
-        for hub in active_hubs:
+        for hi, hub in enumerate(active_hubs):
             emit(q, "status", {
                 "step": f"domestic_{hub}",
                 "message": f"Searching positioning: {search_origin} -> {hub} (one-way)...",
+                "hub": hub, "phase": "domestic", "hub_index": hi, "hub_total": hub_total,
             })
 
             results = search_one_way(search_origin, hub, depart_date, max_results=3)
@@ -304,21 +310,24 @@ def run_hacker_fare_search(q, params):
                 emit(q, "status", {
                     "step": f"domestic_{hub}_done",
                     "message": f"  {search_origin}->{hub}: ${best['price']:.2f} ({best['carrier_display']})",
+                    "hub": hub, "phase": "domestic", "hub_index": hi, "hub_total": hub_total,
                 })
             else:
                 emit(q, "status", {
                     "step": f"domestic_{hub}_done",
                     "message": f"  {search_origin}->{hub}: No flights found",
+                    "hub": hub, "phase": "domestic", "hub_index": hi, "hub_total": hub_total,
                 })
 
         # ---------------------------------------------------------------
         # Step 3: Search international flights (each hub -> destination)
         # ---------------------------------------------------------------
         international_offers = {}
-        for hub in active_hubs:
+        for hi, hub in enumerate(active_hubs):
             emit(q, "status", {
                 "step": f"intl_{hub}",
                 "message": f"Searching international: {hub} -> {destination} (one-way)...",
+                "hub": hub, "phase": "intl", "hub_index": hi, "hub_total": hub_total,
             })
 
             results = search_one_way(hub, destination, depart_date, max_results=3)
@@ -329,21 +338,24 @@ def run_hacker_fare_search(q, params):
                 emit(q, "status", {
                     "step": f"intl_{hub}_done",
                     "message": f"  {hub}->{destination}: ${best['price']:.2f} ({best['carrier_display']})",
+                    "hub": hub, "phase": "intl", "hub_index": hi, "hub_total": hub_total,
                 })
             else:
                 emit(q, "status", {
                     "step": f"intl_{hub}_done",
                     "message": f"  {hub}->{destination}: No flights found",
+                    "hub": hub, "phase": "intl", "hub_index": hi, "hub_total": hub_total,
                 })
 
         # ---------------------------------------------------------------
         # Step 3b: Search return international flights (dest -> each hub)
         # ---------------------------------------------------------------
         return_international_offers = {}
-        for hub in active_hubs:
+        for hi, hub in enumerate(active_hubs):
             emit(q, "status", {
                 "step": f"ret_intl_{hub}",
                 "message": f"Searching return international: {destination} -> {hub} (one-way)...",
+                "hub": hub, "phase": "ret_intl", "hub_index": hi, "hub_total": hub_total,
             })
 
             results = search_one_way(destination, hub, return_date, max_results=3)
@@ -354,21 +366,24 @@ def run_hacker_fare_search(q, params):
                 emit(q, "status", {
                     "step": f"ret_intl_{hub}_done",
                     "message": f"  {destination}->{hub}: ${best['price']:.2f} ({best['carrier_display']})",
+                    "hub": hub, "phase": "ret_intl", "hub_index": hi, "hub_total": hub_total,
                 })
             else:
                 emit(q, "status", {
                     "step": f"ret_intl_{hub}_done",
                     "message": f"  {destination}->{hub}: No flights found",
+                    "hub": hub, "phase": "ret_intl", "hub_index": hi, "hub_total": hub_total,
                 })
 
         # ---------------------------------------------------------------
         # Step 3c: Search return positioning flights (each hub -> origin)
         # ---------------------------------------------------------------
         return_domestic_offers = {}
-        for hub in active_hubs:
+        for hi, hub in enumerate(active_hubs):
             emit(q, "status", {
                 "step": f"ret_dom_{hub}",
                 "message": f"Searching return positioning: {hub} -> {search_origin} (one-way)...",
+                "hub": hub, "phase": "ret_dom", "hub_index": hi, "hub_total": hub_total,
             })
 
             results = search_one_way(hub, search_origin, return_date, max_results=3)
@@ -379,11 +394,13 @@ def run_hacker_fare_search(q, params):
                 emit(q, "status", {
                     "step": f"ret_dom_{hub}_done",
                     "message": f"  {hub}->{search_origin}: ${best['price']:.2f} ({best['carrier_display']})",
+                    "hub": hub, "phase": "ret_dom", "hub_index": hi, "hub_total": hub_total,
                 })
             else:
                 emit(q, "status", {
                     "step": f"ret_dom_{hub}_done",
                     "message": f"  {hub}->{search_origin}: No flights found",
+                    "hub": hub, "phase": "ret_dom", "hub_index": hi, "hub_total": hub_total,
                 })
 
         # ---------------------------------------------------------------
@@ -392,6 +409,7 @@ def run_hacker_fare_search(q, params):
         emit(q, "status", {
             "step": "assembly",
             "message": "Assembling valid hacker fare routes (outbound + return)...",
+            "phase": "assembly",
         })
 
         hacker_fares = []
