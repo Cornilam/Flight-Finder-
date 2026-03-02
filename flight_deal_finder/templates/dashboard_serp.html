@@ -56,26 +56,89 @@
             margin-top: 6px;
         }
 
-        /* Search Buttons */
-        .search-section {
-            display: flex;
-            gap: 20px;
-            justify-content: center;
-            margin-bottom: 24px;
-            flex-wrap: wrap;
+        /* Config Bar */
+        .config-bar {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
         }
-        .search-group {
+        .config-row {
+            display: flex;
+            gap: 16px;
+            align-items: flex-end;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .config-row-secondary {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #334155;
+            justify-content: center;
+        }
+        .config-field {
             display: flex;
             flex-direction: column;
-            align-items: center;
-            gap: 8px;
+            gap: 4px;
         }
-        .search-group-label {
-            font-size: 12px;
+        .config-field label {
+            font-size: 11px;
             font-weight: 600;
             color: #64748b;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+        }
+        .airport-input {
+            width: 80px;
+            padding: 10px 12px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 6px;
+            color: #f8fafc;
+            font-size: 16px;
+            font-weight: 700;
+            text-align: center;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        .airport-input:focus {
+            outline: none;
+            border-color: #38bdf8;
+            box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+        }
+        .date-input {
+            padding: 10px 12px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 6px;
+            color: #f8fafc;
+            font-size: 14px;
+            font-family: inherit;
+        }
+        .date-input:focus {
+            outline: none;
+            border-color: #38bdf8;
+            box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+        }
+        .date-input::-webkit-calendar-picker-indicator {
+            filter: invert(0.7);
+            cursor: pointer;
+        }
+        .cost-input {
+            width: 90px;
+            padding: 10px 12px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 6px;
+            color: #f8fafc;
+            font-size: 14px;
+            text-align: center;
+        }
+        .cost-input:focus {
+            outline: none;
+            border-color: #38bdf8;
+            box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
         }
         .btn-search {
             padding: 14px 36px;
@@ -86,7 +149,9 @@
             font-weight: 600;
             cursor: pointer;
             transition: background 0.2s, transform 0.1s;
+            background: #3b82f6;
         }
+        .btn-search:hover:not(:disabled) { background: #2563eb; }
         .btn-search:active { transform: scale(0.98); }
         .btn-search:disabled {
             background: #334155 !important;
@@ -94,10 +159,6 @@
             cursor: not-allowed;
             transform: none;
         }
-        .btn-mke { background: #3b82f6; }
-        .btn-mke:hover:not(:disabled) { background: #2563eb; }
-        .btn-ord { background: #8b5cf6; }
-        .btn-ord:hover:not(:disabled) { background: #7c3aed; }
         .btn-subtext {
             display: block;
             font-size: 11px;
@@ -105,26 +166,25 @@
             opacity: 0.8;
             margin-top: 3px;
         }
-
-        .cache-dot {
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #4ade80;
-            margin-left: 6px;
-            vertical-align: middle;
-        }
-        .cache-time-label {
-            display: block;
-            font-size: 10px;
-            font-weight: 400;
+        .config-field-btn { justify-content: flex-end; }
+        .hub-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
             color: #94a3b8;
-            margin-top: 2px;
+            cursor: pointer;
         }
-        .btn-search.active-origin {
-            outline: 2px solid #4ade80;
-            outline-offset: 2px;
+        .hub-toggle input[type="checkbox"] {
+            accent-color: #8b5cf6;
+            width: 16px;
+            height: 16px;
+        }
+        .hub-compare-fields {
+            display: flex;
+            gap: 16px;
+            align-items: flex-end;
+            margin-left: 16px;
         }
         .btn-rerun {
             padding: 8px 20px;
@@ -137,12 +197,9 @@
             cursor: pointer;
         }
         .btn-rerun:hover { background: #2563eb; }
-
-        .tier-divider {
-            width: 1px;
-            background: #334155;
-            align-self: stretch;
-            margin: 0 4px;
+        @media (max-width: 768px) {
+            .config-row { flex-direction: column; align-items: center; }
+            .hub-compare-fields { flex-direction: column; margin-left: 0; margin-top: 8px; }
         }
 
         /* API budget indicator */
@@ -462,7 +519,7 @@
             <h1>Hacker Fare Engine</h1>
             <div class="subtitle">Powered by SerpAPI / Google Flights</div>
             <div class="trip-info">Split-Ticket Search</div>
-            <div class="trip-route">{{ origin }} -> {{ destination }}</div>
+            <div class="trip-route" id="tripRoute">{{ origin }} -> {{ destination }}</div>
             <div class="trip-meta">
                 {{ depart_date }} to {{ return_date }}
                 &nbsp;|&nbsp;
@@ -472,29 +529,66 @@
             </div>
         </header>
 
-        <!-- Search Buttons -->
-        <div class="search-section">
-            <div class="search-group">
-                <div class="search-group-label">Fly from {{ origin }}</div>
-                <button class="btn-search btn-mke" id="searchBtnMKE" onclick="startSearch('{{ origin }}', false)">
-                    Search from {{ origin }}
-                    <span class="btn-subtext">{{ hubs | length }} hubs | ~{{ 1 + hubs|length * 4 }} API calls</span>
-                </button>
+        <!-- Config Bar -->
+        <div class="config-bar">
+            <div class="config-row">
+                <div class="config-field">
+                    <label for="inputOrigin">From</label>
+                    <input type="text" id="inputOrigin" value="{{ origin }}"
+                           maxlength="3" placeholder="MKE" class="airport-input"
+                           oninput="this.value = this.value.toUpperCase(); updateHeaderDisplay();">
+                </div>
+                <div class="config-field">
+                    <label for="inputDestination">To</label>
+                    <input type="text" id="inputDestination" value="{{ destination }}"
+                           maxlength="3" placeholder="ATH" class="airport-input"
+                           oninput="this.value = this.value.toUpperCase(); updateHeaderDisplay();">
+                </div>
+                <div class="config-field">
+                    <label for="inputDepart">Depart</label>
+                    <input type="date" id="inputDepart" value="{{ depart_date }}" class="date-input">
+                </div>
+                <div class="config-field">
+                    <label for="inputReturn">Return</label>
+                    <input type="date" id="inputReturn" value="{{ return_date }}" class="date-input">
+                </div>
+                <div class="config-field config-field-btn">
+                    <button class="btn-search" id="searchBtn" onclick="runSearch()">
+                        Search
+                        <span class="btn-subtext" id="apiCallEstimate">{{ hubs | length }} hubs | ~{{ 1 + hubs|length * 4 }} API calls</span>
+                    </button>
+                </div>
             </div>
 
-            <div class="tier-divider"></div>
-
-            <div class="search-group">
-                <div class="search-group-label">Drive to {{ hub_airport }} + ${{ "%.0f"|format(driving_cost + parking_rate * trip_days) }}</div>
-                <button class="btn-search btn-ord" id="searchBtnORD" onclick="startSearch('{{ hub_airport }}', false)">
-                    Search from {{ hub_airport }}
-                    <span class="btn-subtext">{{ hubs | length }} hubs | ~{{ 1 + hubs|length * 4 }} API calls</span>
-                </button>
+            <div class="config-row config-row-secondary">
+                <label class="hub-toggle">
+                    <input type="checkbox" id="hubCompare" onchange="toggleHubCompare()">
+                    <span>Also compare: drive to hub</span>
+                </label>
+                <div class="hub-compare-fields" id="hubCompareFields" style="display:none;">
+                    <div class="config-field">
+                        <label for="inputHubAirport">Hub</label>
+                        <input type="text" id="inputHubAirport" value="{{ hub_airport }}"
+                               maxlength="3" placeholder="ORD" class="airport-input"
+                               oninput="this.value = this.value.toUpperCase();">
+                    </div>
+                    <div class="config-field">
+                        <label for="inputDrivingCost">Drive $</label>
+                        <input type="number" id="inputDrivingCost" value="{{ driving_cost }}"
+                               min="0" step="10" class="cost-input">
+                    </div>
+                    <div class="config-field">
+                        <label for="inputParkingRate">Park $/day</label>
+                        <input type="number" id="inputParkingRate" value="{{ parking_rate }}"
+                               min="0" step="5" class="cost-input">
+                    </div>
+                </div>
             </div>
         </div>
 
         <div class="budget-note">
-            SerpAPI: 250 searches/month | Each search uses ~{{ 1 + hubs|length * 4 }} calls
+            SerpAPI: 250 searches/month | Each search uses ~<span id="budgetEstimate">{{ 1 + hubs|length * 4 }}</span> calls
+            <span id="hubBudgetNote"></span>
         </div>
 
         <!-- Live Status Panel -->
@@ -519,15 +613,15 @@
     <script>
         var resultsCache = {};
         var lastRenderedOrigin = null;
-        var LS_KEY = 'hackerFareCache';
+        var LS_KEY = 'hackerFareCache_v2';
 
         function saveToLocalStorage() {
             try {
                 var toStore = {};
-                for (var origin in resultsCache) {
-                    toStore[origin] = {
-                        results: resultsCache[origin],
-                        cached_at: resultsCache[origin]._cached_at || new Date().toISOString()
+                for (var key in resultsCache) {
+                    toStore[key] = {
+                        results: resultsCache[key],
+                        cached_at: resultsCache[key]._cached_at || new Date().toISOString()
                     };
                 }
                 localStorage.setItem(LS_KEY, JSON.stringify(toStore));
@@ -541,10 +635,11 @@
                 var raw = localStorage.getItem(LS_KEY);
                 if (!raw) return;
                 var stored = JSON.parse(raw);
-                for (var origin in stored) {
-                    var entry = stored[origin];
+                for (var key in stored) {
+                    var entry = stored[key];
                     entry.results._cached_at = entry.cached_at;
-                    resultsCache[origin] = entry.results;
+                    entry.results._cache_key = key;
+                    resultsCache[key] = entry.results;
                 }
             } catch(e) {
                 console.warn('Could not load from localStorage:', e);
@@ -575,36 +670,41 @@
             });
         }
 
-        function updateButtonBadges() {
-            var origins = ['{{ origin }}', '{{ hub_airport }}'];
-            var btnIds = ['searchBtnMKE', 'searchBtnORD'];
-            for (var i = 0; i < origins.length; i++) {
-                var btn = document.getElementById(btnIds[i]);
-                // Remove existing badges
-                var existing = btn.querySelector('.cache-dot');
-                if (existing) existing.remove();
-                var existingTime = btn.querySelector('.cache-time-label');
-                if (existingTime) existingTime.remove();
-                btn.classList.remove('active-origin');
+        var HUB_COUNT = {{ hubs | length }};
 
-                if (resultsCache[origins[i]]) {
-                    var dot = document.createElement('span');
-                    dot.className = 'cache-dot';
-                    dot.title = 'Cached data available';
-                    btn.appendChild(dot);
+        function toggleHubCompare() {
+            var checked = document.getElementById('hubCompare').checked;
+            document.getElementById('hubCompareFields').style.display = checked ? 'flex' : 'none';
+            updateBudgetEstimate();
+        }
 
-                    var cachedAt = resultsCache[origins[i]]._cached_at;
-                    if (cachedAt) {
-                        var timeLabel = document.createElement('span');
-                        timeLabel.className = 'cache-time-label';
-                        timeLabel.textContent = formatRelativeTime(cachedAt);
-                        btn.appendChild(timeLabel);
-                    }
-                }
-                if (origins[i] === lastRenderedOrigin) {
-                    btn.classList.add('active-origin');
-                }
-            }
+        function updateBudgetEstimate() {
+            var callsPerSearch = 1 + HUB_COUNT * 4;
+            var hubCompare = document.getElementById('hubCompare').checked;
+            var total = hubCompare ? callsPerSearch * 2 : callsPerSearch;
+            document.getElementById('apiCallEstimate').textContent = HUB_COUNT + ' hubs | ~' + total + ' API calls';
+            document.getElementById('budgetEstimate').textContent = callsPerSearch;
+            document.getElementById('hubBudgetNote').textContent = hubCompare ? ' (x2 for hub compare)' : '';
+        }
+
+        function updateHeaderDisplay() {
+            var o = document.getElementById('inputOrigin').value || '{{ origin }}';
+            var d = document.getElementById('inputDestination').value || '{{ destination }}';
+            document.getElementById('tripRoute').textContent = o + ' \u2192 ' + d;
+        }
+
+        function makeCacheKey(origin, destination, departDate, returnDate) {
+            return origin + '-' + destination + '-' + departDate + '-' + returnDate;
+        }
+
+        function rerunSearch(origin, destination, departDate, returnDate) {
+            var params = {
+                origin: origin,
+                destination: destination,
+                depart_date: departDate,
+                return_date: returnDate,
+            };
+            startSearch(params, true);
         }
 
         function formatMinutes(min) {
@@ -695,16 +795,48 @@
         }
 
         function setButtonsDisabled(disabled) {
-            document.getElementById("searchBtnMKE").disabled = disabled;
-            document.getElementById("searchBtnORD").disabled = disabled;
+            document.getElementById("searchBtn").disabled = disabled;
         }
 
-        function startSearch(origin, forceRefresh) {
-            // Client-side cache: show instantly if we have results for this origin
-            if (!forceRefresh && resultsCache[origin]) {
+        function getSearchParams() {
+            return {
+                origin: (document.getElementById('inputOrigin').value || '').trim().toUpperCase(),
+                destination: (document.getElementById('inputDestination').value || '').trim().toUpperCase(),
+                depart_date: document.getElementById('inputDepart').value,
+                return_date: document.getElementById('inputReturn').value,
+                hub_compare: document.getElementById('hubCompare').checked,
+                hub_airport: (document.getElementById('inputHubAirport').value || '').trim().toUpperCase(),
+                driving_cost: parseFloat(document.getElementById('inputDrivingCost').value) || 0,
+                parking_rate: parseFloat(document.getElementById('inputParkingRate').value) || 0,
+            };
+        }
+
+        var pendingHubSearch = null;
+
+        function runSearch() {
+            var params = getSearchParams();
+            if (params.origin.length !== 3) { alert('Origin must be a 3-letter airport code'); return; }
+            if (params.destination.length !== 3) { alert('Destination must be a 3-letter airport code'); return; }
+            if (!params.depart_date) { alert('Please select a departure date'); return; }
+            if (!params.return_date) { alert('Please select a return date'); return; }
+            if (params.return_date <= params.depart_date) { alert('Return date must be after departure date'); return; }
+
+            if (params.hub_compare && params.hub_airport.length === 3) {
+                pendingHubSearch = Object.assign({}, params, { origin: params.hub_airport, is_hub_search: true });
+            } else {
+                pendingHubSearch = null;
+            }
+
+            startSearch(params, false);
+        }
+
+        function startSearch(params, forceRefresh) {
+            var cacheKey = makeCacheKey(params.origin, params.destination, params.depart_date, params.return_date);
+
+            if (!forceRefresh && resultsCache[cacheKey]) {
                 document.getElementById("statusPanel").classList.remove("visible");
                 document.getElementById("errorBanner").classList.remove("visible");
-                renderResults(resultsCache[origin], true);
+                renderResults(resultsCache[cacheKey], true);
                 return;
             }
 
@@ -723,21 +855,24 @@
             document.getElementById("hackerFareTable").innerHTML = "";
             document.getElementById("warnings").innerHTML = "";
 
-            addLog("Starting SerpAPI hacker fare search from " + origin + "...", "searching");
+            addLog("Starting search: " + params.origin + " \u2192 " + params.destination + "...", "searching");
 
             fetch("/search", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ origin: origin }),
+                body: JSON.stringify(params),
             })
             .then(function(resp) { return resp.json(); })
             .then(function(data) {
                 if (data.error) {
                     addLog(data.error, "error");
+                    var banner = document.getElementById("errorBanner");
+                    banner.textContent = data.error;
+                    banner.classList.add("visible");
                     setButtonsDisabled(false);
                     return;
                 }
-                listenForUpdates(data.search_id);
+                listenForUpdates(data.search_id, cacheKey);
             })
             .catch(function(err) {
                 addLog("Failed to start search: " + err, "error");
@@ -745,7 +880,7 @@
             });
         }
 
-        function listenForUpdates(searchId) {
+        function listenForUpdates(searchId, cacheKey) {
             var evtSource = new EventSource("/stream/" + searchId);
 
             evtSource.addEventListener("status", function(e) {
@@ -769,7 +904,8 @@
             evtSource.addEventListener("results", function(e) {
                 var results = JSON.parse(e.data);
                 results._cached_at = results.searched_at || new Date().toISOString();
-                resultsCache[results.search_origin] = results;
+                results._cache_key = cacheKey;
+                resultsCache[cacheKey] = results;
                 saveToLocalStorage();
                 renderResults(results, false);
             });
@@ -778,12 +914,19 @@
                 evtSource.close();
                 document.getElementById("statusSpinner").style.display = "none";
                 setButtonsDisabled(false);
+
+                if (pendingHubSearch) {
+                    var hubParams = pendingHubSearch;
+                    pendingHubSearch = null;
+                    addLog("Starting hub comparison search from " + hubParams.origin + "...", "searching");
+                    startSearch(hubParams, false);
+                }
             });
         }
 
         function renderResults(r, fromCache) {
             document.getElementById("resultsPanel").classList.add("visible");
-            lastRenderedOrigin = r.search_origin;
+            lastRenderedOrigin = r._cache_key || r.search_origin;
 
             // Origin label
             var labelHtml = '<div class="origin-label">';
@@ -815,7 +958,9 @@
             labelHtml += '</div>';
             if (fromCache) {
                 labelHtml += '<div style="text-align:center; margin-top:10px;">' +
-                    '<button class="btn-rerun" onclick="startSearch(\'' + r.search_origin + '\', true)">' +
+                    '<button class="btn-rerun" onclick="rerunSearch(\'' +
+                    r.search_origin + '\',\'' + r.destination + '\',\'' + r.depart_date + '\',\'' + r.return_date +
+                    '\')">' +
                     'Rerun Search from ' + r.search_origin +
                     '</button></div>';
             }
@@ -1060,22 +1205,19 @@
                 }
             }
             document.getElementById("warnings").innerHTML = warnHtml;
-
-            updateButtonBadges();
         }
 
         // Page load: hydrate from localStorage and render most recent cached results
         (function() {
             loadFromLocalStorage();
-            updateButtonBadges();
 
             var mostRecent = null;
             var mostRecentTime = null;
-            for (var origin in resultsCache) {
-                var t = resultsCache[origin]._cached_at;
+            for (var key in resultsCache) {
+                var t = resultsCache[key]._cached_at;
                 if (t && (!mostRecentTime || t > mostRecentTime)) {
                     mostRecentTime = t;
-                    mostRecent = origin;
+                    mostRecent = key;
                 }
             }
             if (mostRecent) {

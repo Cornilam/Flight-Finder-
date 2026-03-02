@@ -38,7 +38,7 @@ DEPART_DATE = os.getenv("DEPART_DATE", "2026-05-22")
 RETURN_DATE = os.getenv("RETURN_DATE", "2026-05-30")
 
 # Hubs for SerpAPI (smaller list to conserve searches)
-SERP_HUBS = [h.strip() for h in os.getenv("SERP_HUBS", "JFK,EWR,ORD,IAD,ATL").split(",") if h.strip()]
+SERP_HUBS = [h.strip() for h in os.getenv("SERP_HUBS", "JFK,EWR,ORD,IAD,ATL,YYZ,DFW,BOS").split(",") if h.strip()]
 
 # Minimum connection time (minutes) between separate tickets at a hub
 MIN_CONNECTION_MINUTES = int(os.getenv("MIN_CONNECTION_MINUTES", "120"))
@@ -86,14 +86,52 @@ def index():
 def start_search():
     data = request.get_json() or {}
     search_origin = data.get("origin", ORIGIN).upper().strip()
+    destination = data.get("destination", DESTINATION).upper().strip()
+    depart_date = data.get("depart_date", DEPART_DATE).strip()
+    return_date = data.get("return_date", RETURN_DATE).strip()
 
-    search_id = f"serp-{search_origin}-{DESTINATION}-{id(request)}"
+    # Validate airport codes
+    for code, label in [(search_origin, "origin"), (destination, "destination")]:
+        if len(code) != 3 or not code.isalpha():
+            return jsonify({"error": f"Invalid {label} airport code: {code}"}), 400
+
+    # Validate dates
+    try:
+        d = datetime.strptime(depart_date, "%Y-%m-%d").date()
+        r = datetime.strptime(return_date, "%Y-%m-%d").date()
+        if r <= d:
+            return jsonify({"error": "Return date must be after departure date"}), 400
+        trip_days = (r - d).days
+    except ValueError:
+        return jsonify({"error": "Invalid date format. Use YYYY-MM-DD."}), 400
+
+    # Hub comparison parameters
+    hub_airport = data.get("hub_airport", HUB_AIRPORT).upper().strip()
+    driving_cost = float(data.get("driving_cost", DRIVING_COST))
+    parking_rate = float(data.get("parking_rate", PARKING_RATE_PER_DAY))
+
+    is_hub_search = data.get("is_hub_search", False)
+
+    search_params = {
+        "origin": search_origin,
+        "destination": destination,
+        "depart_date": depart_date,
+        "return_date": return_date,
+        "trip_days": trip_days,
+        "hub_airport": hub_airport,
+        "driving_cost": driving_cost,
+        "parking_rate": parking_rate,
+        "is_hub_search": is_hub_search,
+        "hubs": SERP_HUBS,
+    }
+
+    search_id = f"serp-{search_origin}-{destination}-{id(request)}"
     msg_queue = queue.Queue()
     active_searches[search_id] = msg_queue
 
     t = threading.Thread(
         target=run_hacker_fare_search,
-        args=(msg_queue, search_origin),
+        args=(msg_queue, search_params),
         daemon=True,
     )
     t.start()
@@ -160,26 +198,34 @@ def emit(q, event_type, data):
     q.put({"type": event_type, "data": data})
 
 
-def run_hacker_fare_search(q, search_origin):
+def run_hacker_fare_search(q, params):
     """
     Full hacker fare search pipeline using SerpAPI.
     """
     try:
+        search_origin = params["origin"]
+        destination = params["destination"]
+        depart_date = params["depart_date"]
+        return_date = params["return_date"]
+        trip_days = params["trip_days"]
+        hub_airport = params["hub_airport"]
+        hubs = params["hubs"]
+
         # Snapshot cache stats before this search
         stats_before = get_cache_stats()
 
         # Determine which hubs to search (skip if hub == origin)
-        active_hubs = [h for h in SERP_HUBS if h != search_origin]
+        active_hubs = [h for h in hubs if h != search_origin]
 
-        # Determine if this is a hub-origin search (driving to ORD)
-        is_hub_search = (search_origin == HUB_AIRPORT)
+        # Hub-origin search (driving to hub) — only when explicitly flagged
+        is_hub_search = params.get("is_hub_search", False)
         ground_cost = 0.0
         if is_hub_search:
-            ground_cost = DRIVING_COST + (PARKING_RATE_PER_DAY * TRIP_DAYS)
+            ground_cost = params["driving_cost"] + (params["parking_rate"] * trip_days)
 
         origin_label = search_origin
         if is_hub_search:
-            origin_label = f"{search_origin} (drive from {REGIONAL_AIRPORT})"
+            origin_label = f"{search_origin} (drive to hub)"
 
         emit(q, "status", {
             "step": "start",
@@ -195,11 +241,11 @@ def run_hacker_fare_search(q, search_origin):
         # ---------------------------------------------------------------
         emit(q, "status", {
             "step": "baseline",
-            "message": f"Searching baseline: {search_origin} -> {DESTINATION} (round-trip)...",
+            "message": f"Searching baseline: {search_origin} -> {destination} (round-trip)...",
         })
 
         baseline_results = search_round_trip(
-            search_origin, DESTINATION, DEPART_DATE, RETURN_DATE, max_results=3,
+            search_origin, destination, depart_date, return_date, max_results=3,
         )
 
         baseline = None
@@ -250,7 +296,7 @@ def run_hacker_fare_search(q, search_origin):
                 "message": f"Searching positioning: {search_origin} -> {hub} (one-way)...",
             })
 
-            results = search_one_way(search_origin, hub, DEPART_DATE, max_results=3)
+            results = search_one_way(search_origin, hub, depart_date, max_results=3)
 
             if results:
                 domestic_offers[hub] = results
@@ -272,22 +318,22 @@ def run_hacker_fare_search(q, search_origin):
         for hub in active_hubs:
             emit(q, "status", {
                 "step": f"intl_{hub}",
-                "message": f"Searching international: {hub} -> {DESTINATION} (one-way)...",
+                "message": f"Searching international: {hub} -> {destination} (one-way)...",
             })
 
-            results = search_one_way(hub, DESTINATION, DEPART_DATE, max_results=3)
+            results = search_one_way(hub, destination, depart_date, max_results=3)
 
             if results:
                 international_offers[hub] = results
                 best = results[0]
                 emit(q, "status", {
                     "step": f"intl_{hub}_done",
-                    "message": f"  {hub}->{DESTINATION}: ${best['price']:.2f} ({best['carrier_display']})",
+                    "message": f"  {hub}->{destination}: ${best['price']:.2f} ({best['carrier_display']})",
                 })
             else:
                 emit(q, "status", {
                     "step": f"intl_{hub}_done",
-                    "message": f"  {hub}->{DESTINATION}: No flights found",
+                    "message": f"  {hub}->{destination}: No flights found",
                 })
 
         # ---------------------------------------------------------------
@@ -297,22 +343,22 @@ def run_hacker_fare_search(q, search_origin):
         for hub in active_hubs:
             emit(q, "status", {
                 "step": f"ret_intl_{hub}",
-                "message": f"Searching return international: {DESTINATION} -> {hub} (one-way)...",
+                "message": f"Searching return international: {destination} -> {hub} (one-way)...",
             })
 
-            results = search_one_way(DESTINATION, hub, RETURN_DATE, max_results=3)
+            results = search_one_way(destination, hub, return_date, max_results=3)
 
             if results:
                 return_international_offers[hub] = results
                 best = results[0]
                 emit(q, "status", {
                     "step": f"ret_intl_{hub}_done",
-                    "message": f"  {DESTINATION}->{hub}: ${best['price']:.2f} ({best['carrier_display']})",
+                    "message": f"  {destination}->{hub}: ${best['price']:.2f} ({best['carrier_display']})",
                 })
             else:
                 emit(q, "status", {
                     "step": f"ret_intl_{hub}_done",
-                    "message": f"  {DESTINATION}->{hub}: No flights found",
+                    "message": f"  {destination}->{hub}: No flights found",
                 })
 
         # ---------------------------------------------------------------
@@ -325,7 +371,7 @@ def run_hacker_fare_search(q, search_origin):
                 "message": f"Searching return positioning: {hub} -> {search_origin} (one-way)...",
             })
 
-            results = search_one_way(hub, search_origin, RETURN_DATE, max_results=3)
+            results = search_one_way(hub, search_origin, return_date, max_results=3)
 
             if results:
                 return_domestic_offers[hub] = results
@@ -484,9 +530,9 @@ def run_hacker_fare_search(q, search_origin):
             "origin_label": origin_label,
             "is_hub_search": is_hub_search,
             "ground_cost": ground_cost,
-            "destination": DESTINATION,
-            "depart_date": DEPART_DATE,
-            "return_date": RETURN_DATE,
+            "destination": destination,
+            "depart_date": depart_date,
+            "return_date": return_date,
             "hubs_searched": active_hubs,
             "min_connection_minutes": MIN_CONNECTION_MINUTES,
             "baseline": baseline,
