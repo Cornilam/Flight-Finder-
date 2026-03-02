@@ -32,7 +32,8 @@ _cache = {}
 _cache_stats = {"hits": 0, "misses": 0}
 _cache_timestamps = {}  # key_tuple -> float (unix timestamp)
 
-CACHE_FILE = Path(__file__).parent / "cache" / "serp_cache.json"
+CACHE_DIR = os.getenv("CACHE_DIR", str(Path(__file__).parent / "cache"))
+CACHE_FILE = Path(CACHE_DIR) / "serp_cache.json"
 CACHE_MAX_AGE_SECONDS = 24 * 60 * 60  # 24 hours
 
 

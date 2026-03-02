@@ -10,6 +10,7 @@ Usage:
 
 import os
 import json
+import time
 import queue
 import threading
 from datetime import datetime
@@ -107,13 +108,15 @@ def stream(search_id):
         return jsonify({"error": "Search not found"}), 404
 
     def generate():
+        start_time = time.time()
+        max_wait = 600  # 10-minute absolute maximum
         try:
-            while True:
+            while time.time() - start_time < max_wait:
                 try:
-                    event = msg_queue.get(timeout=300)
+                    event = msg_queue.get(timeout=30)
                 except queue.Empty:
-                    yield "event: done\ndata: {}\n\n"
-                    break
+                    yield ": heartbeat\n\n"
+                    continue
 
                 event_type = event.get("type", "status")
                 payload = json.dumps(event.get("data", {}))
@@ -121,6 +124,8 @@ def stream(search_id):
 
                 if event_type == "done":
                     break
+            else:
+                yield "event: done\ndata: {}\n\n"
         finally:
             active_searches.pop(search_id, None)
 
