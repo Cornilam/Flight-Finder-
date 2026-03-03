@@ -46,7 +46,7 @@ MIN_CONNECTION_MINUTES = int(os.getenv("MIN_CONNECTION_MINUTES", "120"))
 # Drive-to-hub config
 REGIONAL_AIRPORT = os.getenv("REGIONAL_AIRPORT", "MKE")
 HUB_AIRPORT = os.getenv("HUB_AIRPORT", "ORD")
-DRIVING_COST = float(os.getenv("DRIVING_COST", "100.00"))
+DRIVING_COST = float(os.getenv("DRIVING_COST", "60.00"))
 PARKING_RATE_PER_DAY = float(os.getenv("PARKING_RATE_PER_DAY", "20.00"))
 
 # Trip duration for parking calculation

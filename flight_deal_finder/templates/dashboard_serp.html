@@ -261,76 +261,41 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 24px;
+            gap: 16px;
             max-width: 900px;
             margin: 0 auto;
+        }
+        .ord-cost-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            color: #6b7280;
+        }
+        .ord-cost-info .car-icon {
+            font-size: 16px;
+        }
+        .ord-cost-info .cost-detail {
+            font-size: 12px;
+            color: #9ca3af;
+        }
+        .ord-cost-info .cost-detail strong {
+            color: #6b7280;
+            font-weight: 600;
         }
         .hub-toggle {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             font-size: 13px;
-            color: #6b7280;
+            color: #2563eb;
             cursor: pointer;
+            font-weight: 500;
         }
         .hub-toggle input[type="checkbox"] {
-            accent-color: #8b5cf6;
+            accent-color: #2563eb;
             width: 16px;
             height: 16px;
-        }
-        .hub-compare-fields {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-        }
-        .hub-compare-field {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-        }
-        .hub-compare-field label {
-            font-size: 10px;
-            font-weight: 600;
-            color: #6b7280;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .cost-input {
-            width: 80px;
-            padding: 6px 8px;
-            background: #f9fafb;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            color: #111827;
-            font-size: 13px;
-            text-align: center;
-        }
-        .cost-input:focus {
-            outline: none;
-            border-color: #2563eb;
-            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
-        }
-        .hub-airport-input-sm {
-            width: 60px;
-            padding: 6px 8px;
-            background: #f9fafb;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            color: #111827;
-            font-size: 13px;
-            font-weight: 600;
-            text-align: center;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .hub-airport-input-sm:focus {
-            outline: none;
-            border-color: #2563eb;
-            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
-            width: 160px;
-            text-align: left;
-            letter-spacing: normal;
-            text-transform: none;
         }
         .btn-rerun {
             padding: 8px 20px;
@@ -947,35 +912,16 @@
                 </button>
             </div>
 
-            <!-- Secondary Options -->
+            <!-- ORD Driving Cost Info -->
             <div class="search-options">
+                <div class="ord-cost-info">
+                    <span class="car-icon">&#x1F697;</span>
+                    <span class="cost-detail">Drive to <strong>ORD</strong>: <strong>$60</strong> round trip + <strong>$20</strong>/day parking</span>
+                </div>
                 <label class="hub-toggle">
                     <input type="checkbox" id="hubCompare" onchange="toggleHubCompare()">
-                    <span>Also compare: drive to hub</span>
+                    <span>Compare ORD</span>
                 </label>
-                <div class="hub-compare-fields" id="hubCompareFields" style="display:none;">
-                    <div class="hub-compare-field airport-field-wrap">
-                        <label for="inputHubAirport">Hub</label>
-                        <input type="text" id="inputHubAirport" value="{{ hub_airport }}"
-                               placeholder="ORD" class="hub-airport-input-sm"
-                               autocomplete="off"
-                               onfocus="onAirportFocus(this, 'acHub')"
-                               oninput="onAirportInput(this, 'acHub')"
-                               onblur="onAirportBlur(this, 'acHub')"
-                               onkeydown="onAirportKeydown(event, this, 'acHub')">
-                        <div class="autocomplete-dropdown" id="acHub"></div>
-                    </div>
-                    <div class="hub-compare-field">
-                        <label for="inputDrivingCost">Drive $</label>
-                        <input type="number" id="inputDrivingCost" value="{{ driving_cost }}"
-                               min="0" step="10" class="cost-input">
-                    </div>
-                    <div class="hub-compare-field">
-                        <label for="inputParkingRate">Park $/day</label>
-                        <input type="number" id="inputParkingRate" value="{{ parking_rate }}"
-                               min="0" step="5" class="cost-input">
-                    </div>
-                </div>
             </div>
 
             <div class="budget-note">
@@ -1323,8 +1269,6 @@
         var HUB_COUNT = {{ hubs | length }};
 
         function toggleHubCompare() {
-            var checked = document.getElementById('hubCompare').checked;
-            document.getElementById('hubCompareFields').style.display = checked ? 'flex' : 'none';
             updateBudgetEstimate();
         }
 
@@ -1625,16 +1569,15 @@
         function getSearchParams() {
             var oEl = document.getElementById('inputOrigin');
             var dEl = document.getElementById('inputDestination');
-            var hEl = document.getElementById('inputHubAirport');
             return {
                 origin: (oEl.dataset.selectedIata || oEl.value || '').trim().toUpperCase(),
                 destination: (dEl.dataset.selectedIata || dEl.value || '').trim().toUpperCase(),
                 depart_date: document.getElementById('inputDepart').value,
                 return_date: document.getElementById('inputReturn').value,
                 hub_compare: document.getElementById('hubCompare').checked,
-                hub_airport: (hEl.dataset.selectedIata || hEl.value || '').trim().toUpperCase(),
-                driving_cost: parseFloat(document.getElementById('inputDrivingCost').value) || 0,
-                parking_rate: parseFloat(document.getElementById('inputParkingRate').value) || 0,
+                hub_airport: 'ORD',
+                driving_cost: 60,
+                parking_rate: 20,
             };
         }
 
@@ -2066,7 +2009,7 @@
             // Set initial selectedIata for pre-filled airport inputs
             document.getElementById('inputOrigin').dataset.selectedIata = '{{ origin }}';
             document.getElementById('inputDestination').dataset.selectedIata = '';
-            document.getElementById('inputHubAirport').dataset.selectedIata = '{{ hub_airport }}';
+            /* hub airport hardcoded to ORD — no input element */
 
             loadFromLocalStorage();
             renderRecentSearches();
