@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hacker Fare Engine - SerpAPI</title>
+    <title>Milwaukee Flight Finder</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background: #0f172a;
-            color: #e2e8f0;
+            background: #f8fafc;
+            color: #1e293b;
             min-height: 100vh;
         }
 
@@ -20,221 +20,257 @@
             padding: 24px 16px;
         }
 
-        /* Header */
-        header {
+        /* Search Banner */
+        .search-banner {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 40px 32px 28px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
             text-align: center;
-            margin-bottom: 32px;
         }
-        header h1 {
-            font-size: 28px;
+        .search-banner h1 {
+            font-size: 32px;
             font-weight: 700;
-            color: #f8fafc;
+            color: #111827;
             letter-spacing: -0.5px;
+            margin-bottom: 4px;
         }
-        header .subtitle {
-            color: #4ade80;
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-top: 4px;
-        }
-        header .trip-info {
-            color: #94a3b8;
-            margin-top: 8px;
+        .search-banner .subtitle {
+            color: #6b7280;
             font-size: 15px;
-        }
-        header .trip-route {
-            font-size: 20px;
-            color: #38bdf8;
-            font-weight: 600;
-            margin-top: 4px;
-        }
-        header .trip-meta {
-            color: #64748b;
-            font-size: 13px;
-            margin-top: 6px;
+            font-weight: 400;
+            margin-bottom: 28px;
         }
 
-        /* Config Bar */
-        .config-bar {
-            background: #1e293b;
-            border: 1px solid #334155;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 16px;
-        }
-        .config-row {
+        /* Search Fields Row */
+        .search-fields {
             display: flex;
-            gap: 16px;
-            align-items: flex-end;
-            flex-wrap: wrap;
+            align-items: stretch;
             justify-content: center;
+            gap: 0;
+            max-width: 900px;
+            margin: 0 auto 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 50px;
+            overflow: visible;
+            position: relative;
+            background: #fff;
+            transition: border-color 0.2s;
         }
-        .config-row-secondary {
-            margin-top: 12px;
-            padding-top: 12px;
-            border-top: 1px solid #334155;
-            justify-content: center;
+        .search-fields:focus-within {
+            border-color: #2563eb;
         }
-        .config-field {
+
+        .search-field {
+            flex: 1;
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            padding: 12px 20px;
+            position: relative;
+            min-width: 0;
         }
-        .config-field label {
+        .search-field label {
             font-size: 11px;
             font-weight: 600;
-            color: #64748b;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 2px;
+            text-align: left;
+        }
+        .search-field-divider {
+            width: 1px;
+            background: #e5e7eb;
+            flex-shrink: 0;
+            margin: 10px 0;
+        }
+
+        /* Swap Button */
+        .swap-btn {
+            width: 36px;
+            height: 36px;
+            min-width: 36px;
+            border-radius: 50%;
+            border: 2px solid #e5e7eb;
+            background: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            transition: border-color 0.2s, background 0.2s;
+            color: #6b7280;
+            flex-shrink: 0;
+            align-self: center;
+            margin: 0 -8px;
+        }
+        .swap-btn:hover {
+            border-color: #2563eb;
+            background: #eff6ff;
+            color: #2563eb;
+        }
+        .swap-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* Airport Inputs (in search banner) */
+        .airport-field-wrap {
+            position: relative;
+            flex: 1;
+        }
+        .airport-input {
+            width: 100%;
+            padding: 6px 0;
+            background: transparent;
+            border: none;
+            color: #111827;
+            font-size: 16px;
+            font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
-        .airport-field-wrap {
-            position: relative;
-        }
-        .airport-input {
-            width: 80px;
-            padding: 10px 12px;
-            background: #0f172a;
-            border: 1px solid #334155;
-            border-radius: 6px;
-            color: #f8fafc;
-            font-size: 16px;
-            font-weight: 700;
-            text-align: center;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            transition: width 0.2s ease;
+        .airport-input::placeholder {
+            color: #9ca3af;
+            font-weight: 400;
+            text-transform: none;
+            letter-spacing: normal;
         }
         .airport-input:focus {
             outline: none;
-            border-color: #38bdf8;
-            box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
-            width: 200px;
-            text-align: left;
-            letter-spacing: normal;
             text-transform: none;
+            letter-spacing: normal;
         }
         .autocomplete-dropdown {
             display: none;
             position: absolute;
-            top: 100%;
-            left: 0;
-            min-width: 300px;
-            max-height: 240px;
+            top: calc(100% + 12px);
+            left: -20px;
+            min-width: 320px;
+            max-height: 260px;
             overflow-y: auto;
-            background: #1e293b;
-            border: 1px solid #334155;
-            border-radius: 8px;
-            margin-top: 4px;
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
             z-index: 1000;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
         }
         .autocomplete-dropdown.visible {
             display: block;
         }
         .ac-item {
-            padding: 8px 12px;
+            padding: 10px 16px;
             cursor: pointer;
             display: flex;
             align-items: center;
             gap: 10px;
-            border-bottom: 1px solid #1a2332;
+            border-bottom: 1px solid #f3f4f6;
         }
         .ac-item:last-child {
             border-bottom: none;
         }
         .ac-item:hover, .ac-item.active {
-            background: #334155;
+            background: #f3f4f6;
         }
         .ac-iata {
             font-weight: 700;
             font-size: 14px;
-            color: #4ade80;
+            color: #059669;
             min-width: 36px;
         }
         .ac-detail {
             font-size: 13px;
-            color: #94a3b8;
+            color: #6b7280;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
         .ac-city {
-            color: #e2e8f0;
+            color: #111827;
             font-weight: 500;
         }
         .ac-empty {
-            padding: 10px 12px;
-            color: #64748b;
+            padding: 10px 16px;
+            color: #9ca3af;
             font-size: 13px;
         }
+
+        /* Date Inputs (in search banner) */
         .date-input {
-            padding: 10px 12px;
-            background: #0f172a;
-            border: 1px solid #334155;
-            border-radius: 6px;
-            color: #f8fafc;
-            font-size: 14px;
+            padding: 6px 0;
+            background: transparent;
+            border: none;
+            color: #111827;
+            font-size: 15px;
+            font-weight: 500;
             font-family: inherit;
+            width: 100%;
         }
         .date-input:focus {
             outline: none;
-            border-color: #38bdf8;
-            box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
         }
         .date-input::-webkit-calendar-picker-indicator {
-            filter: invert(0.7);
             cursor: pointer;
+            opacity: 0.5;
         }
-        .cost-input {
-            width: 90px;
-            padding: 10px 12px;
-            background: #0f172a;
-            border: 1px solid #334155;
-            border-radius: 6px;
-            color: #f8fafc;
-            font-size: 14px;
-            text-align: center;
+        .date-input::-webkit-calendar-picker-indicator:hover {
+            opacity: 1;
         }
-        .cost-input:focus {
-            outline: none;
-            border-color: #38bdf8;
-            box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
-        }
+
+        /* Search Button */
         .btn-search {
-            padding: 14px 36px;
+            padding: 0 28px;
             color: #fff;
             border: none;
-            border-radius: 8px;
+            border-radius: 0 50px 50px 0;
             font-size: 15px;
             font-weight: 600;
             cursor: pointer;
             transition: background 0.2s, transform 0.1s;
-            background: #3b82f6;
+            background: #2563eb;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+            flex-shrink: 0;
+            margin: -2px -2px -2px 0;
         }
-        .btn-search:hover:not(:disabled) { background: #2563eb; }
+        .btn-search:hover:not(:disabled) { background: #1d4ed8; }
         .btn-search:active { transform: scale(0.98); }
         .btn-search:disabled {
-            background: #334155 !important;
-            color: #64748b;
+            background: #e5e7eb !important;
+            color: #9ca3af;
             cursor: not-allowed;
             transform: none;
         }
+        .btn-search svg {
+            width: 20px;
+            height: 20px;
+        }
         .btn-subtext {
             display: block;
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 400;
             opacity: 0.8;
-            margin-top: 3px;
+            margin-top: 1px;
         }
-        .config-field-btn { justify-content: flex-end; }
+
+        /* Secondary Options Row */
+        .search-options {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 24px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
         .hub-toggle {
             display: flex;
             align-items: center;
             gap: 8px;
             font-size: 13px;
-            color: #94a3b8;
+            color: #6b7280;
             cursor: pointer;
         }
         .hub-toggle input[type="checkbox"] {
@@ -244,13 +280,61 @@
         }
         .hub-compare-fields {
             display: flex;
-            gap: 16px;
-            align-items: flex-end;
-            margin-left: 16px;
+            gap: 12px;
+            align-items: center;
+        }
+        .hub-compare-field {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .hub-compare-field label {
+            font-size: 10px;
+            font-weight: 600;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .cost-input {
+            width: 80px;
+            padding: 6px 8px;
+            background: #f9fafb;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            color: #111827;
+            font-size: 13px;
+            text-align: center;
+        }
+        .cost-input:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+        }
+        .hub-airport-input-sm {
+            width: 60px;
+            padding: 6px 8px;
+            background: #f9fafb;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            color: #111827;
+            font-size: 13px;
+            font-weight: 600;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .hub-airport-input-sm:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+            width: 160px;
+            text-align: left;
+            letter-spacing: normal;
+            text-transform: none;
         }
         .btn-rerun {
             padding: 8px 20px;
-            background: #3b82f6;
+            background: #2563eb;
             color: #fff;
             border: none;
             border-radius: 6px;
@@ -258,30 +342,52 @@
             font-weight: 600;
             cursor: pointer;
         }
-        .btn-rerun:hover { background: #2563eb; }
-        @media (max-width: 768px) {
-            .config-row { flex-direction: column; align-items: center; }
-            .hub-compare-fields { flex-direction: column; margin-left: 0; margin-top: 8px; }
-        }
+        .btn-rerun:hover { background: #1d4ed8; }
 
-        /* API budget indicator */
+        /* Budget note */
         .budget-note {
             text-align: center;
             font-size: 11px;
-            color: #475569;
-            margin-bottom: 20px;
+            color: #9ca3af;
+            margin-top: 12px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .search-fields {
+                flex-direction: column;
+                border-radius: 16px;
+            }
+            .search-field-divider {
+                width: auto;
+                height: 1px;
+                margin: 0 10px;
+            }
+            .swap-btn {
+                left: 50%;
+                top: 72px;
+            }
+            .btn-search {
+                border-radius: 0 0 16px 16px;
+                margin: 0 -2px -2px -2px;
+                padding: 16px 28px;
+                justify-content: center;
+            }
+            .search-options { flex-direction: column; gap: 12px; }
+            .hub-compare-fields { flex-direction: column; }
         }
 
         /* Live Status Log */
         /* Search Animation Panel */
         .search-animation {
-            background: #1e293b;
-            border: 1px solid #334155;
+            background: #ffffff;
+            border: none;
             border-radius: 12px;
             padding: 24px 24px 16px;
             margin-bottom: 24px;
             display: none;
             text-align: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
         }
         .search-animation.visible { display: block; }
 
@@ -293,7 +399,7 @@
             display: block;
         }
         .arc-label {
-            fill: #e2e8f0;
+            fill: #111827;
             font-family: inherit;
             font-size: 14px;
             font-weight: 700;
@@ -301,23 +407,23 @@
         }
         .arc-path {
             fill: none;
-            stroke: #334155;
+            stroke: #e5e7eb;
             stroke-width: 2;
             stroke-dasharray: 8 6;
         }
         .arc-path-glow {
             fill: none;
-            stroke: #38bdf8;
+            stroke: #2563eb;
             stroke-width: 2;
             stroke-dasharray: 8 6;
             opacity: 0.3;
         }
         .plane-icon {
-            fill: #f8fafc;
+            fill: #1e293b;
             font-size: 18px;
         }
         .origin-dot, .dest-dot {
-            fill: #4ade80;
+            fill: #059669;
         }
 
         /* Hub Tracker */
@@ -339,41 +445,41 @@
             width: 24px;
             height: 24px;
             border-radius: 50%;
-            border: 2px solid #334155;
+            border: 2px solid #d1d5db;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 11px;
             transition: all 0.3s ease;
-            background: #0f172a;
+            background: #f9fafb;
         }
         .hub-dot.pending .hub-dot-indicator {
-            border-color: #334155;
-            color: #475569;
+            border-color: #d1d5db;
+            color: #9ca3af;
         }
         .hub-dot.searching .hub-dot-indicator {
-            border-color: #38bdf8;
-            color: #38bdf8;
-            box-shadow: 0 0 8px rgba(56, 189, 248, 0.4);
+            border-color: #2563eb;
+            color: #2563eb;
+            box-shadow: 0 0 8px rgba(37, 99, 235, 0.3);
             animation: hubPulse 1.2s ease-in-out infinite;
         }
         .hub-dot.done .hub-dot-indicator {
-            border-color: #4ade80;
-            background: #166534;
-            color: #4ade80;
+            border-color: #10b981;
+            background: #d1fae5;
+            color: #059669;
         }
         .hub-dot-label {
             font-size: 11px;
             font-weight: 600;
-            color: #64748b;
+            color: #6b7280;
             letter-spacing: 0.5px;
         }
-        .hub-dot.searching .hub-dot-label { color: #38bdf8; }
-        .hub-dot.done .hub-dot-label { color: #4ade80; }
+        .hub-dot.searching .hub-dot-label { color: #2563eb; }
+        .hub-dot.done .hub-dot-label { color: #059669; }
 
         @keyframes hubPulse {
-            0%, 100% { box-shadow: 0 0 4px rgba(56, 189, 248, 0.3); }
-            50% { box-shadow: 0 0 16px rgba(56, 189, 248, 0.6); }
+            0%, 100% { box-shadow: 0 0 4px rgba(37, 99, 235, 0.2); }
+            50% { box-shadow: 0 0 16px rgba(37, 99, 235, 0.4); }
         }
 
         /* Progress Bar */
@@ -382,7 +488,7 @@
         }
         .progress-bar {
             height: 6px;
-            background: #0f172a;
+            background: #e5e7eb;
             border-radius: 3px;
             overflow: hidden;
             margin-bottom: 8px;
@@ -390,24 +496,24 @@
         .progress-fill {
             height: 100%;
             width: 0%;
-            background: linear-gradient(90deg, #38bdf8, #4ade80);
+            background: linear-gradient(90deg, #2563eb, #10b981);
             border-radius: 3px;
             transition: width 0.4s ease;
         }
         .progress-text {
             font-size: 13px;
-            color: #94a3b8;
+            color: #6b7280;
         }
 
         /* Details Toggle */
         .details-toggle {
             font-size: 12px;
-            color: #475569;
+            color: #9ca3af;
             cursor: pointer;
             padding: 4px 0;
             user-select: none;
         }
-        .details-toggle:hover { color: #94a3b8; }
+        .details-toggle:hover { color: #6b7280; }
 
         .status-log {
             font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
@@ -418,7 +524,7 @@
             text-align: left;
             margin-top: 8px;
             padding-top: 8px;
-            border-top: 1px solid #1a2332;
+            border-top: 1px solid #e5e7eb;
         }
         .status-log .entry {
             display: flex;
@@ -426,12 +532,12 @@
             gap: 10px;
             padding: 1px 0;
         }
-        .status-log .timestamp { color: #475569; flex-shrink: 0; }
-        .status-log .msg { color: #64748b; }
-        .status-log .msg.success { color: #4ade80; }
-        .status-log .msg.error { color: #f87171; }
-        .status-log .msg.searching { color: #38bdf8; }
-        .status-log .msg.done { color: #a78bfa; }
+        .status-log .timestamp { color: #9ca3af; flex-shrink: 0; }
+        .status-log .msg { color: #6b7280; }
+        .status-log .msg.success { color: #059669; }
+        .status-log .msg.error { color: #dc2626; }
+        .status-log .msg.searching { color: #2563eb; }
+        .status-log .msg.done { color: #7c3aed; }
 
         /* Results */
         .results-panel { display: none; }
@@ -442,15 +548,15 @@
             text-align: center;
             font-size: 16px;
             font-weight: 600;
-            color: #94a3b8;
+            color: #6b7280;
             margin-bottom: 16px;
             padding: 10px;
-            background: #1a2332;
+            background: #f9fafb;
             border-radius: 8px;
-            border: 1px solid #334155;
+            border: 1px solid #e5e7eb;
         }
-        .origin-label .airport { color: #38bdf8; font-size: 18px; }
-        .origin-label .ground-note { color: #a78bfa; font-size: 13px; display: block; margin-top: 4px; }
+        .origin-label .airport { color: #2563eb; font-size: 18px; }
+        .origin-label .ground-note { color: #7c3aed; font-size: 13px; display: block; margin-top: 4px; }
 
         /* Price Insights */
         .price-insights {
@@ -460,47 +566,48 @@
             border-radius: 8px;
             font-size: 13px;
         }
-        .price-low { background: rgba(74, 222, 128, 0.1); border: 1px solid rgba(74, 222, 128, 0.2); color: #4ade80; }
-        .price-typical { background: rgba(148, 163, 184, 0.1); border: 1px solid rgba(148, 163, 184, 0.2); color: #94a3b8; }
-        .price-high { background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.2); color: #fbbf24; }
+        .price-low { background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.2); color: #059669; }
+        .price-typical { background: rgba(107, 114, 128, 0.08); border: 1px solid rgba(107, 114, 128, 0.2); color: #6b7280; }
+        .price-high { background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.2); color: #d97706; }
 
         /* Baseline Card */
         .baseline-card {
-            background: #1e293b;
-            border: 1px solid #334155;
+            background: #ffffff;
+            border: none;
             border-radius: 12px;
             padding: 20px;
             margin-bottom: 24px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
         }
         .baseline-card .label {
             font-size: 14px;
-            color: #94a3b8;
+            color: #6b7280;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             font-weight: 600;
         }
         .baseline-card .route {
             font-size: 13px;
-            color: #64748b;
+            color: #6b7280;
             margin-top: 4px;
         }
         .baseline-card .price {
             font-size: 28px;
             font-weight: 700;
-            color: #f8fafc;
+            color: #111827;
         }
         .baseline-card .price-breakdown {
             font-size: 12px;
-            color: #64748b;
+            color: #6b7280;
             text-align: right;
             margin-top: 4px;
         }
         .baseline-card .detail {
             font-size: 12px;
-            color: #64748b;
+            color: #6b7280;
             text-align: right;
             margin-top: 2px;
         }
@@ -516,20 +623,21 @@
 
         /* Hacker Fare Table */
         .hf-table-wrap {
-            background: #1e293b;
-            border: 1px solid #334155;
+            background: #ffffff;
+            border: none;
             border-radius: 12px;
             overflow-x: auto;
             margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
         }
         .hf-table-header {
             padding: 16px 20px;
-            border-bottom: 1px solid #334155;
+            border-bottom: 1px solid #e5e7eb;
         }
         .hf-table-header h3 {
             font-size: 14px;
             font-weight: 600;
-            color: #94a3b8;
+            color: #6b7280;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
@@ -542,25 +650,25 @@
             padding: 12px 16px;
             font-size: 11px;
             font-weight: 600;
-            color: #64748b;
+            color: #6b7280;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             text-align: left;
-            border-bottom: 1px solid #334155;
-            background: #1a2332;
+            border-bottom: 1px solid #e5e7eb;
+            background: #f9fafb;
         }
         table.hf-table thead th.right { text-align: right; }
 
         table.hf-table tbody tr {
-            border-bottom: 1px solid #1e293b;
+            border-bottom: 1px solid #f3f4f6;
             transition: background 0.15s;
         }
-        table.hf-table tbody tr:hover { background: #1a2332; }
+        table.hf-table tbody tr:hover { background: #f9fafb; }
         table.hf-table tbody tr.best-row {
-            background: rgba(16, 185, 129, 0.08);
+            background: rgba(16, 185, 129, 0.06);
         }
         table.hf-table tbody tr.best-row:hover {
-            background: rgba(16, 185, 129, 0.14);
+            background: rgba(16, 185, 129, 0.10);
         }
 
         table.hf-table td {
@@ -581,16 +689,16 @@
             font-weight: 700;
         }
         .rank-1 { background: #10b981; color: #064e3b; }
-        .rank-2 { background: #334155; color: #94a3b8; }
-        .rank-3 { background: #334155; color: #94a3b8; }
-        .rank-other { background: #1e293b; color: #64748b; border: 1px solid #334155; }
+        .rank-2 { background: #e5e7eb; color: #6b7280; }
+        .rank-3 { background: #e5e7eb; color: #6b7280; }
+        .rank-other { background: #f3f4f6; color: #9ca3af; border: 1px solid #e5e7eb; }
 
-        .hub-name { font-weight: 600; color: #f8fafc; }
-        .leg-price { color: #94a3b8; font-size: 14px; }
-        .leg-detail { color: #64748b; font-size: 12px; margin-top: 2px; }
+        .hub-name { font-weight: 600; color: #111827; }
+        .leg-price { color: #374151; font-size: 14px; }
+        .leg-detail { color: #6b7280; font-size: 12px; margin-top: 2px; }
 
-        .total-price { font-size: 18px; font-weight: 700; color: #f8fafc; }
-        .total-ground { font-size: 11px; color: #a78bfa; margin-top: 2px; }
+        .total-price { font-size: 18px; font-weight: 700; color: #111827; }
+        .total-ground { font-size: 11px; color: #7c3aed; margin-top: 2px; }
 
         .savings-badge {
             display: inline-block;
@@ -600,9 +708,9 @@
             font-weight: 600;
             margin-top: 4px;
         }
-        .savings-positive { background: rgba(16, 185, 129, 0.15); color: #4ade80; }
-        .savings-negative { background: rgba(248, 113, 113, 0.15); color: #f87171; }
-        .savings-neutral { background: rgba(148, 163, 184, 0.15); color: #94a3b8; }
+        .savings-positive { background: rgba(16, 185, 129, 0.1); color: #059669; }
+        .savings-negative { background: rgba(220, 38, 38, 0.1); color: #dc2626; }
+        .savings-neutral { background: rgba(107, 114, 128, 0.1); color: #6b7280; }
 
         /* Layover display */
         .connection-info { font-size: 12px; }
@@ -626,17 +734,17 @@
             display: inline-block;
             font-size: 11px;
             font-weight: 600;
-            color: #38bdf8;
+            color: #2563eb;
             text-decoration: none;
             margin-top: 4px;
             padding: 2px 6px;
-            border: 1px solid rgba(56, 189, 248, 0.3);
+            border: 1px solid rgba(37, 99, 235, 0.3);
             border-radius: 4px;
             transition: background 0.15s, color 0.15s;
         }
         .gf-link:hover {
-            background: rgba(56, 189, 248, 0.15);
-            color: #7dd3fc;
+            background: rgba(37, 99, 235, 0.1);
+            color: #1d4ed8;
         }
         .gf-link-baseline {
             font-size: 12px;
@@ -647,28 +755,28 @@
         /* Warnings */
         .warnings-section { margin-bottom: 24px; }
         .warning-card {
-            background: #451a03;
-            border: 1px solid #f59e0b;
+            background: #fffbeb;
+            border: 1px solid #fcd34d;
             border-radius: 8px;
             padding: 12px 16px;
             font-size: 13px;
-            color: #fcd34d;
+            color: #d97706;
             margin-bottom: 8px;
         }
 
         .no-results {
             text-align: center;
             padding: 40px;
-            color: #64748b;
+            color: #9ca3af;
             font-size: 15px;
         }
 
         .error-banner {
-            background: #450a0a;
-            border: 1px solid #f87171;
+            background: #fef2f2;
+            border: 1px solid #fca5a5;
             border-radius: 12px;
             padding: 16px 20px;
-            color: #fca5a5;
+            color: #dc2626;
             font-size: 14px;
             margin-bottom: 24px;
             display: none;
@@ -687,27 +795,17 @@
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>Hacker Fare Engine</h1>
-            <div class="subtitle">Powered by SerpAPI / Google Flights</div>
-            <div class="trip-info">Split-Ticket Search</div>
-            <div class="trip-route" id="tripRoute">{{ origin }} -> {{ destination }}</div>
-            <div class="trip-meta">
-                {{ depart_date }} to {{ return_date }}
-                &nbsp;|&nbsp;
-                Min connection: {{ min_connection }} min
-                &nbsp;|&nbsp;
-                Hubs: {{ hubs | join(', ') }}
-            </div>
-        </header>
+        <!-- Search Banner -->
+        <div class="search-banner">
+            <h1>Milwaukee Flight Finder</h1>
+            <div class="subtitle">Find cheaper flights by splitting your ticket</div>
 
-        <!-- Config Bar -->
-        <div class="config-bar">
-            <div class="config-row">
-                <div class="config-field airport-field-wrap">
-                    <label for="inputOrigin">From</label>
+            <div class="search-fields">
+                <!-- From -->
+                <div class="search-field airport-field-wrap">
+                    <label for="inputOrigin">Where from?</label>
                     <input type="text" id="inputOrigin" value="{{ origin }}"
-                           placeholder="City or code" class="airport-input"
+                           placeholder="Airport or city" class="airport-input"
                            autocomplete="off"
                            onfocus="onAirportFocus(this, 'acOrigin')"
                            oninput="onAirportInput(this, 'acOrigin')"
@@ -715,10 +813,20 @@
                            onkeydown="onAirportKeydown(event, this, 'acOrigin')">
                     <div class="autocomplete-dropdown" id="acOrigin"></div>
                 </div>
-                <div class="config-field airport-field-wrap">
-                    <label for="inputDestination">To</label>
-                    <input type="text" id="inputDestination" value="{{ destination }}"
-                           placeholder="City or code" class="airport-input"
+
+                <!-- Swap Button -->
+                <button class="swap-btn" onclick="swapAirports()" title="Swap airports" type="button">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M8 3l-4 4 4 4"/><path d="M4 7h16"/>
+                        <path d="M16 21l4-4-4-4"/><path d="M20 17H4"/>
+                    </svg>
+                </button>
+
+                <!-- To -->
+                <div class="search-field airport-field-wrap">
+                    <label for="inputDestination">Where to?</label>
+                    <input type="text" id="inputDestination" value=""
+                           placeholder="&#x1F4CD;" class="airport-input"
                            autocomplete="off"
                            onfocus="onAirportFocus(this, 'acDest')"
                            oninput="onAirportInput(this, 'acDest')"
@@ -726,32 +834,43 @@
                            onkeydown="onAirportKeydown(event, this, 'acDest')">
                     <div class="autocomplete-dropdown" id="acDest"></div>
                 </div>
-                <div class="config-field">
+
+                <div class="search-field-divider"></div>
+
+                <!-- Depart Date -->
+                <div class="search-field">
                     <label for="inputDepart">Depart</label>
                     <input type="date" id="inputDepart" value="{{ depart_date }}" class="date-input">
                 </div>
-                <div class="config-field">
+
+                <div class="search-field-divider"></div>
+
+                <!-- Return Date -->
+                <div class="search-field">
                     <label for="inputReturn">Return</label>
                     <input type="date" id="inputReturn" value="{{ return_date }}" class="date-input">
                 </div>
-                <div class="config-field config-field-btn">
-                    <button class="btn-search" id="searchBtn" onclick="runSearch()">
-                        Search
-                        <span class="btn-subtext" id="apiCallEstimate">{{ hubs | length }} hubs | ~{{ 1 + hubs|length * 4 }} API calls</span>
-                    </button>
-                </div>
+
+                <!-- Search Button -->
+                <button class="btn-search" id="searchBtn" onclick="runSearch()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    </svg>
+                    Search
+                </button>
             </div>
 
-            <div class="config-row config-row-secondary">
+            <!-- Secondary Options -->
+            <div class="search-options">
                 <label class="hub-toggle">
                     <input type="checkbox" id="hubCompare" onchange="toggleHubCompare()">
                     <span>Also compare: drive to hub</span>
                 </label>
                 <div class="hub-compare-fields" id="hubCompareFields" style="display:none;">
-                    <div class="config-field airport-field-wrap">
+                    <div class="hub-compare-field airport-field-wrap">
                         <label for="inputHubAirport">Hub</label>
                         <input type="text" id="inputHubAirport" value="{{ hub_airport }}"
-                               placeholder="City or code" class="airport-input"
+                               placeholder="ORD" class="hub-airport-input-sm"
                                autocomplete="off"
                                onfocus="onAirportFocus(this, 'acHub')"
                                oninput="onAirportInput(this, 'acHub')"
@@ -759,23 +878,23 @@
                                onkeydown="onAirportKeydown(event, this, 'acHub')">
                         <div class="autocomplete-dropdown" id="acHub"></div>
                     </div>
-                    <div class="config-field">
+                    <div class="hub-compare-field">
                         <label for="inputDrivingCost">Drive $</label>
                         <input type="number" id="inputDrivingCost" value="{{ driving_cost }}"
                                min="0" step="10" class="cost-input">
                     </div>
-                    <div class="config-field">
+                    <div class="hub-compare-field">
                         <label for="inputParkingRate">Park $/day</label>
                         <input type="number" id="inputParkingRate" value="{{ parking_rate }}"
                                min="0" step="5" class="cost-input">
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div class="budget-note">
-            SerpAPI: 250 searches/month | Each search uses ~<span id="budgetEstimate">{{ 1 + hubs|length * 4 }}</span> calls
-            <span id="hubBudgetNote"></span>
+            <div class="budget-note">
+                <span id="apiCallEstimate">{{ hubs | length }} hubs &middot; ~{{ 1 + hubs|length * 4 }} API calls</span>
+                <span id="hubBudgetNote"></span>
+            </div>
         </div>
 
         <!-- Search Animation Panel -->
@@ -839,6 +958,18 @@
             .then(function(r) { return r.json(); })
             .then(function(data) { AIRPORTS = data; })
             .catch(function(e) { console.warn('Could not load airport data:', e); });
+
+        /* Preset suggestions shown on focus */
+        var FIELD_PRESETS = {
+            'inputOrigin': [
+                { iata: 'ORD', city: 'Chicago', country: 'United States', name: "O'Hare International Airport" }
+            ],
+            'inputDestination': [
+                { iata: 'LHR', city: 'London', country: 'United Kingdom', name: 'Heathrow Airport' },
+                { iata: 'ATH', city: 'Athens', country: 'Greece', name: 'Eleftherios Venizelos International Airport' },
+                { iata: 'CDG', city: 'Paris', country: 'France', name: 'Charles de Gaulle Airport' }
+            ]
+        };
 
         // Top ~60 busiest airports worldwide for ranking boost
         var MAJOR = {};
@@ -915,13 +1046,16 @@
             input.value = iata;
             input.dataset.selectedIata = iata;
             hideDropdown(dropdownId);
-            updateHeaderDisplay();
+            /* header display removed */
         }
 
         function onAirportFocus(input, dropdownId) {
             acActiveIdx = -1;
             var val = input.value.trim();
-            if (val.length >= 1) {
+            var presets = FIELD_PRESETS[input.id];
+            if (presets && (val.length === 0 || val.toUpperCase() === (input.dataset.selectedIata || ''))) {
+                renderDropdown(dropdownId, presets);
+            } else if (val.length >= 1) {
                 var matches = filterAirports(val);
                 renderDropdown(dropdownId, matches);
             }
@@ -931,12 +1065,17 @@
             acActiveIdx = -1;
             var val = input.value.trim();
             if (val.length === 0) {
-                hideDropdown(dropdownId);
+                var presets = FIELD_PRESETS[input.id];
+                if (presets) {
+                    renderDropdown(dropdownId, presets);
+                } else {
+                    hideDropdown(dropdownId);
+                }
                 return;
             }
             var matches = filterAirports(val);
             renderDropdown(dropdownId, matches);
-            updateHeaderDisplay();
+            /* header display removed */
         }
 
         function onAirportBlur(input, dropdownId) {
@@ -953,7 +1092,7 @@
                     input.value = input.dataset.selectedIata;
                 }
                 hideDropdown(dropdownId);
-                updateHeaderDisplay();
+                /* header display removed */
             }, 200);
         }
 
@@ -999,7 +1138,7 @@
             var dd = item.closest('.autocomplete-dropdown');
             if (!dd) return;
             var input = dd.previousElementSibling;
-            if (input && input.classList.contains('airport-input')) {
+            if (input && (input.classList.contains('airport-input') || input.classList.contains('hub-airport-input-sm'))) {
                 selectAirport(input, dd.id, item.dataset.iata);
             }
         });
@@ -1077,17 +1216,19 @@
             var callsPerSearch = 1 + HUB_COUNT * 4;
             var hubCompare = document.getElementById('hubCompare').checked;
             var total = hubCompare ? callsPerSearch * 2 : callsPerSearch;
-            document.getElementById('apiCallEstimate').textContent = HUB_COUNT + ' hubs | ~' + total + ' API calls';
-            document.getElementById('budgetEstimate').textContent = callsPerSearch;
+            document.getElementById('apiCallEstimate').textContent = HUB_COUNT + ' hubs \u00b7 ~' + total + ' API calls';
             document.getElementById('hubBudgetNote').textContent = hubCompare ? ' (x2 for hub compare)' : '';
         }
 
-        function updateHeaderDisplay() {
+        function swapAirports() {
             var oEl = document.getElementById('inputOrigin');
             var dEl = document.getElementById('inputDestination');
-            var o = (oEl.dataset.selectedIata || oEl.value || '{{ origin }}').toUpperCase();
-            var d = (dEl.dataset.selectedIata || dEl.value || '{{ destination }}').toUpperCase();
-            document.getElementById('tripRoute').textContent = o + ' \u2192 ' + d;
+            var tmpVal = oEl.value;
+            var tmpIata = oEl.dataset.selectedIata || '';
+            oEl.value = dEl.value;
+            oEl.dataset.selectedIata = dEl.dataset.selectedIata || '';
+            dEl.value = tmpVal;
+            dEl.dataset.selectedIata = tmpIata;
         }
 
         function makeCacheKey(origin, destination, departDate, returnDate) {
@@ -1746,7 +1887,7 @@
         (function() {
             // Set initial selectedIata for pre-filled airport inputs
             document.getElementById('inputOrigin').dataset.selectedIata = '{{ origin }}';
-            document.getElementById('inputDestination').dataset.selectedIata = '{{ destination }}';
+            document.getElementById('inputDestination').dataset.selectedIata = '';
             document.getElementById('inputHubAirport').dataset.selectedIata = '{{ hub_airport }}';
 
             loadFromLocalStorage();

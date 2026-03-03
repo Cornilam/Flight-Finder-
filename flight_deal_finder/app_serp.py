@@ -606,6 +606,7 @@ if __name__ == "__main__":
     print(f"  Hubs ({len(SERP_HUBS)}): {', '.join(SERP_HUBS)}")
     print(f"  API calls per search: ~{1 + len(SERP_HUBS) * 4}")
     print(f"  Drive option: {HUB_AIRPORT} (+${DRIVING_COST + PARKING_RATE_PER_DAY * TRIP_DAYS:.0f} ground)")
-    print("  Server starting at http://localhost:5000\n")
+    port = int(os.getenv("PORT", 5000))
+    print(f"  Server starting at http://localhost:{port}\n")
 
-    app.run(debug=False, port=5000)
+    app.run(debug=False, port=port)
