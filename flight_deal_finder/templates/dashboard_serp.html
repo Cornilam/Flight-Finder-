@@ -352,6 +352,93 @@
             margin-top: 12px;
         }
 
+        /* Recent Searches Banner */
+        .recent-searches {
+            max-width: 900px;
+            margin: -8px auto 24px;
+            display: none;
+        }
+        .recent-searches.visible { display: block; }
+        .recent-searches-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 0 4px;
+        }
+        .recent-searches-header h3 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #6b7280;
+        }
+        .recent-searches-clear {
+            background: none;
+            border: none;
+            font-size: 12px;
+            color: #9ca3af;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 6px;
+            transition: color 0.2s, background 0.2s;
+        }
+        .recent-searches-clear:hover {
+            color: #ef4444;
+            background: #fef2f2;
+        }
+        .recent-searches-list {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding-bottom: 6px;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+        }
+        .recent-searches-list::-webkit-scrollbar {
+            height: 4px;
+        }
+        .recent-searches-list::-webkit-scrollbar-thumb {
+            background: #d1d5db;
+            border-radius: 4px;
+        }
+        .recent-search-card {
+            flex: 0 0 180px;
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 14px 16px;
+            cursor: pointer;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .recent-search-card:hover {
+            border-color: #2563eb;
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.12);
+        }
+        .recent-search-card .route {
+            font-size: 15px;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 4px;
+        }
+        .recent-search-card .route .arrow {
+            color: #9ca3af;
+            margin: 0 2px;
+        }
+        .recent-search-card .dates {
+            font-size: 12px;
+            color: #6b7280;
+            margin-bottom: 6px;
+        }
+        .recent-search-card .price {
+            font-size: 14px;
+            font-weight: 700;
+            color: #059669;
+            margin-bottom: 2px;
+        }
+        .recent-search-card .age {
+            font-size: 11px;
+            color: #9ca3af;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .search-fields {
@@ -897,6 +984,15 @@
             </div>
         </div>
 
+        <!-- Recent Searches Banner -->
+        <div id="recentSearches" class="recent-searches">
+            <div class="recent-searches-header">
+                <h3>Recent Searches</h3>
+                <button class="recent-searches-clear" onclick="clearAllCache()">Clear All</button>
+            </div>
+            <div id="recentSearchesList" class="recent-searches-list"></div>
+        </div>
+
         <!-- Search Animation Panel -->
         <div class="search-animation" id="searchAnimation">
             <svg class="flight-arc" viewBox="0 0 600 120" xmlns="http://www.w3.org/2000/svg">
@@ -1143,6 +1239,26 @@
             }
         });
 
+        // Delegate click on recent search cards
+        document.addEventListener('click', function(e) {
+            var card = e.target.closest('.recent-search-card');
+            if (!card) return;
+            var cacheKey = card.dataset.cacheKey;
+            if (!cacheKey || !resultsCache[cacheKey]) return;
+            var r = resultsCache[cacheKey];
+            // Populate search fields
+            var oEl = document.getElementById('inputOrigin');
+            var dEl = document.getElementById('inputDestination');
+            oEl.value = r.search_origin || '';
+            oEl.dataset.selectedIata = r.search_origin || '';
+            dEl.value = r.destination || '';
+            dEl.dataset.selectedIata = r.destination || '';
+            if (r.depart_date) document.getElementById('inputDepart').value = r.depart_date;
+            if (r.return_date) document.getElementById('inputReturn').value = r.return_date;
+            renderResults(r, true);
+            document.getElementById('resultsPanel').scrollIntoView({ behavior: 'smooth' });
+        });
+
         /* ── End Airport Autocomplete ─────────────────────────── */
 
         var resultsCache = {};
@@ -1233,6 +1349,67 @@
 
         function makeCacheKey(origin, destination, departDate, returnDate) {
             return origin + '-' + destination + '-' + departDate + '-' + returnDate;
+        }
+
+        function formatShortDate(dateStr) {
+            if (!dateStr) return '';
+            var d = new Date(dateStr + 'T00:00:00');
+            return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        }
+
+        function getBestPrice(r) {
+            var best = (r.baseline && r.baseline.price) ? r.baseline.price : Infinity;
+            if (r.hacker_fares && r.hacker_fares.length > 0) {
+                for (var i = 0; i < r.hacker_fares.length; i++) {
+                    var t = r.hacker_fares[i].total;
+                    if (t && t < best) best = t;
+                }
+            }
+            return best === Infinity ? null : best;
+        }
+
+        function renderRecentSearches() {
+            var banner = document.getElementById('recentSearches');
+            var list = document.getElementById('recentSearchesList');
+            var entries = [];
+            for (var key in resultsCache) {
+                var r = resultsCache[key];
+                if (!r._cached_at) continue;
+                entries.push({ key: key, data: r });
+            }
+            if (entries.length === 0) {
+                banner.classList.remove('visible');
+                return;
+            }
+            entries.sort(function(a, b) {
+                return a.data._cached_at > b.data._cached_at ? -1 : 1;
+            });
+            var html = '';
+            for (var i = 0; i < entries.length; i++) {
+                var r = entries[i].data;
+                var origin = r.search_origin || entries[i].key.split('-')[0];
+                var dest = r.destination || entries[i].key.split('-')[1];
+                var dates = formatShortDate(r.depart_date) + ' – ' + formatShortDate(r.return_date);
+                var best = getBestPrice(r);
+                var priceStr = best !== null ? 'from $' + Math.round(best) : '';
+                var age = formatRelativeTime(r._cached_at);
+                html += '<div class="recent-search-card" data-cache-key="' + entries[i].key + '">';
+                html += '<div class="route">' + origin + '<span class="arrow"> → </span>' + dest + '</div>';
+                html += '<div class="dates">' + dates + '</div>';
+                if (priceStr) html += '<div class="price">' + priceStr + '</div>';
+                html += '<div class="age">' + age + '</div>';
+                html += '</div>';
+            }
+            list.innerHTML = html;
+            banner.classList.add('visible');
+        }
+
+        function clearAllCache() {
+            resultsCache = {};
+            localStorage.removeItem(LS_KEY);
+            document.getElementById('recentSearches').classList.remove('visible');
+            document.getElementById('recentSearchesList').innerHTML = '';
+            document.getElementById('resultsPanel').classList.remove('visible');
         }
 
         function rerunSearch(origin, destination, departDate, returnDate) {
@@ -1574,6 +1751,7 @@
                 results._cache_key = cacheKey;
                 resultsCache[cacheKey] = results;
                 saveToLocalStorage();
+                renderRecentSearches();
                 renderResults(results, false);
             });
 
@@ -1891,6 +2069,7 @@
             document.getElementById('inputHubAirport').dataset.selectedIata = '{{ hub_airport }}';
 
             loadFromLocalStorage();
+            renderRecentSearches();
 
             var mostRecent = null;
             var mostRecentTime = null;
