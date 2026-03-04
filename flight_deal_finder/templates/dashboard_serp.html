@@ -297,6 +297,72 @@
             width: 16px;
             height: 16px;
         }
+
+        /* Hub Selection Chips */
+        .hub-selector {
+            max-width: 900px;
+            margin: 10px auto 0;
+            text-align: center;
+        }
+        .hub-selector-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+        .hub-checkboxes {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 6px;
+        }
+        .hub-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            border: 1.5px solid #e5e7eb;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #6b7280;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            user-select: none;
+            background: #fff;
+        }
+        .hub-chip:hover {
+            border-color: #93c5fd;
+            background: #eff6ff;
+        }
+        .hub-chip.checked {
+            border-color: #2563eb;
+            background: #eff6ff;
+            color: #2563eb;
+        }
+        .hub-chip input[type="checkbox"] {
+            display: none;
+        }
+        .hub-chip .chip-check {
+            width: 14px;
+            height: 14px;
+            border-radius: 3px;
+            border: 1.5px solid #d1d5db;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            transition: all 0.15s;
+            flex-shrink: 0;
+        }
+        .hub-chip.checked .chip-check {
+            background: #2563eb;
+            border-color: #2563eb;
+            color: #fff;
+        }
+
         .btn-rerun {
             padding: 8px 20px;
             background: #2563eb;
@@ -516,6 +582,8 @@
             }
             .search-options { flex-direction: column; gap: 12px; }
             .hub-compare-fields { flex-direction: column; }
+            .hub-checkboxes { gap: 4px; }
+            .hub-chip { padding: 3px 8px; font-size: 11px; }
         }
 
         /* Live Status Log */
@@ -1178,6 +1246,22 @@
                 </label>
             </div>
 
+            <!-- Hub Selection -->
+            <div class="hub-selector" id="hubSelector">
+                <div class="hub-selector-label">Search Hubs</div>
+                <div class="hub-checkboxes" id="hubCheckboxes">
+                    {% for hub in all_hubs %}
+                    <label class="hub-chip {{ 'checked' if hub in hubs else '' }}" id="hubChip_{{ hub }}">
+                        <input type="checkbox" value="{{ hub }}"
+                               {{ 'checked' if hub in hubs else '' }}
+                               onchange="onHubToggle(this)">
+                        <span class="chip-check">{{ '&#10003;' if hub in hubs else '' }}</span>
+                        <span>{{ hub }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+
             <div class="budget-note">
                 <span id="apiCallEstimate">{{ hubs | length }} hubs &middot; ~{{ 1 + hubs|length * 2 }} API calls</span>
                 <span id="hubBudgetNote"></span>
@@ -1559,17 +1643,39 @@
             });
         }
 
-        var HUB_COUNT = {{ hubs | length }};
+        function getSelectedHubs() {
+            var checkboxes = document.querySelectorAll('#hubCheckboxes input[type="checkbox"]');
+            var selected = [];
+            for (var i = 0; i < checkboxes.length; i++) {
+                if (checkboxes[i].checked) selected.push(checkboxes[i].value);
+            }
+            return selected;
+        }
+
+        function onHubToggle(checkbox) {
+            var chip = checkbox.closest('.hub-chip');
+            if (checkbox.checked) {
+                chip.classList.add('checked');
+                chip.querySelector('.chip-check').innerHTML = '&#10003;';
+            } else {
+                chip.classList.remove('checked');
+                chip.querySelector('.chip-check').innerHTML = '';
+            }
+            updateBudgetEstimate();
+        }
 
         function toggleHubCompare() {
             updateBudgetEstimate();
         }
 
         function updateBudgetEstimate() {
-            var callsPerSearch = 1 + HUB_COUNT * 2;
+            var hubCount = getSelectedHubs().length;
+            var callsPerSearch = 1 + hubCount * 2;
             var hubCompare = document.getElementById('hubCompare').checked;
             var total = hubCompare ? callsPerSearch * 2 : callsPerSearch;
-            document.getElementById('apiCallEstimate').textContent = HUB_COUNT + ' hubs \u00b7 ~' + total + ' API calls';
+            var text = hubCount + ' hub' + (hubCount !== 1 ? 's' : '') + ' \u00b7 ~' + total + ' API call' + (total !== 1 ? 's' : '');
+            if (hubCount > 5) text += ' \u26a0\ufe0f';
+            document.getElementById('apiCallEstimate').textContent = text;
             document.getElementById('hubBudgetNote').textContent = hubCompare ? ' (x2 for hub compare)' : '';
         }
 
@@ -2022,6 +2128,7 @@
                 hub_airport: 'ORD',
                 driving_cost: 60,
                 parking_rate: 20,
+                hubs: getSelectedHubs(),
             };
         }
 

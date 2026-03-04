@@ -38,7 +38,10 @@ DESTINATION = os.getenv("DESTINATION", "ATH")
 DEPART_DATE = os.getenv("DEPART_DATE", "2026-05-22")
 RETURN_DATE = os.getenv("RETURN_DATE", "2026-05-30")
 
-# Hubs for SerpAPI (smaller list to conserve searches)
+# Full list of hub airports available for user selection in the UI
+ALL_HUBS = [h.strip() for h in os.getenv("ALL_HUBS", "JFK,EWR,ORD,IAD,ATL,YYZ,DFW,BOS,LAX,MIA").split(",") if h.strip()]
+
+# Default checked hubs (smaller list to conserve API calls)
 SERP_HUBS = [h.strip() for h in os.getenv("SERP_HUBS", "JFK,ORD,ATL").split(",") if h.strip()]
 
 # Minimum connection time (minutes) between separate tickets at a hub
@@ -155,6 +158,7 @@ def index():
         depart_date=DEPART_DATE,
         return_date=RETURN_DATE,
         hubs=SERP_HUBS,
+        all_hubs=ALL_HUBS,
         min_connection=MIN_CONNECTION_MINUTES,
         driving_cost=DRIVING_COST,
         parking_rate=PARKING_RATE_PER_DAY,
@@ -192,6 +196,19 @@ def start_search():
 
     is_hub_search = data.get("is_hub_search", False)
 
+    # Client-selected hubs (validated against ALL_HUBS whitelist)
+    client_hubs = data.get("hubs", None)
+    if client_hubs and isinstance(client_hubs, list):
+        selected_hubs = [
+            h.upper().strip() for h in client_hubs
+            if isinstance(h, str) and len(h.strip()) == 3
+            and h.strip().isalpha() and h.upper().strip() in ALL_HUBS
+        ]
+        if not selected_hubs:
+            selected_hubs = SERP_HUBS
+    else:
+        selected_hubs = SERP_HUBS
+
     search_params = {
         "origin": search_origin,
         "destination": destination,
@@ -202,7 +219,7 @@ def start_search():
         "driving_cost": driving_cost,
         "parking_rate": parking_rate,
         "is_hub_search": is_hub_search,
-        "hubs": SERP_HUBS,
+        "hubs": selected_hubs,
     }
 
     search_id = f"serp-{search_origin}-{destination}-{id(request)}"
