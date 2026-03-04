@@ -1336,6 +1336,7 @@
             <div class="results-tabs">
                 <button class="results-tab active" data-tab="direct" onclick="switchTab('direct')">Google Flights</button>
                 <button class="results-tab" data-tab="hacker" onclick="switchTab('hacker')">Hacker Fares</button>
+                <button class="results-tab" data-tab="chicago" id="tabBtnChicago" onclick="switchTab('chicago')" style="display:none">From Chicago</button>
             </div>
 
             <!-- Direct Flights Tab -->
@@ -1348,6 +1349,15 @@
                 <div id="baselineCard"></div>
                 <div id="hackerFareTable"></div>
                 <div class="warnings-section" id="warnings"></div>
+            </div>
+
+            <!-- From Chicago Tab -->
+            <div id="tab-chicago" class="tab-content">
+                <div id="chicagoLabel"></div>
+                <div id="chicagoDirectFlights"></div>
+                <div id="chicagoBaselineCard"></div>
+                <div id="chicagoHackerFareTable"></div>
+                <div class="warnings-section" id="chicagoWarnings"></div>
             </div>
         </div>
     </div>
@@ -1881,8 +1891,9 @@
             document.getElementById('tab-' + tabName).classList.add('active');
         }
 
-        function renderDirectFlights(flights, origin, destination, departDate, returnDate) {
-            var container = document.getElementById('directFlightsList');
+        function renderDirectFlights(flights, origin, destination, departDate, returnDate, targetId, groundCost) {
+            var container = document.getElementById(targetId || 'directFlightsList');
+            groundCost = groundCost || 0;
             if (!flights || flights.length === 0) {
                 container.innerHTML = '<div class="no-results">No round-trip flights found for this route.</div>';
                 return;
@@ -1956,9 +1967,14 @@
                 html += '</div>';
 
                 // Price
+                var displayPrice = groundCost > 0 ? f.price + groundCost : f.price;
                 html += '<div class="fc-price">';
-                html += '<div class="price-amount">$' + Math.round(f.price) + '</div>';
-                html += '<div class="price-type">round trip</div>';
+                html += '<div class="price-amount">$' + Math.round(displayPrice) + '</div>';
+                if (groundCost > 0) {
+                    html += '<div class="price-type">incl. $' + Math.round(groundCost) + ' ground</div>';
+                } else {
+                    html += '<div class="price-type">round trip</div>';
+                }
                 html += '</div>';
 
                 html += '</a>';
@@ -2144,6 +2160,7 @@
         }
 
         var pendingHubSearch = null;
+        var hubSearchResults = null;
 
         function runSearch() {
             var params = getSearchParams();
@@ -2169,6 +2186,12 @@
                 document.getElementById("searchAnimation").classList.remove("visible");
                 document.getElementById("errorBanner").classList.remove("visible");
                 renderResults(resultsCache[cacheKey], true);
+                // If hub compare is pending, also load/run Chicago results
+                if (pendingHubSearch) {
+                    var hubParams = pendingHubSearch;
+                    pendingHubSearch = null;
+                    startHubSearch(hubParams);
+                }
                 return;
             }
 
@@ -2192,6 +2215,14 @@
             document.getElementById("baselineCard").innerHTML = "";
             document.getElementById("hackerFareTable").innerHTML = "";
             document.getElementById("warnings").innerHTML = "";
+            // Clear Chicago tab
+            document.getElementById("tabBtnChicago").style.display = "none";
+            document.getElementById("chicagoLabel").innerHTML = "";
+            document.getElementById("chicagoDirectFlights").innerHTML = "";
+            document.getElementById("chicagoBaselineCard").innerHTML = "";
+            document.getElementById("chicagoHackerFareTable").innerHTML = "";
+            document.getElementById("chicagoWarnings").innerHTML = "";
+            hubSearchResults = null;
 
             addLog("Starting search: " + params.origin + " \u2192 " + params.destination + "...", "searching");
 
@@ -2280,16 +2311,221 @@
                     var hubParams = pendingHubSearch;
                     pendingHubSearch = null;
                     addLog("Starting hub comparison search from " + hubParams.origin + "...", "searching");
-                    startSearch(hubParams, false);
+                    startHubSearch(hubParams);
                 }
             });
+        }
+
+        function startHubSearch(params) {
+            var cacheKey = makeCacheKey(params.origin, params.destination, params.depart_date, params.return_date);
+
+            if (resultsCache[cacheKey]) {
+                renderChicagoTab(resultsCache[cacheKey]);
+                return;
+            }
+
+            setButtonsDisabled(true);
+            document.getElementById("searchAnimation").classList.add("visible");
+
+            fetch('/search', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(params)
+            })
+            .then(function(resp) { return resp.json(); })
+            .then(function(data) {
+                if (data.error) {
+                    addLog(data.error, "error");
+                    setButtonsDisabled(false);
+                    return;
+                }
+                var evtSource = new EventSource('/stream/' + data.search_id);
+
+                evtSource.addEventListener("status", function(e) {
+                    var d = JSON.parse(e.data);
+                    addLog(d.message, "searching");
+                });
+
+                evtSource.addEventListener("results", function(e) {
+                    var results = JSON.parse(e.data);
+                    results._cached_at = results.searched_at || new Date().toISOString();
+                    results._cache_key = cacheKey;
+                    resultsCache[cacheKey] = results;
+                    hubSearchResults = results;
+                    saveToLocalStorage();
+                    renderChicagoTab(results);
+                });
+
+                evtSource.addEventListener("done", function(e) {
+                    evtSource.close();
+                    setTimeout(function() {
+                        document.getElementById("searchAnimation").classList.remove("visible");
+                    }, 1000);
+                    setButtonsDisabled(false);
+                });
+
+                evtSource.addEventListener("error", function(e) {
+                    try {
+                        var d = JSON.parse(e.data);
+                        addLog(d.message, "error");
+                    } catch(err) {}
+                });
+
+                evtSource.onerror = function() { evtSource.close(); setButtonsDisabled(false); };
+            })
+            .catch(function(err) {
+                addLog("Hub search failed: " + err, "error");
+                setButtonsDisabled(false);
+            });
+        }
+
+        function renderChicagoTab(r) {
+            // Show the Chicago tab button
+            document.getElementById('tabBtnChicago').style.display = '';
+            hubSearchResults = r;
+
+            // Ground cost label
+            var labelHtml = '<div class="origin-label">';
+            labelHtml += '<span class="airport">' + r.search_origin + ' (Drive to Chicago)</span>';
+            if (r.ground_cost > 0) {
+                labelHtml += '<span class="ground-note">Includes $' + r.ground_cost.toFixed(2) + ' ground transit (driving + parking) in all totals</span>';
+            }
+            labelHtml += '</div>';
+            document.getElementById('chicagoLabel').innerHTML = labelHtml;
+
+            // Google Flights cards with ground cost
+            var gc = r.ground_cost || 0;
+            renderDirectFlights(
+                r.baseline_flights || (r.baseline ? [r.baseline] : []),
+                r.search_origin, r.destination, r.depart_date, r.return_date,
+                'chicagoDirectFlights', gc
+            );
+
+            // Baseline card
+            var baseHtml = "";
+            if (r.baseline) {
+                var b = r.baseline;
+                var bStops = stopsLabel(b.stops, b.connections);
+                var displayPrice = gc > 0 ? b.price + gc : b.price;
+                var breakdownHtml = gc > 0 ? '<div class="price-breakdown">Flight: $' + b.price.toFixed(2) + ' + Ground: $' + gc.toFixed(2) + '</div>' : '';
+                var baseGfUrl = googleFlightsUrl(r.search_origin, r.destination, r.depart_date, r.return_date);
+                var logoHtml = airlineLogoHtml(b.airline_logos, b.airlines);
+                var layoverHtml = formatLayoverDetails(b.layover_details);
+
+                baseHtml =
+                    '<div class="baseline-card">' +
+                        '<div>' +
+                            '<div class="label">Baseline from ' + r.search_origin + '</div>' +
+                            '<div class="route">' + r.search_origin + ' &#8594; ' + r.destination + ' (single ticket)</div>' +
+                            layoverHtml +
+                            '<div style="margin-top:8px;">' +
+                                '<a class="gf-link gf-link-baseline" href="' + baseGfUrl + '" target="_blank" rel="noopener">View on Google Flights</a>' +
+                            '</div>' +
+                        '</div>' +
+                        '<div>' +
+                            '<div class="price">$' + displayPrice.toFixed(2) + '</div>' +
+                            breakdownHtml +
+                            '<div class="detail">' + logoHtml + b.carrier_display + ' | ' + bStops + ' | ' + formatMinutes(b.total_duration) + '</div>' +
+                        '</div>' +
+                    '</div>';
+            }
+            document.getElementById('chicagoBaselineCard').innerHTML = baseHtml;
+
+            // Hacker fare table
+            var tableHtml = "";
+            if (r.hacker_fares && r.hacker_fares.length > 0) {
+                tableHtml =
+                    '<div class="hf-table-wrap">' +
+                        '<div class="hf-table-header"><h3>Hacker Fare Routes from ' + r.search_origin + '</h3></div>' +
+                        '<table class="hf-table">' +
+                            '<thead><tr>' +
+                                '<th>#</th><th>Hub</th><th>Positioning RT</th><th>International RT</th>' +
+                                '<th class="right">Total (incl. ground)</th><th class="right">vs Baseline</th>' +
+                            '</tr></thead><tbody>';
+
+                for (var i = 0; i < r.hacker_fares.length; i++) {
+                    var hf = r.hacker_fares[i];
+                    var pos = hf.positioning;
+                    var intl = hf.international;
+                    var rowClass = (i === 0) ? ' class="best-row"' : '';
+                    var rankClass = hf.rank === 1 ? "rank-1" : hf.rank === 2 ? "rank-2" : hf.rank === 3 ? "rank-3" : "rank-other";
+
+                    var savingsHtml = "";
+                    if (hf.savings_vs_baseline !== null && hf.savings_vs_baseline !== undefined) {
+                        if (hf.savings_vs_baseline > 0) savingsHtml = '<div class="savings-badge savings-positive">Save $' + hf.savings_vs_baseline.toFixed(2) + '</div>';
+                        else if (hf.savings_vs_baseline < 0) savingsHtml = '<div class="savings-badge savings-negative">+$' + Math.abs(hf.savings_vs_baseline).toFixed(2) + ' more</div>';
+                        else savingsHtml = '<div class="savings-badge savings-neutral">Same price</div>';
+                    } else {
+                        savingsHtml = '<span style="color:#64748b">N/A</span>';
+                    }
+
+                    var groundNote = gc > 0 ? '<div class="total-ground">Flights: $' + hf.total.toFixed(2) + ' + Ground: $' + gc.toFixed(2) + '</div>' : '';
+                    var posGfUrl = googleFlightsUrl(r.search_origin, hf.hub, r.depart_date);
+                    var intlGfUrl = googleFlightsUrl(hf.hub, r.destination, r.depart_date);
+                    var posLogoHtml = airlineLogoHtml(pos.airline_logos, pos.airlines);
+                    var intlLogoHtml = airlineLogoHtml(intl.airline_logos, intl.airlines);
+
+                    tableHtml +=
+                        '<tr' + rowClass + '>' +
+                            '<td><span class="rank-badge ' + rankClass + '">' + hf.rank + '</span></td>' +
+                            '<td><span class="hub-name">' + hf.hub + '</span></td>' +
+                            '<td>' +
+                                '<div class="leg-price">' + posLogoHtml + '$' + pos.price.toFixed(2) + ' RT</div>' +
+                                '<div class="leg-detail">' + pos.carrier_display + ' | ' + stopsLabel(pos.stops, pos.connections) + '</div>' +
+                                '<div class="leg-detail">' + r.search_origin + ' <-> ' + hf.hub + '</div>' +
+                                formatLayoverDetails(pos.layover_details) +
+                                '<a class="gf-link" href="' + posGfUrl + '" target="_blank" rel="noopener">Google Flights</a>' +
+                            '</td>' +
+                            '<td>' +
+                                '<div class="leg-price">' + intlLogoHtml + '$' + intl.price.toFixed(2) + ' RT</div>' +
+                                '<div class="leg-detail">' + intl.carrier_display + ' | ' + stopsLabel(intl.stops, intl.connections) + '</div>' +
+                                '<div class="leg-detail">' + hf.hub + ' <-> ' + r.destination + '</div>' +
+                                formatLayoverDetails(intl.layover_details) +
+                                '<a class="gf-link" href="' + intlGfUrl + '" target="_blank" rel="noopener">Google Flights</a>' +
+                            '</td>' +
+                            '<td class="right">' +
+                                '<div class="total-price">$' + hf.total_with_ground.toFixed(2) + '</div>' +
+                                '<div class="leg-detail">Pos: $' + hf.positioning_price.toFixed(2) + ' | Intl: $' + hf.international_price.toFixed(2) + '</div>' +
+                                groundNote +
+                            '</td>' +
+                            '<td class="right">' + savingsHtml + '</td>' +
+                        '</tr>';
+                }
+                tableHtml += '</tbody></table></div>';
+            } else {
+                tableHtml = '<div class="hf-table-wrap"><div class="no-results">No valid hacker fare routes found from ' + r.search_origin + '.</div></div>';
+            }
+            document.getElementById('chicagoHackerFareTable').innerHTML = tableHtml;
+
+            // Warnings
+            var warnHtml = "";
+            if (r.global_warnings && r.global_warnings.length > 0) {
+                for (var w = 0; w < r.global_warnings.length; w++) {
+                    warnHtml += '<div class="warning">' + r.global_warnings[w] + '</div>';
+                }
+            }
+            document.getElementById('chicagoWarnings').innerHTML = warnHtml;
+
+            // Switch to the Chicago tab
+            switchTab('chicago');
         }
 
         function renderResults(r, fromCache) {
             document.getElementById("resultsPanel").classList.add("visible");
             lastRenderedOrigin = r._cache_key || r.search_origin;
 
-            // Reset to Direct Flights tab
+            // Hide Chicago tab on fresh MKE results (unless we have hub results)
+            if (!fromCache) {
+                hubSearchResults = null;
+                document.getElementById('tabBtnChicago').style.display = 'none';
+                document.getElementById('chicagoLabel').innerHTML = '';
+                document.getElementById('chicagoDirectFlights').innerHTML = '';
+                document.getElementById('chicagoBaselineCard').innerHTML = '';
+                document.getElementById('chicagoHackerFareTable').innerHTML = '';
+                document.getElementById('chicagoWarnings').innerHTML = '';
+            }
+
+            // Reset to Google Flights tab
             switchTab('direct');
 
             // Render Direct Flights tab
