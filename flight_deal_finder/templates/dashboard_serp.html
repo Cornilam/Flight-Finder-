@@ -404,6 +404,95 @@
             color: #9ca3af;
         }
 
+        /* Community Deals Banner */
+        .community-deals {
+            max-width: 900px;
+            margin: -8px auto 24px;
+            display: none;
+        }
+        .community-deals.visible { display: block; }
+        .community-deals-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 0 4px;
+        }
+        .community-deals-header h3 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #6b7280;
+        }
+        .community-deals-header .subtitle {
+            font-size: 12px;
+            color: #9ca3af;
+            font-weight: 400;
+            margin-left: 8px;
+        }
+        .community-deals-list {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding-bottom: 6px;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+        }
+        .community-deals-list::-webkit-scrollbar {
+            height: 4px;
+        }
+        .community-deals-list::-webkit-scrollbar-thumb {
+            background: #d1d5db;
+            border-radius: 4px;
+        }
+        .community-deal-card {
+            flex: 0 0 200px;
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 14px 16px;
+            cursor: pointer;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .community-deal-card:hover {
+            border-color: #7c3aed;
+            box-shadow: 0 2px 8px rgba(124, 58, 237, 0.12);
+        }
+        .community-deal-card .route {
+            font-size: 15px;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 4px;
+        }
+        .community-deal-card .route .arrow {
+            color: #9ca3af;
+            margin: 0 2px;
+        }
+        .community-deal-card .dates {
+            font-size: 12px;
+            color: #6b7280;
+            margin-bottom: 6px;
+        }
+        .community-deal-card .price {
+            font-size: 14px;
+            font-weight: 700;
+            color: #059669;
+            margin-bottom: 2px;
+        }
+        .community-deal-card .savings {
+            font-size: 11px;
+            font-weight: 600;
+            color: #7c3aed;
+            margin-bottom: 2px;
+        }
+        .community-deal-card .hub-label {
+            font-size: 11px;
+            color: #9ca3af;
+        }
+        .community-deal-card .age {
+            font-size: 11px;
+            color: #9ca3af;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .search-fields {
@@ -590,6 +679,169 @@
         .status-log .msg.error { color: #dc2626; }
         .status-log .msg.searching { color: #2563eb; }
         .status-log .msg.done { color: #7c3aed; }
+
+        /* Results Tabs */
+        .results-tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        .results-tab {
+            padding: 12px 24px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #6b7280;
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            cursor: pointer;
+            transition: color 0.2s, border-color 0.2s;
+        }
+        .results-tab:hover {
+            color: #374151;
+        }
+        .results-tab.active {
+            color: #2563eb;
+            font-weight: 600;
+            border-bottom-color: #2563eb;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Google Flights-style Flight Cards */
+        .flight-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .flight-card {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+        }
+        .flight-card:hover {
+            border-color: #2563eb;
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.10);
+        }
+        .flight-card.cheapest {
+            border-color: #10b981;
+            background: rgba(16, 185, 129, 0.03);
+        }
+        .flight-card.cheapest:hover {
+            border-color: #059669;
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.15);
+        }
+        .fc-airline-logo {
+            width: 32px;
+            height: 32px;
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
+        .fc-times {
+            min-width: 180px;
+        }
+        .fc-times .time-range {
+            font-size: 16px;
+            font-weight: 700;
+            color: #111827;
+        }
+        .fc-times .route-airports {
+            font-size: 12px;
+            color: #9ca3af;
+            margin-top: 2px;
+        }
+        .fc-carrier {
+            min-width: 120px;
+            font-size: 13px;
+            color: #6b7280;
+        }
+        .fc-duration {
+            min-width: 70px;
+            text-align: center;
+        }
+        .fc-duration .dur-time {
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+        }
+        .fc-duration .dur-label {
+            font-size: 11px;
+            color: #9ca3af;
+        }
+        .fc-stops {
+            min-width: 100px;
+        }
+        .fc-stops .stops-label {
+            font-size: 13px;
+            color: #374151;
+        }
+        .fc-stops .stops-label.nonstop {
+            color: #059669;
+            font-weight: 600;
+        }
+        .fc-stops .stops-airports {
+            font-size: 11px;
+            color: #9ca3af;
+        }
+        .fc-price {
+            margin-left: auto;
+            text-align: right;
+            flex-shrink: 0;
+        }
+        .fc-price .price-amount {
+            font-size: 18px;
+            font-weight: 700;
+            color: #111827;
+        }
+        .fc-price .price-type {
+            font-size: 11px;
+            color: #9ca3af;
+        }
+        .fc-badge {
+            display: inline-block;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .fc-badge-cheapest {
+            background: rgba(16, 185, 129, 0.1);
+            color: #059669;
+        }
+        .fc-layover-detail {
+            font-size: 11px;
+            color: #9ca3af;
+            margin-top: 2px;
+        }
+
+        @media (max-width: 768px) {
+            .flight-card {
+                flex-wrap: wrap;
+                gap: 12px;
+            }
+            .fc-times { min-width: unset; flex: 1; }
+            .fc-carrier { min-width: unset; }
+            .fc-duration { min-width: unset; }
+            .fc-stops { min-width: unset; }
+            .fc-price { margin-left: 0; width: 100%; text-align: left; }
+            .results-tab { padding: 10px 16px; font-size: 13px; }
+        }
 
         /* Results */
         .results-panel { display: none; }
@@ -892,7 +1144,8 @@
                 <!-- Depart Date -->
                 <div class="search-field">
                     <label for="inputDepart">Depart</label>
-                    <input type="date" id="inputDepart" value="{{ depart_date }}" class="date-input">
+                    <input type="date" id="inputDepart" value="{{ depart_date }}" class="date-input"
+                           onchange="onDepartDateChange()">
                 </div>
 
                 <div class="search-field-divider"></div>
@@ -900,7 +1153,8 @@
                 <!-- Return Date -->
                 <div class="search-field">
                     <label for="inputReturn">Return</label>
-                    <input type="date" id="inputReturn" value="{{ return_date }}" class="date-input">
+                    <input type="date" id="inputReturn" value="{{ return_date }}" class="date-input"
+                           min="{{ depart_date }}">
                 </div>
 
                 <!-- Search Button -->
@@ -928,6 +1182,14 @@
                 <span id="apiCallEstimate">{{ hubs | length }} hubs &middot; ~{{ 1 + hubs|length * 2 }} API calls</span>
                 <span id="hubBudgetNote"></span>
             </div>
+        </div>
+
+        <!-- Community Deals Banner -->
+        <div id="communityDeals" class="community-deals">
+            <div class="community-deals-header">
+                <h3>Community Deals <span class="subtitle">Flights found by other travelers</span></h3>
+            </div>
+            <div id="communityDealsList" class="community-deals-list"></div>
         </div>
 
         <!-- Recent Searches Banner -->
@@ -985,9 +1247,24 @@
         <div class="results-panel" id="resultsPanel">
             <div id="originLabel"></div>
             <div id="priceInsights"></div>
-            <div id="baselineCard"></div>
-            <div id="hackerFareTable"></div>
-            <div class="warnings-section" id="warnings"></div>
+
+            <!-- Tab Bar -->
+            <div class="results-tabs">
+                <button class="results-tab active" data-tab="direct" onclick="switchTab('direct')">Direct Flights</button>
+                <button class="results-tab" data-tab="hacker" onclick="switchTab('hacker')">Hacker Fares</button>
+            </div>
+
+            <!-- Direct Flights Tab -->
+            <div id="tab-direct" class="tab-content active">
+                <div id="directFlightsList"></div>
+            </div>
+
+            <!-- Hacker Fares Tab -->
+            <div id="tab-hacker" class="tab-content">
+                <div id="baselineCard"></div>
+                <div id="hackerFareTable"></div>
+                <div class="warnings-section" id="warnings"></div>
+            </div>
         </div>
     </div>
 
@@ -1205,6 +1482,22 @@
             document.getElementById('resultsPanel').scrollIntoView({ behavior: 'smooth' });
         });
 
+        // Delegate click on community deal cards — populate search fields
+        document.addEventListener('click', function(e) {
+            var card = e.target.closest('.community-deal-card');
+            if (!card) return;
+            var oEl = document.getElementById('inputOrigin');
+            var dEl = document.getElementById('inputDestination');
+            oEl.value = card.dataset.origin || '';
+            oEl.dataset.selectedIata = card.dataset.origin || '';
+            dEl.value = card.dataset.dest || '';
+            dEl.dataset.selectedIata = card.dataset.dest || '';
+            if (card.dataset.depart) document.getElementById('inputDepart').value = card.dataset.depart;
+            if (card.dataset.return) document.getElementById('inputReturn').value = card.dataset.return;
+            // Scroll to search bar so user can hit search
+            document.querySelector('.search-banner').scrollIntoView({ behavior: 'smooth' });
+        });
+
         /* ── End Airport Autocomplete ─────────────────────────── */
 
         var resultsCache = {};
@@ -1278,6 +1571,16 @@
             var total = hubCompare ? callsPerSearch * 2 : callsPerSearch;
             document.getElementById('apiCallEstimate').textContent = HUB_COUNT + ' hubs \u00b7 ~' + total + ' API calls';
             document.getElementById('hubBudgetNote').textContent = hubCompare ? ' (x2 for hub compare)' : '';
+        }
+
+        function onDepartDateChange() {
+            var depart = document.getElementById('inputDepart').value;
+            var returnEl = document.getElementById('inputReturn');
+            returnEl.min = depart;
+            // If return date is now before depart, clear it
+            if (returnEl.value && returnEl.value <= depart) {
+                returnEl.value = '';
+            }
         }
 
         function swapAirports() {
@@ -1356,6 +1659,48 @@
             document.getElementById('resultsPanel').classList.remove('visible');
         }
 
+        function fetchCommunityDeals() {
+            fetch('/api/deals')
+                .then(function(resp) { return resp.json(); })
+                .then(function(deals) {
+                    renderCommunityDeals(deals);
+                })
+                .catch(function(err) {
+                    console.log('Could not load community deals:', err);
+                });
+        }
+
+        function renderCommunityDeals(deals) {
+            var banner = document.getElementById('communityDeals');
+            var list = document.getElementById('communityDealsList');
+            if (!deals || deals.length === 0) {
+                banner.classList.remove('visible');
+                return;
+            }
+            var html = '';
+            for (var i = 0; i < deals.length; i++) {
+                var d = deals[i];
+                var dates = formatShortDate(d.depart_date) + ' – ' + formatShortDate(d.return_date);
+                var priceStr = d.best_price ? 'from $' + Math.round(d.best_price) : '';
+                var savingsStr = '';
+                if (d.savings && d.savings > 0) {
+                    savingsStr = 'Save $' + Math.round(d.savings) + ' vs direct';
+                }
+                var hubStr = d.best_hub ? 'via ' + d.best_hub : '';
+                var age = formatRelativeTime(d.searched_at);
+                html += '<div class="community-deal-card" data-origin="' + d.origin + '" data-dest="' + d.destination + '" data-depart="' + d.depart_date + '" data-return="' + d.return_date + '">';
+                html += '<div class="route">' + d.origin + '<span class="arrow"> → </span>' + d.destination + '</div>';
+                html += '<div class="dates">' + dates + '</div>';
+                if (priceStr) html += '<div class="price">' + priceStr + '</div>';
+                if (savingsStr) html += '<div class="savings">' + savingsStr + '</div>';
+                if (hubStr) html += '<div class="hub-label">' + hubStr + '</div>';
+                html += '<div class="age">' + age + '</div>';
+                html += '</div>';
+            }
+            list.innerHTML = html;
+            banner.classList.add('visible');
+        }
+
         function rerunSearch(origin, destination, departDate, returnDate) {
             var params = {
                 origin: origin,
@@ -1404,6 +1749,105 @@
             var q = "Flights from " + from + " to " + to + " on " + departDate;
             if (returnDate) q += " return " + returnDate;
             return "https://www.google.com/travel/flights?q=" + encodeURIComponent(q);
+        }
+
+        function switchTab(tabName) {
+            var tabs = document.querySelectorAll('.results-tab');
+            for (var i = 0; i < tabs.length; i++) {
+                tabs[i].classList.remove('active');
+            }
+            document.querySelector('.results-tab[data-tab="' + tabName + '"]').classList.add('active');
+            var contents = document.querySelectorAll('.tab-content');
+            for (var j = 0; j < contents.length; j++) {
+                contents[j].classList.remove('active');
+            }
+            document.getElementById('tab-' + tabName).classList.add('active');
+        }
+
+        function renderDirectFlights(flights, origin, destination, departDate, returnDate) {
+            var container = document.getElementById('directFlightsList');
+            if (!flights || flights.length === 0) {
+                container.innerHTML = '<div class="no-results">No direct round-trip flights found for this route.</div>';
+                return;
+            }
+            var cheapestPrice = flights[0].price;
+            var gfUrl = googleFlightsUrl(origin, destination, departDate, returnDate);
+            var html = '<div class="flight-cards">';
+            for (var i = 0; i < flights.length; i++) {
+                var f = flights[i];
+                var isCheapest = (i === 0);
+                var cardClass = 'flight-card' + (isCheapest ? ' cheapest' : '');
+
+                // Airline logo
+                var logoHtml = '';
+                if (f.airline_logos && f.airline_logos.length > 0) {
+                    logoHtml = '<img class="fc-airline-logo" src="' + f.airline_logos[0] + '" alt="' + (f.airlines[0] || '') + '">';
+                }
+
+                // Times
+                var depTime = formatTime(f.departure_time);
+                var arrTime = formatTime(f.arrival_time);
+
+                // Stops
+                var stopsText = stopsLabel(f.stops, f.connections);
+                var stopsClass = f.stops === 0 ? 'stops-label nonstop' : 'stops-label';
+                var stopsAirports = '';
+                if (f.connections && f.connections.length > 0) {
+                    stopsAirports = f.connections.join(', ');
+                }
+
+                // Layover summary
+                var layoverSummary = '';
+                if (f.layover_details && f.layover_details.length > 0) {
+                    var parts = [];
+                    for (var k = 0; k < f.layover_details.length; k++) {
+                        var ld = f.layover_details[k];
+                        parts.push(formatMinutes(ld.minutes) + ' in ' + ld.airport);
+                    }
+                    layoverSummary = parts.join(' · ');
+                }
+
+                // Badge
+                var badgeHtml = '';
+                if (isCheapest) {
+                    badgeHtml = '<span class="fc-badge fc-badge-cheapest">Cheapest</span> ';
+                }
+
+                html += '<a class="' + cardClass + '" href="' + gfUrl + '" target="_blank" rel="noopener">';
+                html += logoHtml;
+
+                // Times column
+                html += '<div class="fc-times">';
+                html += '<div class="time-range">' + depTime + ' – ' + arrTime + '</div>';
+                html += '<div class="route-airports">' + (f.departure_id || origin) + ' → ' + (f.arrival_id || destination) + '</div>';
+                html += '</div>';
+
+                // Carrier
+                html += '<div class="fc-carrier">' + badgeHtml + f.carrier_display + '</div>';
+
+                // Duration
+                html += '<div class="fc-duration">';
+                html += '<div class="dur-time">' + formatMinutes(f.total_duration) + '</div>';
+                html += '</div>';
+
+                // Stops
+                html += '<div class="fc-stops">';
+                html += '<div class="' + stopsClass + '">' + stopsText + '</div>';
+                if (layoverSummary) {
+                    html += '<div class="fc-layover-detail">' + layoverSummary + '</div>';
+                }
+                html += '</div>';
+
+                // Price
+                html += '<div class="fc-price">';
+                html += '<div class="price-amount">$' + Math.round(f.price) + '</div>';
+                html += '<div class="price-type">round trip</div>';
+                html += '</div>';
+
+                html += '</a>';
+            }
+            html += '</div>';
+            container.innerHTML = html;
         }
 
         function formatLayoverDetails(details) {
@@ -1626,6 +2070,7 @@
             document.getElementById("errorBanner").classList.remove("visible");
             document.getElementById("originLabel").innerHTML = "";
             document.getElementById("priceInsights").innerHTML = "";
+            document.getElementById("directFlightsList").innerHTML = "";
             document.getElementById("baselineCard").innerHTML = "";
             document.getElementById("hackerFareTable").innerHTML = "";
             document.getElementById("warnings").innerHTML = "";
@@ -1695,6 +2140,7 @@
                 resultsCache[cacheKey] = results;
                 saveToLocalStorage();
                 renderRecentSearches();
+                fetchCommunityDeals();
                 renderResults(results, false);
             });
 
@@ -1724,6 +2170,18 @@
         function renderResults(r, fromCache) {
             document.getElementById("resultsPanel").classList.add("visible");
             lastRenderedOrigin = r._cache_key || r.search_origin;
+
+            // Reset to Direct Flights tab
+            switchTab('direct');
+
+            // Render Direct Flights tab
+            renderDirectFlights(
+                r.baseline_flights || (r.baseline ? [r.baseline] : []),
+                r.search_origin,
+                r.destination,
+                r.depart_date,
+                r.return_date
+            );
 
             // Origin label
             var labelHtml = '<div class="origin-label">';
@@ -1939,6 +2397,7 @@
 
             loadFromLocalStorage();
             renderRecentSearches();
+            fetchCommunityDeals();
 
             var mostRecent = null;
             var mostRecentTime = null;

@@ -13,6 +13,7 @@ import json
 import time
 import queue
 import threading
+from pathlib import Path
 from datetime import datetime
 
 from flask import Flask, render_template, request, jsonify, Response
@@ -59,6 +60,85 @@ app.config["TEMPLATES_AUTO_RELOAD"] = True
 
 # Active search streams
 active_searches = {}
+
+# ---------------------------------------------------------------------------
+# Community Deals — shared across all users
+# ---------------------------------------------------------------------------
+
+COMMUNITY_DEALS_FILE = Path(__file__).parent / "cache" / "community_deals.json"
+
+
+def load_community_deals():
+    """Load all community deals from JSON file on disk."""
+    if not COMMUNITY_DEALS_FILE.exists():
+        return []
+    try:
+        with open(COMMUNITY_DEALS_FILE, "r") as f:
+            return json.load(f)
+    except (json.JSONDecodeError, IOError):
+        return []
+
+
+def save_community_deal(results):
+    """
+    Save a deal summary from a completed search.
+    Deduplicates by origin-destination-depart_date-return_date:
+    if the same route+dates already exists, update it instead of adding.
+    """
+    baseline_price = results.get("baseline", {}).get("price") if results.get("baseline") else None
+    best_hacker = None
+    best_hub = None
+    if results.get("hacker_fares"):
+        top = results["hacker_fares"][0]  # already sorted by price
+        best_hacker = top.get("total")
+        best_hub = top.get("hub")
+
+    # Use the cheapest option as the "best price"
+    prices = [p for p in [baseline_price, best_hacker] if p is not None]
+    if not prices:
+        return  # nothing to save
+
+    best_price = min(prices)
+    savings = None
+    if baseline_price and best_hacker and best_hacker < baseline_price:
+        savings = round(baseline_price - best_hacker, 2)
+
+    deal = {
+        "origin": results.get("search_origin", ""),
+        "destination": results.get("destination", ""),
+        "depart_date": results.get("depart_date", ""),
+        "return_date": results.get("return_date", ""),
+        "best_price": round(best_price, 2),
+        "baseline_price": round(baseline_price, 2) if baseline_price else None,
+        "best_hub": best_hub,
+        "savings": savings,
+        "searched_at": results.get("searched_at", datetime.now().isoformat()),
+    }
+
+    # Dedup key
+    dedup_key = f"{deal['origin']}-{deal['destination']}-{deal['depart_date']}-{deal['return_date']}"
+
+    deals = load_community_deals()
+
+    # Check for existing entry with same route+dates
+    found = False
+    for i, existing in enumerate(deals):
+        existing_key = f"{existing['origin']}-{existing['destination']}-{existing['depart_date']}-{existing['return_date']}"
+        if existing_key == dedup_key:
+            deals[i] = deal  # update with fresh data
+            found = True
+            break
+
+    if not found:
+        deals.append(deal)
+
+    # Persist
+    try:
+        COMMUNITY_DEALS_FILE.parent.mkdir(parents=True, exist_ok=True)
+        with open(COMMUNITY_DEALS_FILE, "w") as f:
+            json.dump(deals, f, indent=2)
+    except IOError as e:
+        print(f"  [WARNING] Could not save community deal: {e}")
 
 
 # ---------------------------------------------------------------------------
@@ -176,6 +256,14 @@ def clear_server_cache():
     return jsonify({"status": "ok"})
 
 
+@app.route("/api/deals")
+def api_deals():
+    """Return all community deals sorted by most recent first."""
+    deals = load_community_deals()
+    deals.sort(key=lambda d: d.get("searched_at", ""), reverse=True)
+    return jsonify(deals)
+
+
 # ---------------------------------------------------------------------------
 # Hacker Fare Search Pipeline
 # ---------------------------------------------------------------------------
@@ -250,35 +338,42 @@ def run_hacker_fare_search(q, params):
         })
 
         baseline_results = search_round_trip(
-            search_origin, destination, depart_date, return_date, max_results=3,
+            search_origin, destination, depart_date, return_date, max_results=5,
         )
 
         baseline = None
+        baseline_flights = []
         if baseline_results:
-            b = baseline_results[0]
-            baseline = {
-                "price": b["price"],
-                "carrier_display": b["carrier_display"],
-                "flight_number": b["flight_number"],
-                "airlines": b["airlines"],
-                "airline_logos": b["airline_logos"],
-                "stops": b["stops"],
-                "total_duration": b["total_duration"],
-                "layover_details": b["layover_details"],
-                "connections": b["connections"],
-                "departure_time": b["departure_time"],
-                "arrival_time": b["arrival_time"],
-                "segments": b["segments"],
-                "price_insights": b.get("price_insights", {}),
-                "flight_type": b["flight_type"],
-            }
-            if is_hub_search:
-                baseline["ground_cost"] = ground_cost
-                baseline["total_with_ground"] = b["price"] + ground_cost
+            # Build full list of baseline flights for Direct Flights tab
+            for bf in baseline_results:
+                flight_entry = {
+                    "price": bf["price"],
+                    "carrier_display": bf["carrier_display"],
+                    "flight_number": bf["flight_number"],
+                    "airlines": bf["airlines"],
+                    "airline_logos": bf["airline_logos"],
+                    "stops": bf["stops"],
+                    "total_duration": bf["total_duration"],
+                    "layover_details": bf["layover_details"],
+                    "connections": bf["connections"],
+                    "departure_time": bf["departure_time"],
+                    "arrival_time": bf["arrival_time"],
+                    "segments": bf["segments"],
+                    "price_insights": bf.get("price_insights", {}),
+                    "flight_type": bf["flight_type"],
+                }
+                if is_hub_search:
+                    flight_entry["ground_cost"] = ground_cost
+                    flight_entry["total_with_ground"] = bf["price"] + ground_cost
+                baseline_flights.append(flight_entry)
 
+            # Keep single cheapest as "baseline" for backward compat
+            baseline = baseline_flights[0]
+
+            b = baseline_results[0]
             emit(q, "status", {
                 "step": "baseline_done",
-                "message": f"Baseline: ${b['price']:.2f} ({b['carrier_display']}, {b['stops']} stop{'s' if b['stops'] != 1 else ''})",
+                "message": f"Baseline: ${b['price']:.2f} ({b['carrier_display']}, {b['stops']} stop{'s' if b['stops'] != 1 else ''}) — {len(baseline_results)} options found",
             })
         else:
             emit(q, "status", {
@@ -472,6 +567,7 @@ def run_hacker_fare_search(q, params):
             "hubs_searched": active_hubs,
             "min_connection_minutes": MIN_CONNECTION_MINUTES,
             "baseline": baseline,
+            "baseline_flights": baseline_flights,
             "hacker_fares": unique_fares,
             "global_warnings": global_warnings,
             "price_insights": price_insights,
@@ -483,6 +579,13 @@ def run_hacker_fare_search(q, params):
         }
 
         emit(q, "results", results)
+
+        # Save to community deals (shared across all users)
+        try:
+            save_community_deal(results)
+        except Exception as e:
+            print(f"  [WARNING] Could not save community deal: {e}")
+
         emit(q, "status", {"step": "done", "message": "Search complete."})
         emit(q, "done", {})
 
