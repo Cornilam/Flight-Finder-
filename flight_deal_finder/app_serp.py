@@ -38,7 +38,7 @@ DEPART_DATE = os.getenv("DEPART_DATE", "2026-05-22")
 RETURN_DATE = os.getenv("RETURN_DATE", "2026-05-30")
 
 # Hubs for SerpAPI (smaller list to conserve searches)
-SERP_HUBS = [h.strip() for h in os.getenv("SERP_HUBS", "JFK,EWR,ORD,IAD,ATL,YYZ,DFW,BOS").split(",") if h.strip()]
+SERP_HUBS = [h.strip() for h in os.getenv("SERP_HUBS", "JFK,ORD,ATL").split(",") if h.strip()]
 
 # Minimum connection time (minutes) between separate tickets at a hub
 MIN_CONNECTION_MINUTES = int(os.getenv("MIN_CONNECTION_MINUTES", "120"))
@@ -292,123 +292,92 @@ def run_hacker_fare_search(q, params):
             price_insights = baseline_results[0].get("price_insights", {})
 
         # ---------------------------------------------------------------
-        # Step 2: Search positioning flights (origin -> each hub)
+        # Step 2: Search positioning round-trips (origin <-> each hub)
         # ---------------------------------------------------------------
-        domestic_offers = {}
+        positioning_offers = {}
         for hi, hub in enumerate(active_hubs):
             emit(q, "status", {
-                "step": f"domestic_{hub}",
-                "message": f"Searching positioning: {search_origin} -> {hub} (one-way)...",
+                "step": f"positioning_{hub}",
+                "message": f"Searching positioning: {search_origin} <-> {hub} (round-trip)...",
                 "hub": hub, "phase": "domestic", "hub_index": hi, "hub_total": hub_total,
             })
 
-            results = search_one_way(search_origin, hub, depart_date, max_results=3)
+            results = search_round_trip(search_origin, hub, depart_date, return_date, max_results=3)
 
             if results:
-                domestic_offers[hub] = results
+                positioning_offers[hub] = results
                 best = results[0]
                 emit(q, "status", {
-                    "step": f"domestic_{hub}_done",
-                    "message": f"  {search_origin}->{hub}: ${best['price']:.2f} ({best['carrier_display']})",
+                    "step": f"positioning_{hub}_done",
+                    "message": f"  {search_origin}<->{hub}: ${best['price']:.2f} RT ({best['carrier_display']})",
                     "hub": hub, "phase": "domestic", "hub_index": hi, "hub_total": hub_total,
                 })
             else:
                 emit(q, "status", {
-                    "step": f"domestic_{hub}_done",
-                    "message": f"  {search_origin}->{hub}: No flights found",
+                    "step": f"positioning_{hub}_done",
+                    "message": f"  {search_origin}<->{hub}: No flights found",
                     "hub": hub, "phase": "domestic", "hub_index": hi, "hub_total": hub_total,
                 })
 
         # ---------------------------------------------------------------
-        # Step 3: Search international flights (each hub -> destination)
+        # Step 3: Search international round-trips (each hub <-> dest)
         # ---------------------------------------------------------------
-        international_offers = {}
+        international_rt_offers = {}
         for hi, hub in enumerate(active_hubs):
             emit(q, "status", {
                 "step": f"intl_{hub}",
-                "message": f"Searching international: {hub} -> {destination} (one-way)...",
+                "message": f"Searching international: {hub} <-> {destination} (round-trip)...",
                 "hub": hub, "phase": "intl", "hub_index": hi, "hub_total": hub_total,
             })
 
-            results = search_one_way(hub, destination, depart_date, max_results=3)
+            results = search_round_trip(hub, destination, depart_date, return_date, max_results=3)
 
             if results:
-                international_offers[hub] = results
+                international_rt_offers[hub] = results
                 best = results[0]
                 emit(q, "status", {
                     "step": f"intl_{hub}_done",
-                    "message": f"  {hub}->{destination}: ${best['price']:.2f} ({best['carrier_display']})",
+                    "message": f"  {hub}<->{destination}: ${best['price']:.2f} RT ({best['carrier_display']})",
                     "hub": hub, "phase": "intl", "hub_index": hi, "hub_total": hub_total,
                 })
             else:
                 emit(q, "status", {
                     "step": f"intl_{hub}_done",
-                    "message": f"  {hub}->{destination}: No flights found",
+                    "message": f"  {hub}<->{destination}: No flights found",
                     "hub": hub, "phase": "intl", "hub_index": hi, "hub_total": hub_total,
                 })
 
         # ---------------------------------------------------------------
-        # Step 3b: Search return international flights (dest -> each hub)
+        # ARCHIVED: One-way search approach (4 calls per hub)
+        # Kept for future use — uncomment to restore granular leg data.
         # ---------------------------------------------------------------
-        return_international_offers = {}
-        for hi, hub in enumerate(active_hubs):
-            emit(q, "status", {
-                "step": f"ret_intl_{hub}",
-                "message": f"Searching return international: {destination} -> {hub} (one-way)...",
-                "hub": hub, "phase": "ret_intl", "hub_index": hi, "hub_total": hub_total,
-            })
-
-            results = search_one_way(destination, hub, return_date, max_results=3)
-
-            if results:
-                return_international_offers[hub] = results
-                best = results[0]
-                emit(q, "status", {
-                    "step": f"ret_intl_{hub}_done",
-                    "message": f"  {destination}->{hub}: ${best['price']:.2f} ({best['carrier_display']})",
-                    "hub": hub, "phase": "ret_intl", "hub_index": hi, "hub_total": hub_total,
-                })
-            else:
-                emit(q, "status", {
-                    "step": f"ret_intl_{hub}_done",
-                    "message": f"  {destination}->{hub}: No flights found",
-                    "hub": hub, "phase": "ret_intl", "hub_index": hi, "hub_total": hub_total,
-                })
+        # domestic_offers = {}
+        # for hi, hub in enumerate(active_hubs):
+        #     results = search_one_way(search_origin, hub, depart_date, max_results=3)
+        #     if results: domestic_offers[hub] = results
+        #
+        # international_offers = {}
+        # for hi, hub in enumerate(active_hubs):
+        #     results = search_one_way(hub, destination, depart_date, max_results=3)
+        #     if results: international_offers[hub] = results
+        #
+        # return_international_offers = {}
+        # for hi, hub in enumerate(active_hubs):
+        #     results = search_one_way(destination, hub, return_date, max_results=3)
+        #     if results: return_international_offers[hub] = results
+        #
+        # return_domestic_offers = {}
+        # for hi, hub in enumerate(active_hubs):
+        #     results = search_one_way(hub, search_origin, return_date, max_results=3)
+        #     if results: return_domestic_offers[hub] = results
+        # ---------------------------------------------------------------
 
         # ---------------------------------------------------------------
-        # Step 3c: Search return positioning flights (each hub -> origin)
-        # ---------------------------------------------------------------
-        return_domestic_offers = {}
-        for hi, hub in enumerate(active_hubs):
-            emit(q, "status", {
-                "step": f"ret_dom_{hub}",
-                "message": f"Searching return positioning: {hub} -> {search_origin} (one-way)...",
-                "hub": hub, "phase": "ret_dom", "hub_index": hi, "hub_total": hub_total,
-            })
-
-            results = search_one_way(hub, search_origin, return_date, max_results=3)
-
-            if results:
-                return_domestic_offers[hub] = results
-                best = results[0]
-                emit(q, "status", {
-                    "step": f"ret_dom_{hub}_done",
-                    "message": f"  {hub}->{search_origin}: ${best['price']:.2f} ({best['carrier_display']})",
-                    "hub": hub, "phase": "ret_dom", "hub_index": hi, "hub_total": hub_total,
-                })
-            else:
-                emit(q, "status", {
-                    "step": f"ret_dom_{hub}_done",
-                    "message": f"  {hub}->{search_origin}: No flights found",
-                    "hub": hub, "phase": "ret_dom", "hub_index": hi, "hub_total": hub_total,
-                })
-
-        # ---------------------------------------------------------------
-        # Step 4: Assemble valid hacker fare pairings
+        # Step 4: Assemble valid hacker fare pairings (round-trip mode)
         # ---------------------------------------------------------------
         emit(q, "status", {
             "step": "assembly",
-            "message": "Assembling valid hacker fare routes (outbound + return)...",
+            "message": "Assembling hacker fare routes (positioning RT + international RT)...",
             "phase": "assembly",
         })
 
@@ -416,60 +385,17 @@ def run_hacker_fare_search(q, params):
         global_warnings = []
 
         for hub in active_hubs:
-            dom_list = domestic_offers.get(hub, [])
-            intl_list = international_offers.get(hub, [])
-            ret_intl_list = return_international_offers.get(hub, [])
-            ret_dom_list = return_domestic_offers.get(hub, [])
+            pos_list = positioning_offers.get(hub, [])
+            intl_list = international_rt_offers.get(hub, [])
 
-            # Need all 4 leg types to have results
-            if not dom_list or not intl_list or not ret_intl_list or not ret_dom_list:
+            # Need both round-trip legs to have results
+            if not pos_list or not intl_list:
                 continue
 
-            # Phase 1: Valid outbound pairs (origin->hub + hub->dest)
-            outbound_pairs = []
-            for dom in dom_list:
-                for intl in intl_list:
-                    conn_out = calculate_connection_time(
-                        dom["arrival_time"], intl["departure_time"]
-                    )
-                    if conn_out is None or conn_out < MIN_CONNECTION_MINUTES:
-                        continue
-                    outbound_pairs.append({
-                        "domestic": dom,
-                        "international": intl,
-                        "connection_minutes": conn_out,
-                        "pair_price": dom["price"] + intl["price"],
-                    })
-
-            # Phase 2: Valid return pairs (dest->hub + hub->origin)
-            return_pairs = []
-            for ret_intl in ret_intl_list:
-                for ret_dom in ret_dom_list:
-                    conn_ret = calculate_connection_time(
-                        ret_intl["arrival_time"], ret_dom["departure_time"]
-                    )
-                    if conn_ret is None or conn_ret < MIN_CONNECTION_MINUTES:
-                        continue
-                    return_pairs.append({
-                        "ret_international": ret_intl,
-                        "ret_domestic": ret_dom,
-                        "connection_minutes": conn_ret,
-                        "pair_price": ret_intl["price"] + ret_dom["price"],
-                    })
-
-            if not outbound_pairs or not return_pairs:
-                continue
-
-            # Keep top 3 cheapest of each direction
-            outbound_pairs.sort(key=lambda x: x["pair_price"])
-            return_pairs.sort(key=lambda x: x["pair_price"])
-            top_outbound = outbound_pairs[:3]
-            top_return = return_pairs[:3]
-
-            # Phase 3: Cross-combine top outbound x top return
-            for ob in top_outbound:
-                for rt in top_return:
-                    total = ob["pair_price"] + rt["pair_price"]
+            # Combine top positioning x top international round-trips
+            for pos in pos_list[:3]:
+                for intl in intl_list[:3]:
+                    total = pos["price"] + intl["price"]
                     total_with_ground = total + ground_cost
 
                     savings = None
@@ -483,14 +409,10 @@ def run_hacker_fare_search(q, params):
 
                     hacker_fares.append({
                         "hub": hub,
-                        "domestic": ob["domestic"],
-                        "international": ob["international"],
-                        "outbound_connection_minutes": ob["connection_minutes"],
-                        "ret_international": rt["ret_international"],
-                        "ret_domestic": rt["ret_domestic"],
-                        "return_connection_minutes": rt["connection_minutes"],
-                        "outbound_total": ob["pair_price"],
-                        "return_total": rt["pair_price"],
+                        "positioning": pos,
+                        "international": intl,
+                        "positioning_price": pos["price"],
+                        "international_price": intl["price"],
                         "total": total,
                         "ground_cost": ground_cost,
                         "total_with_ground": total_with_ground,
@@ -504,14 +426,10 @@ def run_hacker_fare_search(q, params):
         for hf in hacker_fares:
             key = (
                 hf["hub"],
-                hf["domestic"]["carrier_display"],
-                hf["domestic"]["price"],
+                hf["positioning"]["carrier_display"],
+                hf["positioning"]["price"],
                 hf["international"]["carrier_display"],
                 hf["international"]["price"],
-                hf["ret_international"]["carrier_display"],
-                hf["ret_international"]["price"],
-                hf["ret_domestic"]["carrier_display"],
-                hf["ret_domestic"]["price"],
             )
             if key not in seen:
                 seen.add(key)
@@ -532,7 +450,7 @@ def run_hacker_fare_search(q, params):
         # ---------------------------------------------------------------
         # Step 5: Send results
         # ---------------------------------------------------------------
-        api_calls = 1 + len(active_hubs) * 4
+        api_calls = 1 + len(active_hubs) * 2  # 1 baseline + 2 RT per hub
         stats_after = get_cache_stats()
         search_hits = stats_after["hits"] - stats_before["hits"]
         search_misses = stats_after["misses"] - stats_before["misses"]
@@ -604,7 +522,7 @@ if __name__ == "__main__":
     print("\n  Hacker Fare Engine - SerpAPI Edition")
     print(f"  Trip: {ORIGIN} -> {DESTINATION} | {DEPART_DATE} to {RETURN_DATE}")
     print(f"  Hubs ({len(SERP_HUBS)}): {', '.join(SERP_HUBS)}")
-    print(f"  API calls per search: ~{1 + len(SERP_HUBS) * 4}")
+    print(f"  API calls per search: ~{1 + len(SERP_HUBS) * 2}")
     print(f"  Drive option: {HUB_AIRPORT} (+${DRIVING_COST + PARKING_RATE_PER_DAY * TRIP_DAYS:.0f} ground)")
     port = int(os.getenv("PORT", 5000))
     print(f"  Server starting at http://localhost:{port}\n")

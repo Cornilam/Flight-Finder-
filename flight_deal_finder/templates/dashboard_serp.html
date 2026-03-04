@@ -925,7 +925,7 @@
             </div>
 
             <div class="budget-note">
-                <span id="apiCallEstimate">{{ hubs | length }} hubs &middot; ~{{ 1 + hubs|length * 4 }} API calls</span>
+                <span id="apiCallEstimate">{{ hubs | length }} hubs &middot; ~{{ 1 + hubs|length * 2 }} API calls</span>
                 <span id="hubBudgetNote"></span>
             </div>
         </div>
@@ -1273,7 +1273,7 @@
         }
 
         function updateBudgetEstimate() {
-            var callsPerSearch = 1 + HUB_COUNT * 4;
+            var callsPerSearch = 1 + HUB_COUNT * 2;
             var hubCompare = document.getElementById('hubCompare').checked;
             var total = hubCompare ? callsPerSearch * 2 : callsPerSearch;
             document.getElementById('apiCallEstimate').textContent = HUB_COUNT + ' hubs \u00b7 ~' + total + ' API calls';
@@ -1832,30 +1832,20 @@
                         '<table class="hf-table">' +
                             '<thead>' +
                             '<tr>' +
-                                '<th rowspan="2">#</th>' +
-                                '<th rowspan="2">Hub</th>' +
-                                '<th colspan="3" style="text-align:center; border-bottom:1px solid #334155;">Outbound (' + r.depart_date + ')</th>' +
-                                '<th colspan="3" style="text-align:center; border-bottom:1px solid #334155;">Return (' + r.return_date + ')</th>' +
-                                '<th rowspan="2" class="right">' + totalLabel + '</th>' +
-                                '<th rowspan="2" class="right">vs Baseline</th>' +
-                            '</tr>' +
-                            '<tr>' +
-                                '<th>Positioning</th>' +
-                                '<th>International</th>' +
-                                '<th>Hub Layover</th>' +
-                                '<th>International</th>' +
-                                '<th>Positioning</th>' +
-                                '<th>Hub Layover</th>' +
+                                '<th>#</th>' +
+                                '<th>Hub</th>' +
+                                '<th>Positioning RT</th>' +
+                                '<th>International RT</th>' +
+                                '<th class="right">' + totalLabel + '</th>' +
+                                '<th class="right">vs Baseline</th>' +
                             '</tr>' +
                             '</thead>' +
                             '<tbody>';
 
                 for (var i = 0; i < r.hacker_fares.length; i++) {
                     var hf = r.hacker_fares[i];
-                    var dom = hf.domestic;
+                    var pos = hf.positioning;
                     var intl = hf.international;
-                    var retIntl = hf.ret_international;
-                    var retDom = hf.ret_domestic;
                     var rowClass = (i === 0) ? ' class="best-row"' : '';
                     var rankClass = "rank-other";
                     if (hf.rank === 1) rankClass = "rank-1";
@@ -1875,10 +1865,8 @@
                         savingsHtml = '<span style="color:#64748b">N/A</span>';
                     }
 
-                    var domStops = stopsLabel(dom.stops, dom.connections);
+                    var posStops = stopsLabel(pos.stops, pos.connections);
                     var intlStops = stopsLabel(intl.stops, intl.connections);
-                    var retIntlStops = stopsLabel(retIntl.stops, retIntl.connections);
-                    var retDomStops = stopsLabel(retDom.stops, retDom.connections);
 
                     var displayTotal = hf.total_with_ground;
                     var groundNote = "";
@@ -1886,98 +1874,36 @@
                         groundNote = '<div class="total-ground">Flights: $' + hf.total.toFixed(2) + ' + Ground: $' + hf.ground_cost.toFixed(2) + '</div>';
                     }
 
-                    var domGfUrl = googleFlightsUrl(r.search_origin, hf.hub, r.depart_date);
+                    var posGfUrl = googleFlightsUrl(r.search_origin, hf.hub, r.depart_date);
                     var intlGfUrl = googleFlightsUrl(hf.hub, r.destination, r.depart_date);
-                    var retIntlGfUrl = googleFlightsUrl(r.destination, hf.hub, r.return_date);
-                    var retDomGfUrl = googleFlightsUrl(hf.hub, r.search_origin, r.return_date);
 
-                    var domLogoHtml = airlineLogoHtml(dom.airline_logos, dom.airlines);
+                    var posLogoHtml = airlineLogoHtml(pos.airline_logos, pos.airlines);
                     var intlLogoHtml = airlineLogoHtml(intl.airline_logos, intl.airlines);
-                    var retIntlLogoHtml = airlineLogoHtml(retIntl.airline_logos, retIntl.airlines);
-                    var retDomLogoHtml = airlineLogoHtml(retDom.airline_logos, retDom.airlines);
-
-                    // Outbound hub layover
-                    var outHubLayoverHtml = (function(mins) {
-                        var cls = "layover-short";
-                        var tag = "";
-                        if (mins >= 720) {
-                            cls = "layover-long";
-                            tag = '<div class="layover-tag layover-tag-warning">Very long</div>';
-                        } else if (mins >= 480) {
-                            cls = "layover-medium";
-                            tag = '<div class="layover-tag layover-tag-overnight">Overnight likely</div>';
-                        } else if (mins >= 360) {
-                            cls = "layover-medium";
-                        }
-                        return '<div class="connection-info">' +
-                            '<span class="time ' + cls + '">' + formatMinutes(mins) + '</span>' +
-                            ' at ' + hf.hub +
-                            '</div>' + tag;
-                    })(hf.outbound_connection_minutes);
-
-                    // Return hub layover
-                    var retHubLayoverHtml = (function(mins) {
-                        var cls = "layover-short";
-                        var tag = "";
-                        if (mins >= 720) {
-                            cls = "layover-long";
-                            tag = '<div class="layover-tag layover-tag-warning">Very long</div>';
-                        } else if (mins >= 480) {
-                            cls = "layover-medium";
-                            tag = '<div class="layover-tag layover-tag-overnight">Overnight likely</div>';
-                        } else if (mins >= 360) {
-                            cls = "layover-medium";
-                        }
-                        return '<div class="connection-info">' +
-                            '<span class="time ' + cls + '">' + formatMinutes(mins) + '</span>' +
-                            ' at ' + hf.hub +
-                            '</div>' + tag;
-                    })(hf.return_connection_minutes);
 
                     tableHtml +=
                         '<tr' + rowClass + '>' +
                             '<td><span class="rank-badge ' + rankClass + '">' + hf.rank + '</span></td>' +
                             '<td><span class="hub-name">' + hf.hub + '</span></td>' +
-                            // Outbound positioning
+                            // Positioning round-trip
                             '<td>' +
-                                '<div class="leg-price">' + domLogoHtml + '$' + dom.price.toFixed(2) + '</div>' +
-                                '<div class="leg-detail">' + dom.carrier_display + ' | ' + domStops + '</div>' +
-                                '<div class="leg-detail">Dep: ' + formatTime(dom.departure_time) + ' | Arr: ' + formatTime(dom.arrival_time) + '</div>' +
-                                formatLayoverDetails(dom.layover_details) +
-                                '<a class="gf-link" href="' + domGfUrl + '" target="_blank" rel="noopener">Google Flights</a>' +
+                                '<div class="leg-price">' + posLogoHtml + '$' + pos.price.toFixed(2) + ' RT</div>' +
+                                '<div class="leg-detail">' + pos.carrier_display + ' | ' + posStops + '</div>' +
+                                '<div class="leg-detail">' + r.search_origin + ' <-> ' + hf.hub + '</div>' +
+                                formatLayoverDetails(pos.layover_details) +
+                                '<a class="gf-link" href="' + posGfUrl + '" target="_blank" rel="noopener">Google Flights</a>' +
                             '</td>' +
-                            // Outbound international
+                            // International round-trip
                             '<td>' +
-                                '<div class="leg-price">' + intlLogoHtml + '$' + intl.price.toFixed(2) + '</div>' +
+                                '<div class="leg-price">' + intlLogoHtml + '$' + intl.price.toFixed(2) + ' RT</div>' +
                                 '<div class="leg-detail">' + intl.carrier_display + ' | ' + intlStops + '</div>' +
-                                '<div class="leg-detail">Dep: ' + formatTime(intl.departure_time) + ' | Arr: ' + formatTime(intl.arrival_time) + '</div>' +
+                                '<div class="leg-detail">' + hf.hub + ' <-> ' + r.destination + '</div>' +
                                 formatLayoverDetails(intl.layover_details) +
                                 '<a class="gf-link" href="' + intlGfUrl + '" target="_blank" rel="noopener">Google Flights</a>' +
                             '</td>' +
-                            // Outbound hub layover
-                            '<td>' + outHubLayoverHtml + '</td>' +
-                            // Return international
-                            '<td>' +
-                                '<div class="leg-price">' + retIntlLogoHtml + '$' + retIntl.price.toFixed(2) + '</div>' +
-                                '<div class="leg-detail">' + retIntl.carrier_display + ' | ' + retIntlStops + '</div>' +
-                                '<div class="leg-detail">Dep: ' + formatTime(retIntl.departure_time) + ' | Arr: ' + formatTime(retIntl.arrival_time) + '</div>' +
-                                formatLayoverDetails(retIntl.layover_details) +
-                                '<a class="gf-link" href="' + retIntlGfUrl + '" target="_blank" rel="noopener">Google Flights</a>' +
-                            '</td>' +
-                            // Return positioning
-                            '<td>' +
-                                '<div class="leg-price">' + retDomLogoHtml + '$' + retDom.price.toFixed(2) + '</div>' +
-                                '<div class="leg-detail">' + retDom.carrier_display + ' | ' + retDomStops + '</div>' +
-                                '<div class="leg-detail">Dep: ' + formatTime(retDom.departure_time) + ' | Arr: ' + formatTime(retDom.arrival_time) + '</div>' +
-                                formatLayoverDetails(retDom.layover_details) +
-                                '<a class="gf-link" href="' + retDomGfUrl + '" target="_blank" rel="noopener">Google Flights</a>' +
-                            '</td>' +
-                            // Return hub layover
-                            '<td>' + retHubLayoverHtml + '</td>' +
                             // Total
                             '<td class="right">' +
                                 '<div class="total-price">$' + displayTotal.toFixed(2) + '</div>' +
-                                '<div class="leg-detail">Out: $' + hf.outbound_total.toFixed(2) + ' | Ret: $' + hf.return_total.toFixed(2) + '</div>' +
+                                '<div class="leg-detail">Pos: $' + hf.positioning_price.toFixed(2) + ' | Intl: $' + hf.international_price.toFixed(2) + '</div>' +
                                 groundNote +
                             '</td>' +
                             // Savings
