@@ -1566,20 +1566,31 @@
             document.getElementById('resultsPanel').scrollIntoView({ behavior: 'smooth' });
         });
 
-        // Delegate click on community deal cards — populate search fields
+        // Delegate click on community deal cards — populate search fields + load cached results
         document.addEventListener('click', function(e) {
             var card = e.target.closest('.community-deal-card');
             if (!card) return;
+            var origin = card.dataset.origin || '';
+            var dest = card.dataset.dest || '';
+            var depart = card.dataset.depart || '';
+            var ret = card.dataset.return || '';
             var oEl = document.getElementById('inputOrigin');
             var dEl = document.getElementById('inputDestination');
-            oEl.value = card.dataset.origin || '';
-            oEl.dataset.selectedIata = card.dataset.origin || '';
-            dEl.value = card.dataset.dest || '';
-            dEl.dataset.selectedIata = card.dataset.dest || '';
-            if (card.dataset.depart) document.getElementById('inputDepart').value = card.dataset.depart;
-            if (card.dataset.return) document.getElementById('inputReturn').value = card.dataset.return;
-            // Scroll to search bar so user can hit search
-            document.querySelector('.search-banner').scrollIntoView({ behavior: 'smooth' });
+            oEl.value = origin;
+            oEl.dataset.selectedIata = origin;
+            dEl.value = dest;
+            dEl.dataset.selectedIata = dest;
+            if (depart) document.getElementById('inputDepart').value = depart;
+            if (ret) document.getElementById('inputReturn').value = ret;
+            // If we have cached results for this route, render them
+            var cacheKey = makeCacheKey(origin, dest, depart, ret);
+            if (resultsCache[cacheKey]) {
+                renderResults(resultsCache[cacheKey], true);
+                document.getElementById('resultsPanel').scrollIntoView({ behavior: 'smooth' });
+            } else {
+                // Scroll to search bar so user can hit search
+                document.querySelector('.search-banner').scrollIntoView({ behavior: 'smooth' });
+            }
         });
 
         /* ── End Airport Autocomplete ─────────────────────────── */
