@@ -1250,7 +1250,7 @@
 
             <!-- Tab Bar -->
             <div class="results-tabs">
-                <button class="results-tab active" data-tab="direct" onclick="switchTab('direct')">Direct Flights</button>
+                <button class="results-tab active" data-tab="direct" onclick="switchTab('direct')">Google Flights</button>
                 <button class="results-tab" data-tab="hacker" onclick="switchTab('hacker')">Hacker Fares</button>
             </div>
 
@@ -1767,7 +1767,7 @@
         function renderDirectFlights(flights, origin, destination, departDate, returnDate) {
             var container = document.getElementById('directFlightsList');
             if (!flights || flights.length === 0) {
-                container.innerHTML = '<div class="no-results">No direct round-trip flights found for this route.</div>';
+                container.innerHTML = '<div class="no-results">No round-trip flights found for this route.</div>';
                 return;
             }
             var cheapestPrice = flights[0].price;
@@ -2272,7 +2272,7 @@
                 baseHtml =
                     '<div class="baseline-card">' +
                         '<div>' +
-                            '<div class="label">Baseline: No Direct Flights Found</div>' +
+                            '<div class="label">Baseline: No Flights Found</div>' +
                             '<div class="route">' + r.search_origin + ' &#8594; ' + r.destination + '</div>' +
                         '</div>' +
                         '<div><div class="price">N/A</div></div>' +
