@@ -1872,10 +1872,20 @@
             return s;
         }
 
+        function formatDateForGF(dateStr) {
+            if (!dateStr) return '';
+            var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+            var parts = dateStr.split('-');
+            if (parts.length !== 3) return dateStr;
+            var m = parseInt(parts[1], 10) - 1;
+            var d = parseInt(parts[2], 10);
+            return months[m] + ' ' + d + ', ' + parts[0];
+        }
+
         function googleFlightsUrl(from, to, departDate, returnDate) {
-            var q = "Flights from " + from + " to " + to + " on " + departDate;
-            if (returnDate) q += " return " + returnDate;
-            return "https://www.google.com/travel/flights?q=" + encodeURIComponent(q);
+            var q = 'flights from ' + from + ' to ' + to + ' departing ' + formatDateForGF(departDate);
+            if (returnDate) q += ' returning ' + formatDateForGF(returnDate);
+            return 'https://www.google.com/travel/flights?q=' + encodeURIComponent(q);
         }
 
         function switchTab(tabName) {
@@ -2460,8 +2470,8 @@
                     }
 
                     var groundNote = gc > 0 ? '<div class="total-ground">Flights: $' + hf.total.toFixed(2) + ' + Ground: $' + gc.toFixed(2) + '</div>' : '';
-                    var posGfUrl = googleFlightsUrl(r.search_origin, hf.hub, r.depart_date);
-                    var intlGfUrl = googleFlightsUrl(hf.hub, r.destination, r.depart_date);
+                    var posGfUrl = googleFlightsUrl(r.search_origin, hf.hub, r.depart_date, r.return_date);
+                    var intlGfUrl = googleFlightsUrl(hf.hub, r.destination, r.depart_date, r.return_date);
                     var posLogoHtml = airlineLogoHtml(pos.airline_logos, pos.airlines);
                     var intlLogoHtml = airlineLogoHtml(intl.airline_logos, intl.airlines);
 
@@ -2686,8 +2696,8 @@
                         groundNote = '<div class="total-ground">Flights: $' + hf.total.toFixed(2) + ' + Ground: $' + hf.ground_cost.toFixed(2) + '</div>';
                     }
 
-                    var posGfUrl = googleFlightsUrl(r.search_origin, hf.hub, r.depart_date);
-                    var intlGfUrl = googleFlightsUrl(hf.hub, r.destination, r.depart_date);
+                    var posGfUrl = googleFlightsUrl(r.search_origin, hf.hub, r.depart_date, r.return_date);
+                    var intlGfUrl = googleFlightsUrl(hf.hub, r.destination, r.depart_date, r.return_date);
 
                     var posLogoHtml = airlineLogoHtml(pos.airline_logos, pos.airlines);
                     var intlLogoHtml = airlineLogoHtml(intl.airline_logos, intl.airlines);
