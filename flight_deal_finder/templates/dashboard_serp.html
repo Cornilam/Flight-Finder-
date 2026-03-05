@@ -1981,6 +1981,16 @@
             return timeStr;
         }
 
+        function hubLayoverMinutes(posArrival, intlDeparture) {
+            if (!posArrival || !intlDeparture) return null;
+            try {
+                var arr = new Date(posArrival.replace(' ', 'T'));
+                var dep = new Date(intlDeparture.replace(' ', 'T'));
+                var diff = (dep - arr) / 60000;
+                return diff > 0 ? Math.round(diff) : null;
+            } catch(e) { return null; }
+        }
+
         function stopsLabel(n, connections) {
             if (n === 0) return "Nonstop";
             var s = n + " stop" + (n !== 1 ? "s" : "");
@@ -2566,7 +2576,7 @@
                         '<div class="hf-table-header"><h3>Hacker Fare Routes from ' + r.search_origin + '</h3></div>' +
                         '<table class="hf-table">' +
                             '<thead><tr>' +
-                                '<th>#</th><th>Hub</th><th>Positioning RT</th><th>International RT</th>' +
+                                '<th>#</th><th>Hub</th><th>Positioning RT</th><th>Hub Time</th><th>International RT</th>' +
                                 '<th class="right">Total (incl. ground)</th><th class="right">vs Baseline</th>' +
                             '</tr></thead><tbody>';
 
@@ -2604,6 +2614,15 @@
                                 formatLayoverDetails(pos.layover_details) +
                                 '<a class="gf-link" href="' + posGfUrl + '" target="_blank" rel="noopener">Google Flights</a>' +
                             '</td>' +
+                            // Hub layover time
+                            (function() {
+                                var mins = hubLayoverMinutes(pos.arrival_time, intl.departure_time);
+                                if (mins !== null) {
+                                    var hubClass = (mins < 60 || mins > 480) ? 'color:#ef4444' : (mins < 120 || mins > 240) ? 'color:#f59e0b' : 'color:#22c55e';
+                                    return '<td style="text-align:center;"><div style="font-weight:600;' + hubClass + '">' + formatMinutes(mins) + '</div><div class="leg-detail">at ' + hf.hub + '</div></td>';
+                                }
+                                return '<td style="text-align:center; color:#94a3b8;">—</td>';
+                            })() +
                             '<td>' +
                                 '<div class="leg-price">' + intlLogoHtml + '$' + intl.price.toFixed(2) + ' RT</div>' +
                                 '<div class="leg-detail">' + intl.carrier_display + ' | ' + stopsLabel(intl.stops, intl.connections) + ' | ' + formatMinutes(intl.total_duration) + '</div>' +
@@ -2753,6 +2772,7 @@
                                 '<th>#</th>' +
                                 '<th>Hub</th>' +
                                 '<th>Positioning RT</th>' +
+                                '<th>Hub Time</th>' +
                                 '<th>International RT</th>' +
                                 '<th class="right">' + totalLabel + '</th>' +
                                 '<th class="right">vs Baseline</th>' +
@@ -2811,6 +2831,15 @@
                                 formatLayoverDetails(pos.layover_details) +
                                 '<a class="gf-link" href="' + posGfUrl + '" target="_blank" rel="noopener">Google Flights</a>' +
                             '</td>' +
+                            // Hub layover time
+                            (function() {
+                                var mins = hubLayoverMinutes(pos.arrival_time, intl.departure_time);
+                                if (mins !== null) {
+                                    var hubClass = (mins < 60 || mins > 480) ? 'color:#ef4444' : (mins < 120 || mins > 240) ? 'color:#f59e0b' : 'color:#22c55e';
+                                    return '<td style="text-align:center;"><div style="font-weight:600;' + hubClass + '">' + formatMinutes(mins) + '</div><div class="leg-detail">at ' + hf.hub + '</div></td>';
+                                }
+                                return '<td style="text-align:center; color:#94a3b8;">—</td>';
+                            })() +
                             // International round-trip
                             '<td>' +
                                 '<div class="leg-price">' + intlLogoHtml + '$' + intl.price.toFixed(2) + ' RT</div>' +
