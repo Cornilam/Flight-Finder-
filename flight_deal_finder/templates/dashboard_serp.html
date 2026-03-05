@@ -1296,7 +1296,13 @@
 
             <!-- Hub Selection -->
             <div class="hub-selector" id="hubSelector">
-                <div class="hub-selector-label">Search Hubs</div>
+                <div class="hub-selector-label">Search Hubs
+                    <span style="font-size:11px; font-weight:400; margin-left:8px;">
+                        <a href="#" onclick="toggleAllHubs(true); return false;" style="color:#2563eb; text-decoration:none;">Select All</a>
+                        &middot;
+                        <a href="#" onclick="toggleAllHubs(false); return false;" style="color:#2563eb; text-decoration:none;">Unselect All</a>
+                    </span>
+                </div>
                 <div class="hub-checkboxes" id="hubCheckboxes">
                     {% for hub in all_hubs %}
                     <label class="hub-chip {{ 'checked' if hub in hubs else '' }}" id="hubChip_{{ hub }}">
@@ -1738,6 +1744,14 @@
                 chip.querySelector('.chip-check').innerHTML = '';
             }
             updateBudgetEstimate();
+        }
+
+        function toggleAllHubs(selectAll) {
+            var checkboxes = document.querySelectorAll('#hubCheckboxes input[type="checkbox"]');
+            for (var i = 0; i < checkboxes.length; i++) {
+                checkboxes[i].checked = selectAll;
+                onHubToggle(checkboxes[i]);
+            }
         }
 
         function toggleHubCompare() {
@@ -2584,14 +2598,16 @@
                             '<td><span class="hub-name">' + hf.hub + '</span></td>' +
                             '<td>' +
                                 '<div class="leg-price">' + posLogoHtml + '$' + pos.price.toFixed(2) + ' RT</div>' +
-                                '<div class="leg-detail">' + pos.carrier_display + ' | ' + stopsLabel(pos.stops, pos.connections) + '</div>' +
+                                '<div class="leg-detail">' + pos.carrier_display + ' | ' + stopsLabel(pos.stops, pos.connections) + ' | ' + formatMinutes(pos.total_duration) + '</div>' +
+                                (pos.departure_time && pos.arrival_time ? '<div class="leg-detail">' + formatTime(pos.departure_time) + ' – ' + formatTime(pos.arrival_time) + '</div>' : '') +
                                 '<div class="leg-detail">' + r.search_origin + ' <-> ' + hf.hub + '</div>' +
                                 formatLayoverDetails(pos.layover_details) +
                                 '<a class="gf-link" href="' + posGfUrl + '" target="_blank" rel="noopener">Google Flights</a>' +
                             '</td>' +
                             '<td>' +
                                 '<div class="leg-price">' + intlLogoHtml + '$' + intl.price.toFixed(2) + ' RT</div>' +
-                                '<div class="leg-detail">' + intl.carrier_display + ' | ' + stopsLabel(intl.stops, intl.connections) + '</div>' +
+                                '<div class="leg-detail">' + intl.carrier_display + ' | ' + stopsLabel(intl.stops, intl.connections) + ' | ' + formatMinutes(intl.total_duration) + '</div>' +
+                                (intl.departure_time && intl.arrival_time ? '<div class="leg-detail">' + formatTime(intl.departure_time) + ' – ' + formatTime(intl.arrival_time) + '</div>' : '') +
                                 '<div class="leg-detail">' + hf.hub + ' <-> ' + r.destination + '</div>' +
                                 formatLayoverDetails(intl.layover_details) +
                                 '<a class="gf-link" href="' + intlGfUrl + '" target="_blank" rel="noopener">Google Flights</a>' +
@@ -2789,7 +2805,8 @@
                             // Positioning round-trip
                             '<td>' +
                                 '<div class="leg-price">' + posLogoHtml + '$' + pos.price.toFixed(2) + ' RT</div>' +
-                                '<div class="leg-detail">' + pos.carrier_display + ' | ' + posStops + '</div>' +
+                                '<div class="leg-detail">' + pos.carrier_display + ' | ' + posStops + ' | ' + formatMinutes(pos.total_duration) + '</div>' +
+                                (pos.departure_time && pos.arrival_time ? '<div class="leg-detail">' + formatTime(pos.departure_time) + ' – ' + formatTime(pos.arrival_time) + '</div>' : '') +
                                 '<div class="leg-detail">' + r.search_origin + ' <-> ' + hf.hub + '</div>' +
                                 formatLayoverDetails(pos.layover_details) +
                                 '<a class="gf-link" href="' + posGfUrl + '" target="_blank" rel="noopener">Google Flights</a>' +
@@ -2797,7 +2814,8 @@
                             // International round-trip
                             '<td>' +
                                 '<div class="leg-price">' + intlLogoHtml + '$' + intl.price.toFixed(2) + ' RT</div>' +
-                                '<div class="leg-detail">' + intl.carrier_display + ' | ' + intlStops + '</div>' +
+                                '<div class="leg-detail">' + intl.carrier_display + ' | ' + intlStops + ' | ' + formatMinutes(intl.total_duration) + '</div>' +
+                                (intl.departure_time && intl.arrival_time ? '<div class="leg-detail">' + formatTime(intl.departure_time) + ' – ' + formatTime(intl.arrival_time) + '</div>' : '') +
                                 '<div class="leg-detail">' + hf.hub + ' <-> ' + r.destination + '</div>' +
                                 formatLayoverDetails(intl.layover_details) +
                                 '<a class="gf-link" href="' + intlGfUrl + '" target="_blank" rel="noopener">Google Flights</a>' +
