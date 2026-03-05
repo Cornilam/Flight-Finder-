@@ -375,6 +375,54 @@
         }
         .btn-rerun:hover { background: #1d4ed8; }
 
+        /* Freshness Banner */
+        .freshness-banner {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 12px;
+        }
+        .freshness-banner.fresh {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            color: #166534;
+        }
+        .freshness-banner.cached {
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            color: #92400e;
+        }
+        .freshness-banner.stale {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #991b1b;
+        }
+        .freshness-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            flex-shrink: 0;
+        }
+        .freshness-dot.green { background: #22c55e; }
+        .freshness-dot.yellow { background: #f59e0b; }
+        .freshness-dot.red { background: #ef4444; }
+        .freshness-details {
+            font-size: 11px;
+            font-weight: 400;
+            color: inherit;
+            opacity: 0.8;
+        }
+        .freshness-banner .btn-rerun {
+            padding: 5px 14px;
+            font-size: 12px;
+            margin-left: 6px;
+        }
+
         /* Budget note */
         .budget-note {
             text-align: center;
@@ -1329,6 +1377,7 @@
 
         <!-- Results Panel -->
         <div class="results-panel" id="resultsPanel">
+            <div id="freshnessBanner"></div>
             <div id="originLabel"></div>
             <div id="priceInsights"></div>
 
@@ -1592,14 +1641,20 @@
             dEl.dataset.selectedIata = dest;
             if (depart) document.getElementById('inputDepart').value = depart;
             if (ret) document.getElementById('inputReturn').value = ret;
-            // If we have cached results for this route, render them
+            // If we have cached results for this route, render them; otherwise start a search
             var cacheKey = makeCacheKey(origin, dest, depart, ret);
             if (resultsCache[cacheKey]) {
                 renderResults(resultsCache[cacheKey], true);
                 document.getElementById('resultsPanel').scrollIntoView({ behavior: 'smooth' });
             } else {
-                // Scroll to search bar so user can hit search
+                // Auto-search this route
                 document.querySelector('.search-banner').scrollIntoView({ behavior: 'smooth' });
+                var params = getSearchParams();
+                params.origin = origin;
+                params.destination = dest;
+                params.depart_date = depart;
+                params.return_date = ret;
+                startSearch(params);
             }
         });
 
@@ -1836,6 +1891,53 @@
                 return_date: returnDate,
             };
             startSearch(params, true);
+        }
+
+        function renderFreshnessBanner(r, fromCache) {
+            var banner = document.getElementById('freshnessBanner');
+            if (!banner) return;
+            var html = '';
+            if (fromCache) {
+                var cachedAt = r._cached_at || r.searched_at || '';
+                var ageText = cachedAt ? formatRelativeTime(cachedAt) : 'unknown age';
+                var ageMs = cachedAt ? (new Date() - new Date(cachedAt)) : 0;
+                var ageHours = ageMs / (1000 * 60 * 60);
+                // Color: yellow if < 6 hours, orange/red if older
+                var bannerClass = 'cached';
+                var dotClass = 'yellow';
+                if (ageHours > 12) { bannerClass = 'stale'; dotClass = 'red'; }
+                html = '<div class="freshness-banner ' + bannerClass + '">' +
+                    '<span class="freshness-dot ' + dotClass + '"></span>' +
+                    '<span>Cached results from <strong>' + ageText + '</strong></span>';
+                if (cachedAt) {
+                    html += '<span class="freshness-details">(' + formatTimestamp(cachedAt) + ')</span>';
+                }
+                html += '<button class="btn-rerun" onclick="rerunSearch(\'' +
+                    r.search_origin + '\',\'' + r.destination + '\',\'' +
+                    r.depart_date + '\',\'' + r.return_date + '\')">Refresh</button>';
+                html += '</div>';
+            } else {
+                var apiInfo = '';
+                if (r.cache_stats) {
+                    if (r.cache_stats.search_misses > 0 && r.cache_stats.search_hits > 0) {
+                        apiInfo = r.cache_stats.search_misses + ' fresh API calls, ' +
+                            r.cache_stats.search_hits + ' from server cache';
+                    } else if (r.cache_stats.search_misses > 0) {
+                        apiInfo = r.cache_stats.search_misses + ' fresh API calls';
+                    } else {
+                        apiInfo = 'All results from server cache (24h)';
+                    }
+                }
+                var searchedAt = r.searched_at || new Date().toISOString();
+                html = '<div class="freshness-banner fresh">' +
+                    '<span class="freshness-dot green"></span>' +
+                    '<span><strong>Live results</strong> — just searched</span>';
+                if (apiInfo) {
+                    html += '<span class="freshness-details">(' + apiInfo + ')</span>';
+                }
+                html += '</div>';
+            }
+            banner.innerHTML = html;
         }
 
         function formatMinutes(min) {
@@ -2219,6 +2321,7 @@
 
             document.getElementById("resultsPanel").classList.remove("visible");
             document.getElementById("errorBanner").classList.remove("visible");
+            document.getElementById("freshnessBanner").innerHTML = "";
             document.getElementById("originLabel").innerHTML = "";
             document.getElementById("priceInsights").innerHTML = "";
             document.getElementById("directFlightsList").innerHTML = "";
@@ -2547,42 +2650,19 @@
                 r.return_date
             );
 
+            // Freshness banner
+            renderFreshnessBanner(r, fromCache);
+
             // Origin label
             var labelHtml = '<div class="origin-label">';
             labelHtml += '<span class="airport">' + r.search_origin + '</span>';
-
-            // Cache / API stats line
-            var statsLine = r.hubs_searched.length + ' hubs searched';
-            if (fromCache) {
-                statsLine += ' | <span style="color:#4ade80;">Cached results</span>';
-                var cachedAt = r._cached_at || '';
-                if (cachedAt) {
-                    statsLine += '<span style="display:block; font-size:11px; color:#94a3b8; margin-top:2px;">' +
-                        'Last searched: ' + formatTimestamp(cachedAt) + ' (' + formatRelativeTime(cachedAt) + ')' +
-                        '</span>';
-                }
-            } else if (r.cache_stats) {
-                statsLine += ' | ' + r.cache_stats.search_misses + ' new API calls';
-                if (r.cache_stats.search_hits > 0) {
-                    statsLine += ', ' + r.cache_stats.search_hits + ' cached';
-                }
-            } else {
-                statsLine += ' | ' + (r.api_calls_used || "?") + ' SerpAPI calls used';
-            }
+            var statsLine = (r.hubs_searched ? r.hubs_searched.length : 0) + ' hubs searched';
             labelHtml += '<span style="display:block; font-size:12px; color:#64748b; margin-top:4px;">' + statsLine + '</span>';
 
             if (r.is_hub_search && r.ground_cost > 0) {
                 labelHtml += '<span class="ground-note">Includes $' + r.ground_cost.toFixed(2) + ' ground transit (driving + parking) in all totals</span>';
             }
             labelHtml += '</div>';
-            if (fromCache) {
-                labelHtml += '<div style="text-align:center; margin-top:10px;">' +
-                    '<button class="btn-rerun" onclick="rerunSearch(\'' +
-                    r.search_origin + '\',\'' + r.destination + '\',\'' + r.depart_date + '\',\'' + r.return_date +
-                    '\')">' +
-                    'Rerun Search from ' + r.search_origin +
-                    '</button></div>';
-            }
             document.getElementById("originLabel").innerHTML = labelHtml;
 
             // Price insights
