@@ -1221,6 +1221,37 @@
             font-style: italic;
             border-top: 2px solid #f1f5f9;
         }
+        .hf-layover-strip {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px 16px;
+            padding: 10px 20px;
+            background: #f8fafc;
+            border-top: 1px solid #f1f5f9;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 12px;
+            color: #374151;
+        }
+        .hf-layover-strip .layover-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .hf-layover-strip .layover-dot {
+            width: 6px; height: 6px; border-radius: 50%;
+        }
+        .hf-layover-strip .layover-dot.green { background: #22c55e; }
+        .hf-layover-strip .layover-dot.yellow { background: #f59e0b; }
+        .hf-layover-strip .layover-dot.red { background: #ef4444; }
+        .hf-layover-strip .layover-time { font-weight: 600; }
+        .hf-layover-strip .strip-label {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #9ca3af;
+            margin-right: 4px;
+        }
         .hf-outbound-label {
             display: inline-block;
             font-size: 10px;
@@ -2158,10 +2189,45 @@
                 '<div class="hf-card-leg-airline">' + logo + '<span>' + flight.carrier_display + '</span></div>' +
                 timesHtml +
                 '<div class="hf-card-leg-meta">' + stopsLabel(flight.stops, flight.connections) + ' &middot; ' + formatMinutes(flight.total_duration) + '</div>' +
-                formatLayoverDetails(flight.layover_details) +
                 priceHtml +
                 '<a class="gf-link" href="' + gfUrl + '" target="_blank" rel="noopener">Google Flights</a>' +
             '</div>';
+        }
+
+        function buildLayoverStrip(label, leg1, leg2, hubMins, hubCode) {
+            var items = [];
+            // Leg 1 layovers (within-flight stops)
+            if (leg1 && leg1.layover_details) {
+                for (var i = 0; i < leg1.layover_details.length; i++) {
+                    var d = leg1.layover_details[i];
+                    items.push({ mins: d.minutes, name: d.airport_name || d.airport, type: 'layover' });
+                }
+            }
+            // Hub connection time
+            if (hubMins !== null && hubMins !== undefined) {
+                items.push({ mins: hubMins, name: hubCode + ' (connection)', type: 'hub' });
+            }
+            // Leg 2 layovers (within-flight stops)
+            if (leg2 && leg2.layover_details) {
+                for (var i = 0; i < leg2.layover_details.length; i++) {
+                    var d = leg2.layover_details[i];
+                    items.push({ mins: d.minutes, name: d.airport_name || d.airport, type: 'layover' });
+                }
+            }
+            if (items.length === 0) return '';
+            var html = '<div class="hf-layover-strip"><span class="strip-label">' + label + ':</span>';
+            for (var i = 0; i < items.length; i++) {
+                var m = items[i].mins;
+                var dotClass = (m < 60 || m > 480) ? 'red' : (m < 120 || m > 240) ? 'yellow' : 'green';
+                html += '<span class="layover-item">' +
+                    '<span class="layover-dot ' + dotClass + '"></span>' +
+                    '<span class="layover-time">' + formatMinutes(m) + '</span> ' +
+                    items[i].name +
+                '</span>';
+                if (i < items.length - 1) html += '<span style="color:#d1d5db">→</span>';
+            }
+            html += '</div>';
+            return html;
         }
 
         function buildReturnSection(intlRet, posRet, destination, hub, origin, hubCode, posGfUrl, intlGfUrl) {
@@ -2178,11 +2244,12 @@
             return '<div class="hf-card-direction">' +
                 '<div class="hf-direction-label return">Return</div>' +
                 '<div class="hf-card-legs">' +
-                    buildLegHtml('Intl Return', destination, hub, intlRet, intlGfUrl, false) +
+                    buildLegHtml('Leg 1', destination, hub, intlRet, intlGfUrl, false) +
                     retHubTimeHtml +
-                    buildLegHtml('Positioning Return', hub, origin, posRet, posGfUrl, false) +
+                    buildLegHtml('Leg 2', hub, origin, posRet, posGfUrl, false) +
                 '</div>' +
-            '</div>';
+            '</div>' +
+            buildLayoverStrip('Return layovers', intlRet, posRet, retHubMins, hubCode);
         }
 
         function renderHackerFareCards(r, targetId) {
@@ -2238,18 +2305,20 @@
                         '<div class="hf-card-direction">' +
                             '<div class="hf-direction-label outbound">Outbound</div>' +
                             '<div class="hf-card-legs">' +
-                                buildLegHtml('Positioning', r.search_origin, hf.hub, pos, posGfUrl, true) +
+                                buildLegHtml('Leg 1', r.search_origin, hf.hub, pos, posGfUrl, true) +
                                 outHubTimeHtml +
-                                buildLegHtml('International', hf.hub, r.destination, intl, intlGfUrl, true) +
+                                buildLegHtml('Leg 2', hf.hub, r.destination, intl, intlGfUrl, true) +
                             '</div>' +
                         '</div>' +
+                        // Outbound layover strip
+                        buildLayoverStrip('Outbound layovers', pos, intl, outHubMins, hf.hub) +
                         // Return section
                         buildReturnSection(intlRet, posRet, r.destination, hf.hub, r.search_origin, hf.hub, posGfUrl, intlGfUrl) +
                         // Footer
                         '<div class="hf-card-footer">' +
                             '<div>' +
                                 '<div class="hf-card-total">$' + displayTotal.toFixed(0) + '</div>' +
-                                '<div class="hf-card-breakdown">Positioning: $' + pos.price.toFixed(0) + ' RT + International: $' + intl.price.toFixed(0) + ' RT</div>' +
+                                '<div class="hf-card-breakdown">Leg 1: $' + pos.price.toFixed(0) + ' RT + Leg 2: $' + intl.price.toFixed(0) + ' RT</div>' +
                                 groundNote +
                             '</div>' +
                             '<div style="text-align:right">' + savingsHtml + '</div>' +
