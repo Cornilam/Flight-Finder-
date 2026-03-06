@@ -2189,6 +2189,7 @@
                 '<div class="hf-card-leg-airline">' + logo + '<span>' + flight.carrier_display + '</span></div>' +
                 timesHtml +
                 '<div class="hf-card-leg-meta">' + stopsLabel(flight.stops, flight.connections) + ' &middot; ' + formatMinutes(flight.total_duration) + '</div>' +
+                formatLayoverDetails(flight.layover_details) +
                 priceHtml +
                 '<a class="gf-link" href="' + gfUrl + '" target="_blank" rel="noopener">Google Flights</a>' +
             '</div>';
@@ -2248,8 +2249,7 @@
                     retHubTimeHtml +
                     buildLegHtml('Leg 2', hub, origin, posRet, posGfUrl, false) +
                 '</div>' +
-            '</div>' +
-            buildLayoverStrip('Return layovers', intlRet, posRet, retHubMins, hubCode);
+            '</div>';
         }
 
         function renderHackerFareCards(r, targetId) {
@@ -2310,8 +2310,6 @@
                                 buildLegHtml('Leg 2', hf.hub, r.destination, intl, intlGfUrl, true) +
                             '</div>' +
                         '</div>' +
-                        // Outbound layover strip
-                        buildLayoverStrip('Outbound layovers', pos, intl, outHubMins, hf.hub) +
                         // Return section
                         buildReturnSection(intlRet, posRet, r.destination, hf.hub, r.search_origin, hf.hub, posGfUrl, intlGfUrl) +
                         // Footer
