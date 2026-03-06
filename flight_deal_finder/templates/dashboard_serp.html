@@ -1058,7 +1058,7 @@
             border-radius: 2px;
         }
 
-        /* Hacker Fare Table */
+        /* Hub Hop Table */
         .hf-table-wrap {
             background: #ffffff;
             border: none;
@@ -1149,7 +1149,7 @@
         .savings-negative { background: rgba(220, 38, 38, 0.1); color: #dc2626; }
         .savings-neutral { background: rgba(107, 114, 128, 0.1); color: #6b7280; }
 
-        /* Hacker Fare Cards */
+        /* Hub Hop Cards */
         .hf-cards { display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px; }
         .hf-card {
             background: #fff;
@@ -1483,9 +1483,279 @@
             .search-section { flex-direction: column; align-items: center; }
             .tier-divider { width: 80%; height: 1px; margin: 4px 0; }
         }
+        /* ── Tom Onboarding Overlay ─────────────────────────── */
+        body.tom-active .container { display: none; }
+        body.tom-active { background: #ffffff; }
+
+        .tom-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 1;
+            transition: opacity 0.6s ease;
+        }
+        .tom-overlay.tom-hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* Big centered text area */
+        .tom-stage {
+            text-align: center;
+            width: 100%;
+            max-width: 700px;
+            padding: 0 24px;
+        }
+
+        /* Giant headline text */
+        .tom-big-text {
+            font-size: 48px;
+            font-weight: 800;
+            color: #111827;
+            line-height: 1.2;
+            letter-spacing: -1px;
+            margin-bottom: 32px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+        .tom-big-text.tom-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .tom-big-text.tom-exit {
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+        .tom-big-text .tom-emoji {
+            display: inline-block;
+            animation: tomWave 1s ease-in-out;
+        }
+        @keyframes tomWave {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(20deg); }
+            50% { transform: rotate(-10deg); }
+            75% { transform: rotate(15deg); }
+        }
+
+        /* Input area below the big text */
+        .tom-input-area {
+            max-width: 480px;
+            margin: 0 auto;
+            opacity: 0;
+            transform: translateY(16px);
+            transition: opacity 0.4s ease 0.1s, transform 0.4s ease 0.1s;
+        }
+        .tom-input-area.tom-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .tom-input-area.tom-hidden-input {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* Airport text input */
+        .tom-text-input-wrap { position: relative; }
+        .tom-text-input {
+            width: 100%;
+            padding: 18px 24px;
+            border: 2px solid #e5e7eb;
+            border-radius: 16px;
+            font-size: 20px;
+            font-family: inherit;
+            color: #111827;
+            background: #fff;
+            text-align: center;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .tom-text-input:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+        }
+        .tom-text-input::placeholder { color: #c0c7d0; }
+
+        /* Autocomplete dropdown */
+        .tom-ac-dropdown {
+            display: none;
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            right: 0;
+            max-height: 260px;
+            overflow-y: auto;
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            z-index: 10001;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+        }
+        .tom-ac-dropdown.visible { display: block; }
+        .tom-ac-dropdown .ac-item { padding: 14px 20px; font-size: 16px; }
+
+        /* Date picker row */
+        .tom-date-row { display: flex; gap: 16px; justify-content: center; }
+        .tom-date-field { flex: 1; max-width: 220px; display: flex; flex-direction: column; gap: 6px; }
+        .tom-date-field label {
+            font-size: 13px;
+            font-weight: 700;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .tom-date-field input[type="date"] {
+            padding: 16px 18px;
+            border: 2px solid #e5e7eb;
+            border-radius: 16px;
+            font-size: 18px;
+            font-family: inherit;
+            color: #111827;
+            text-align: center;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .tom-date-field input[type="date"]:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+        }
+
+        /* Hub chips */
+        .tom-hub-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+        .tom-hub-chips .hub-chip { padding: 10px 18px; font-size: 16px; }
+
+        /* Continue / Search button */
+        .tom-btn {
+            display: block;
+            width: 100%;
+            max-width: 320px;
+            margin: 20px auto 0;
+            padding: 18px;
+            background: #2563eb;
+            color: #fff;
+            border: none;
+            border-radius: 16px;
+            font-size: 18px;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.15s;
+        }
+        .tom-btn:hover { background: #1d4ed8; transform: scale(1.02); }
+        .tom-btn:disabled { background: #e5e7eb; color: #9ca3af; cursor: not-allowed; transform: none; }
+
+        /* Skip link */
+        .tom-skip {
+            display: block;
+            text-align: center;
+            margin-top: 16px;
+            font-size: 14px;
+            color: #b0b8c4;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .tom-skip:hover { color: #6b7280; }
+
+        /* User selection echo (shows briefly after picking) */
+        .tom-echo {
+            font-size: 36px;
+            font-weight: 800;
+            color: #2563eb;
+            margin-bottom: 24px;
+            opacity: 0;
+            transform: scale(0.9);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        .tom-echo.tom-visible {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* Floating re-open button */
+        .tom-fab {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 9998;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            background: #2563eb;
+            color: #fff;
+            border: none;
+            border-radius: 50px;
+            font-size: 14px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(37, 99, 235, 0.3);
+            transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+        }
+        .tom-fab:hover {
+            background: #1d4ed8;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+        }
+        .tom-fab-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        /* Dashboard reveal */
+        .container.tom-reveal {
+            animation: tomDashboardReveal 0.6s ease-out;
+        }
+        @keyframes tomDashboardReveal {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .tom-big-text { font-size: 32px; }
+            .tom-echo { font-size: 26px; }
+            .tom-text-input { font-size: 18px; }
+            .tom-stage { padding: 0 16px; }
+            .tom-date-row { flex-direction: column; align-items: center; }
+            .tom-date-field { max-width: 100%; width: 100%; }
+        }
     </style>
 </head>
 <body>
+    <!-- Tom Onboarding Overlay -->
+    <div id="tomOverlay" class="tom-overlay">
+        <div class="tom-stage">
+            <div class="tom-big-text" id="tomBigText"></div>
+            <div class="tom-echo" id="tomEcho"></div>
+            <div class="tom-input-area" id="tomInputArea"></div>
+        </div>
+    </div>
+
+    <!-- Floating Re-open Tom Button -->
+    <button class="tom-fab" id="tomFab" style="display:none;" onclick="reopenTom()">
+        <span class="tom-fab-icon">T</span>
+        <span class="tom-fab-label">Chat with Tom</span>
+    </button>
+
     <div class="container">
         <!-- Search Banner -->
         <div class="search-banner">
@@ -1662,7 +1932,7 @@
             <!-- Tab Bar -->
             <div class="results-tabs">
                 <button class="results-tab active" data-tab="direct" onclick="switchTab('direct')">Google Flights</button>
-                <button class="results-tab" data-tab="hacker" onclick="switchTab('hacker')">Hacker Fares</button>
+                <button class="results-tab" data-tab="hacker" onclick="switchTab('hacker')">Hub Hops</button>
                 <button class="results-tab" data-tab="chicago" id="tabBtnChicago" onclick="switchTab('chicago')" style="display:none">From Chicago</button>
             </div>
 
@@ -1671,7 +1941,7 @@
                 <div id="directFlightsList"></div>
             </div>
 
-            <!-- Hacker Fares Tab -->
+            <!-- Hub Hops Tab -->
             <div id="tab-hacker" class="tab-content">
                 <div id="baselineCard"></div>
                 <div id="hackerFareTable"></div>
@@ -2181,7 +2451,7 @@
             startSearch(params, true);
         }
 
-        // --- Hacker Fare Card Helpers ---
+        // --- Hub Hop Card Helpers ---
 
         function hfLogoHtml(flight) {
             if (!flight || !flight.airline_logos || !flight.airline_logos[0]) return '';
@@ -2307,7 +2577,7 @@
         function renderHackerFareCards(r, targetId) {
             var container = document.getElementById(targetId);
             if (!r.hacker_fares || r.hacker_fares.length === 0) {
-                container.innerHTML = '<div class="hf-table-wrap"><div class="no-results">No valid hacker fare routes found.</div></div>';
+                container.innerHTML = '<div class="hf-table-wrap"><div class="no-results">No valid Hub Hop routes found.</div></div>';
                 return;
             }
             var gc = (r.is_hub_search && r.ground_cost) ? r.ground_cost : 0;
@@ -2506,7 +2776,7 @@
             var directBtn = document.querySelector('.results-tab[data-tab="direct"]');
             var hackerBtn = document.querySelector('.results-tab[data-tab="hacker"]');
             directBtn.innerHTML = 'Google Flights <span class="tab-count">' + flightCount + '</span>';
-            hackerBtn.innerHTML = 'Hacker Fares <span class="tab-count">' + hfCount + '</span>';
+            hackerBtn.innerHTML = 'Hub Hops <span class="tab-count">' + hfCount + '</span>';
         }
 
         function renderDirectFlights(flights, origin, destination, departDate, returnDate, targetId, groundCost) {
@@ -3052,7 +3322,7 @@
             }
             document.getElementById('chicagoBaselineCard').innerHTML = baseHtml;
 
-            // Hacker fare cards
+            // Hub Hop cards
             renderHackerFareCards(r, 'chicagoHackerFareTable');
 
             // Warnings
@@ -3172,7 +3442,7 @@
             }
             document.getElementById("baselineCard").innerHTML = baseHtml;
 
-            // Hacker fare cards
+            // Hub Hop cards
             renderHackerFareCards(r, 'hackerFareTable');
 
             // Update tab counts
@@ -3212,6 +3482,471 @@
                 renderResults(resultsCache[mostRecent], true);
             }
         })();
+
+        /* ── Tom Cinematic Onboarding ──────────────────── */
+        var TOM = {
+            state: 'INIT',
+            collected: { destination: null, origin: null, depart_date: null, return_date: null, hubs: [] },
+            acActiveIdx: -1
+        };
+
+        /* ── Core animation helpers ── */
+
+        // Show big text with fade-in-up, call back when visible
+        function showBigText(text, callback) {
+            var el = document.getElementById('tomBigText');
+            el.classList.remove('tom-visible', 'tom-exit');
+            el.innerHTML = text;
+            // Force reflow so transition replays
+            el.offsetHeight;
+            el.classList.add('tom-visible');
+            setTimeout(function() { if (callback) callback(); }, 550);
+        }
+
+        // Exit big text with fade-out-up, call back when gone
+        function exitBigText(callback) {
+            var el = document.getElementById('tomBigText');
+            el.classList.add('tom-exit');
+            el.classList.remove('tom-visible');
+            setTimeout(function() {
+                el.innerHTML = '';
+                el.classList.remove('tom-exit');
+                if (callback) callback();
+            }, 450);
+        }
+
+        // Show echo (user selection) with scale-in, hold, then fade out
+        function showEcho(text, callback) {
+            var el = document.getElementById('tomEcho');
+            el.classList.remove('tom-visible');
+            el.textContent = text;
+            el.offsetHeight;
+            el.classList.add('tom-visible');
+            setTimeout(function() {
+                el.classList.remove('tom-visible');
+                setTimeout(function() {
+                    el.textContent = '';
+                    if (callback) callback();
+                }, 350);
+            }, 1000);
+        }
+
+        // Show input area with fade-in
+        function showInputArea() {
+            var el = document.getElementById('tomInputArea');
+            el.classList.remove('tom-hidden-input');
+            el.offsetHeight;
+            el.classList.add('tom-visible');
+        }
+
+        // Hide input area
+        function hideInputArea() {
+            var el = document.getElementById('tomInputArea');
+            el.classList.remove('tom-visible');
+            el.classList.add('tom-hidden-input');
+        }
+
+        /* ── Init & greeting ── */
+
+        function initTom() {
+            document.body.classList.add('tom-active');
+            // Clear origin so Tom always asks
+            var oEl = document.getElementById('inputOrigin');
+            oEl.value = '';
+            oEl.dataset.selectedIata = '';
+
+            TOM.state = 'GREETING';
+            setTimeout(function() {
+                showBigText('Hi, I\'m Tom. <span class="tom-emoji">\uD83D\uDC4B</span>', function() {
+                    setTimeout(function() {
+                        exitBigText(function() {
+                            showBigText('Where do you want to go? \uD83D\uDCCD', function() {
+                                TOM.state = 'DESTINATION';
+                                showAirportInput('destination', 'Type a destination city or airport...');
+                            });
+                        });
+                    }, 1200);
+                });
+            }, 400);
+        }
+
+        /* ── Airport input ── */
+
+        function showAirportInput(fieldType, placeholder) {
+            var inputArea = document.getElementById('tomInputArea');
+            inputArea.classList.remove('tom-hidden-input');
+            inputArea.innerHTML =
+                '<div class="tom-text-input-wrap">' +
+                    '<input type="text" class="tom-text-input" id="tomAirportInput" ' +
+                        'placeholder="' + placeholder + '" autocomplete="off">' +
+                    '<div class="tom-ac-dropdown" id="tomAcDropdown"></div>' +
+                '</div>' +
+                '<div class="tom-skip" onclick="skipToDashboard()">Skip to dashboard</div>';
+
+            // Trigger fade-in
+            inputArea.offsetHeight;
+            inputArea.classList.add('tom-visible');
+
+            var input = document.getElementById('tomAirportInput');
+            TOM.acActiveIdx = -1;
+
+            var presets = (fieldType === 'destination')
+                ? FIELD_PRESETS['inputDestination']
+                : FIELD_PRESETS['inputOrigin'];
+
+            input.addEventListener('focus', function() {
+                TOM.acActiveIdx = -1;
+                var val = input.value.trim();
+                if (val.length === 0 && presets) {
+                    renderTomDropdown(presets);
+                } else if (val.length >= 1) {
+                    renderTomDropdown(filterAirports(val));
+                }
+            });
+
+            input.addEventListener('input', function() {
+                TOM.acActiveIdx = -1;
+                var val = input.value.trim();
+                if (val.length === 0) {
+                    if (presets) renderTomDropdown(presets);
+                    else hideTomDropdown();
+                } else {
+                    renderTomDropdown(filterAirports(val));
+                }
+            });
+
+            input.addEventListener('keydown', function(e) {
+                var dd = document.getElementById('tomAcDropdown');
+                var items = dd.querySelectorAll('.ac-item');
+                if (!items.length) return;
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    TOM.acActiveIdx = Math.min(TOM.acActiveIdx + 1, items.length - 1);
+                    updateTomActiveItem(items);
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    TOM.acActiveIdx = Math.max(TOM.acActiveIdx - 1, 0);
+                    updateTomActiveItem(items);
+                } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (TOM.acActiveIdx >= 0 && TOM.acActiveIdx < items.length) {
+                        selectTomAirport(items[TOM.acActiveIdx].dataset.iata, fieldType);
+                    } else if (items.length > 0) {
+                        selectTomAirport(items[0].dataset.iata, fieldType);
+                    }
+                }
+            });
+
+            setTimeout(function() { input.focus(); }, 200);
+        }
+
+        function renderTomDropdown(matches) {
+            var dd = document.getElementById('tomAcDropdown');
+            if (!matches || !matches.length) {
+                dd.innerHTML = '<div class="ac-empty">No airports found</div>';
+                dd.classList.add('visible');
+                return;
+            }
+            var html = '';
+            for (var i = 0; i < matches.length; i++) {
+                var a = matches[i];
+                html += '<div class="ac-item' + (i === TOM.acActiveIdx ? ' active' : '') +
+                    '" data-iata="' + a.iata + '" data-idx="' + i + '">' +
+                    '<span class="ac-iata">' + a.iata + '</span>' +
+                    '<span class="ac-detail"><span class="ac-city">' + a.city + '</span>, ' +
+                    a.country + ' &mdash; ' + a.name + '</span></div>';
+            }
+            dd.innerHTML = html;
+            dd.classList.add('visible');
+        }
+
+        function hideTomDropdown() {
+            var dd = document.getElementById('tomAcDropdown');
+            if (dd) { dd.classList.remove('visible'); dd.innerHTML = ''; }
+            TOM.acActiveIdx = -1;
+        }
+
+        function updateTomActiveItem(items) {
+            for (var i = 0; i < items.length; i++) {
+                items[i].classList.toggle('active', i === TOM.acActiveIdx);
+            }
+            if (TOM.acActiveIdx >= 0 && items[TOM.acActiveIdx]) {
+                items[TOM.acActiveIdx].scrollIntoView({ block: 'nearest' });
+            }
+        }
+
+        /* ── Airport selection ── */
+
+        function selectTomAirport(iata, fieldType) {
+            hideTomDropdown();
+            var displayText = iata;
+            for (var i = 0; i < AIRPORTS.length; i++) {
+                if (AIRPORTS[i].iata === iata) {
+                    displayText = AIRPORTS[i].city + ' (' + iata + ')';
+                    break;
+                }
+            }
+            TOM.collected[fieldType] = iata;
+
+            // Hide input, exit big text, show echo, then next step
+            hideInputArea();
+            exitBigText(function() {
+                showEcho(displayText, function() {
+                    if (fieldType === 'destination') {
+                        showBigText('Where are you flying from? \u2708\uFE0F', function() {
+                            TOM.state = 'ORIGIN';
+                            showAirportInput('origin', 'Type your departure city or airport...');
+                        });
+                    } else if (fieldType === 'origin') {
+                        showBigText('What dates are you flying?', function() {
+                            TOM.state = 'DATES';
+                            showDatePickers();
+                        });
+                    }
+                });
+            });
+        }
+
+        // Mousedown delegate for Tom's autocomplete
+        document.addEventListener('mousedown', function(e) {
+            var item = e.target.closest('.tom-ac-dropdown .ac-item');
+            if (!item) return;
+            e.preventDefault();
+            var fieldType = TOM.state === 'DESTINATION' ? 'destination' : 'origin';
+            selectTomAirport(item.dataset.iata, fieldType);
+        });
+
+        /* ── Date pickers ── */
+
+        function showDatePickers() {
+            var today = new Date().toISOString().split('T')[0];
+            var inputArea = document.getElementById('tomInputArea');
+            inputArea.classList.remove('tom-hidden-input');
+            inputArea.innerHTML =
+                '<div class="tom-date-row">' +
+                    '<div class="tom-date-field">' +
+                        '<label for="tomDepart">Depart</label>' +
+                        '<input type="date" id="tomDepart" min="' + today + '">' +
+                    '</div>' +
+                    '<div class="tom-date-field">' +
+                        '<label for="tomReturn">Return</label>' +
+                        '<input type="date" id="tomReturn" min="' + today + '">' +
+                    '</div>' +
+                '</div>' +
+                '<button class="tom-btn" id="tomDateBtn" onclick="confirmDates()" disabled>Continue</button>';
+
+            inputArea.offsetHeight;
+            inputArea.classList.add('tom-visible');
+
+            var departInput = document.getElementById('tomDepart');
+            var returnInput = document.getElementById('tomReturn');
+            var btn = document.getElementById('tomDateBtn');
+
+            function validateDates() {
+                var d = departInput.value;
+                var r = returnInput.value;
+                btn.disabled = !(d && r && r > d);
+            }
+            departInput.addEventListener('change', function() {
+                returnInput.min = departInput.value;
+                if (returnInput.value && returnInput.value <= departInput.value) returnInput.value = '';
+                validateDates();
+            });
+            returnInput.addEventListener('change', validateDates);
+        }
+
+        function confirmDates() {
+            var depart = document.getElementById('tomDepart').value;
+            var ret = document.getElementById('tomReturn').value;
+            TOM.collected.depart_date = depart;
+            TOM.collected.return_date = ret;
+
+            var dateDisplay = formatShortDate(depart) + ' \u2013 ' + formatShortDate(ret);
+
+            hideInputArea();
+            exitBigText(function() {
+                showEcho(dateDisplay, function() {
+                    showBigText('Pick your routing hubs', function() {
+                        TOM.state = 'HUBS';
+                        showHubChips();
+                    });
+                });
+            });
+        }
+
+        /* ── Hub chips ── */
+
+        function showHubChips() {
+            var existingChips = document.querySelectorAll('#hubCheckboxes input[type="checkbox"]');
+            var allHubCodes = [];
+            var defaultChecked = [];
+            for (var i = 0; i < existingChips.length; i++) {
+                allHubCodes.push(existingChips[i].value);
+                if (existingChips[i].checked) defaultChecked.push(existingChips[i].value);
+            }
+
+            var inputArea = document.getElementById('tomInputArea');
+            inputArea.classList.remove('tom-hidden-input');
+            var html = '<div class="tom-hub-chips" id="tomHubChips">';
+            for (var i = 0; i < allHubCodes.length; i++) {
+                var hub = allHubCodes[i];
+                var isChecked = defaultChecked.indexOf(hub) !== -1;
+                html += '<label class="hub-chip' + (isChecked ? ' checked' : '') + '">' +
+                    '<input type="checkbox" value="' + hub + '"' + (isChecked ? ' checked' : '') +
+                    ' onchange="onTomHubToggle(this)">' +
+                    '<span class="chip-check">' + (isChecked ? '&#10003;' : '') + '</span>' +
+                    '<span>' + hub + '</span>' +
+                '</label>';
+            }
+            html += '</div>';
+            html += '<button class="tom-btn" onclick="confirmHubs()">Search flights \u2708\uFE0F</button>';
+            inputArea.innerHTML = html;
+            inputArea.offsetHeight;
+            inputArea.classList.add('tom-visible');
+        }
+
+        function onTomHubToggle(checkbox) {
+            var chip = checkbox.closest('.hub-chip');
+            if (checkbox.checked) {
+                chip.classList.add('checked');
+                chip.querySelector('.chip-check').innerHTML = '&#10003;';
+            } else {
+                chip.classList.remove('checked');
+                chip.querySelector('.chip-check').innerHTML = '';
+            }
+        }
+
+        function confirmHubs() {
+            var checkboxes = document.querySelectorAll('#tomHubChips input[type="checkbox"]');
+            var selected = [];
+            for (var i = 0; i < checkboxes.length; i++) {
+                if (checkboxes[i].checked) selected.push(checkboxes[i].value);
+            }
+            if (selected.length === 0) { alert('Please select at least one hub'); return; }
+            TOM.collected.hubs = selected;
+
+            hideInputArea();
+            exitBigText(function() {
+                showBigText('Finding you the best deals\u2026 \u2728', function() {
+                    TOM.state = 'SEARCHING';
+                    setTimeout(transitionToDashboard, 1800);
+                });
+            });
+        }
+
+        /* ── Dashboard transition ── */
+
+        function skipToDashboard() {
+            var el = document.getElementById('tomBigText');
+            el.classList.remove('tom-visible', 'tom-exit');
+            var overlay = document.getElementById('tomOverlay');
+            overlay.classList.add('tom-hidden');
+            document.body.classList.remove('tom-active');
+            document.querySelector('.container').classList.add('tom-reveal');
+            document.getElementById('tomFab').style.display = 'flex';
+            setTimeout(function() { overlay.style.display = 'none'; }, 600);
+        }
+
+        function transitionToDashboard() {
+            // Populate dashboard form fields
+            var oEl = document.getElementById('inputOrigin');
+            var dEl = document.getElementById('inputDestination');
+            oEl.value = TOM.collected.origin;
+            oEl.dataset.selectedIata = TOM.collected.origin;
+            dEl.value = TOM.collected.destination;
+            dEl.dataset.selectedIata = TOM.collected.destination;
+            document.getElementById('inputDepart').value = TOM.collected.depart_date;
+            document.getElementById('inputReturn').value = TOM.collected.return_date;
+
+            // Sync hub checkboxes
+            var dashCbs = document.querySelectorAll('#hubCheckboxes input[type="checkbox"]');
+            for (var i = 0; i < dashCbs.length; i++) {
+                dashCbs[i].checked = TOM.collected.hubs.indexOf(dashCbs[i].value) !== -1;
+                onHubToggle(dashCbs[i]);
+            }
+
+            // Exit big text first, then fade overlay to dashboard
+            exitBigText(function() {
+                var overlay = document.getElementById('tomOverlay');
+                overlay.classList.add('tom-hidden');
+                document.body.classList.remove('tom-active');
+                document.querySelector('.container').classList.add('tom-reveal');
+                document.getElementById('tomFab').style.display = 'flex';
+
+                setTimeout(function() {
+                    overlay.style.display = 'none';
+
+                    var params = {
+                        origin: TOM.collected.origin,
+                        destination: TOM.collected.destination,
+                        depart_date: TOM.collected.depart_date,
+                        return_date: TOM.collected.return_date,
+                        hub_compare: false,
+                        hub_airport: 'ORD',
+                        driving_cost: 60,
+                        parking_rate: 20,
+                        hubs: TOM.collected.hubs
+                    };
+
+                    // Auto ORD comparison if flying from MKE
+                    if (params.origin === 'MKE') {
+                        pendingHubSearch = Object.assign({}, params, { origin: 'ORD', is_hub_search: true });
+                    }
+
+                    startSearch(params, false);
+                }, 600);
+            });
+        }
+
+        /* ── Reopen Tom ── */
+
+        function reopenTom() {
+            TOM.state = 'GREETING';
+            TOM.collected = { destination: null, origin: null, depart_date: null, return_date: null, hubs: [] };
+
+            var bigText = document.getElementById('tomBigText');
+            var echo = document.getElementById('tomEcho');
+            var inputArea = document.getElementById('tomInputArea');
+            bigText.innerHTML = '';
+            bigText.classList.remove('tom-visible', 'tom-exit');
+            echo.textContent = '';
+            echo.classList.remove('tom-visible');
+            inputArea.innerHTML = '';
+            inputArea.classList.remove('tom-visible', 'tom-hidden-input');
+
+            var overlay = document.getElementById('tomOverlay');
+            overlay.style.display = 'flex';
+            overlay.offsetHeight; // force reflow
+            overlay.classList.remove('tom-hidden');
+            document.body.classList.add('tom-active');
+            document.getElementById('tomFab').style.display = 'none';
+
+            setTimeout(function() {
+                showBigText('Hi again! <span class="tom-emoji">\uD83D\uDC4B</span>', function() {
+                    setTimeout(function() {
+                        exitBigText(function() {
+                            showBigText('Where do you want to go? \uD83D\uDCCD', function() {
+                                TOM.state = 'DESTINATION';
+                                showAirportInput('destination', 'Type a destination city or airport...');
+                            });
+                        });
+                    }, 1200);
+                });
+            }, 300);
+        }
+
+        // Initialize Tom when airports data is ready
+        var tomInitInterval = setInterval(function() {
+            if (AIRPORTS.length > 0) {
+                clearInterval(tomInitInterval);
+                initTom();
+            }
+        }, 100);
+        setTimeout(function() {
+            clearInterval(tomInitInterval);
+            if (TOM.state === 'INIT') initTom();
+        }, 3000);
+
     </script>
 </body>
 </html>

@@ -1,8 +1,8 @@
 """
-Hacker Fare Engine - SerpAPI Edition
+Hub Hop Engine - SerpAPI Edition
 
 Flask web app that searches Google Flights via SerpAPI for split-ticket
-"hacker fare" deals. Compares flying from MKE vs driving to ORD.
+"Hub Hop" deals. Compares flying from MKE vs driving to ORD.
 
 Usage:
     python app_serp.py
@@ -46,7 +46,7 @@ ALL_HUBS = [h.strip() for h in os.getenv("ALL_HUBS", "JFK,EWR,ORD,IAD,ATL,YYZ,DF
 SERP_HUBS = [h.strip() for h in os.getenv("SERP_HUBS", "JFK,ORD,ATL").split(",") if h.strip()]
 
 # Minimum connection time (minutes) between separate tickets at a hub
-MIN_CONNECTION_MINUTES = int(os.getenv("MIN_CONNECTION_MINUTES", "120"))
+MIN_CONNECTION_MINUTES = int(os.getenv("MIN_CONNECTION_MINUTES", "60"))
 
 # Drive-to-hub config
 REGIONAL_AIRPORT = os.getenv("REGIONAL_AIRPORT", "MKE")
@@ -283,7 +283,7 @@ def api_deals():
 
 
 # ---------------------------------------------------------------------------
-# Hacker Fare Search Pipeline
+# Hub Hop Search Pipeline
 # ---------------------------------------------------------------------------
 
 def format_minutes(mins):
@@ -306,7 +306,7 @@ def emit(q, event_type, data):
 
 def run_hacker_fare_search(q, params):
     """
-    Full hacker fare search pipeline using SerpAPI.
+    Full Hub Hop search pipeline using SerpAPI.
     """
     try:
         search_origin = params["origin"]
@@ -337,7 +337,7 @@ def run_hacker_fare_search(q, params):
 
         emit(q, "status", {
             "step": "start",
-            "message": f"Starting SerpAPI hacker fare search from {origin_label}",
+            "message": f"Starting Hub Hop search from {origin_label}",
             "hub_total": hub_total,
             "hubs": active_hubs,
         })
@@ -486,16 +486,17 @@ def run_hacker_fare_search(q, params):
         # ---------------------------------------------------------------
 
         # ---------------------------------------------------------------
-        # Step 4: Assemble valid hacker fare pairings (round-trip mode)
+        # Step 4: Assemble valid Hub Hop pairings (round-trip mode)
         # ---------------------------------------------------------------
         emit(q, "status", {
             "step": "assembly",
-            "message": "Assembling hacker fare routes (positioning RT + international RT)...",
+            "message": "Assembling Hub Hop routes (positioning RT + international RT)...",
             "phase": "assembly",
         })
 
         hacker_fares = []
         global_warnings = []
+        skipped_bad_connection = 0
 
         for hub in active_hubs:
             pos_list = positioning_offers.get(hub, [])
@@ -508,6 +509,20 @@ def run_hacker_fare_search(q, params):
             # Combine top positioning x top international round-trips
             for pos in pos_list[:3]:
                 for intl in intl_list[:3]:
+                    # Validate outbound connection: positioning must arrive
+                    # at the hub BEFORE the international flight departs
+                    conn_minutes = calculate_connection_time(
+                        pos.get("arrival_time"), intl.get("departure_time")
+                    )
+                    if conn_minutes is not None and conn_minutes < MIN_CONNECTION_MINUTES:
+                        skipped_bad_connection += 1
+                        continue
+                    # conn_minutes is None when times can't be parsed or
+                    # the connection is impossible (negative); skip those too
+                    if conn_minutes is None and pos.get("arrival_time") and intl.get("departure_time"):
+                        skipped_bad_connection += 1
+                        continue
+
                     total = pos["price"] + intl["price"]
                     total_with_ground = total + ground_cost
 
@@ -533,6 +548,11 @@ def run_hacker_fare_search(q, params):
                         "warnings": [],
                     })
 
+        if skipped_bad_connection:
+            global_warnings.append(
+                f"Filtered out {skipped_bad_connection} route(s) with impossible or too-short outbound connections (minimum {MIN_CONNECTION_MINUTES} min)."
+            )
+
         # Deduplicate
         seen = set()
         unique_fares = []
@@ -557,7 +577,7 @@ def run_hacker_fare_search(q, params):
 
         emit(q, "status", {
             "step": "assembly_done",
-            "message": f"Found {len(unique_fares)} valid hacker fare routes.",
+            "message": f"Found {len(unique_fares)} valid Hub Hop routes.",
         })
 
         # ---------------------------------------------------------------
@@ -571,7 +591,7 @@ def run_hacker_fare_search(q, params):
             "phase": "return_legs",
         })
 
-        # Collect unique departure_tokens from assembled hacker fares
+        # Collect unique departure_tokens from assembled Hub Hop fares
         tokens_to_fetch = {}  # dedup key -> (origin, dest, depart, return, token)
 
         for hf in unique_fares:
@@ -622,12 +642,41 @@ def run_hacker_fare_search(q, params):
             "message": f"Fetched {len(return_leg_cache)} return legs from {total_tokens} tokens.",
         })
 
-        # Attach return leg data to each hacker fare
+        # Attach return leg data to each Hub Hop fare
         for hf in unique_fares:
             pos_token = hf["positioning"].get("departure_token", "")[:60]
             intl_token = hf["international"].get("departure_token", "")[:60]
             hf["positioning_return"] = return_leg_cache.get(pos_token, None)
             hf["international_return"] = return_leg_cache.get(intl_token, None)
+
+        # Validate return connections: international return must arrive
+        # at the hub before the positioning return departs
+        skipped_return = 0
+        validated_fares = []
+        for hf in unique_fares:
+            intl_ret = hf.get("international_return")
+            pos_ret = hf.get("positioning_return")
+            if intl_ret and pos_ret:
+                ret_conn = calculate_connection_time(
+                    intl_ret.get("arrival_time"), pos_ret.get("departure_time")
+                )
+                if ret_conn is not None and ret_conn < MIN_CONNECTION_MINUTES:
+                    skipped_return += 1
+                    continue
+                if ret_conn is None and intl_ret.get("arrival_time") and pos_ret.get("departure_time"):
+                    skipped_return += 1
+                    continue
+            validated_fares.append(hf)
+
+        if skipped_return:
+            global_warnings.append(
+                f"Filtered out {skipped_return} route(s) with impossible or too-short return connections."
+            )
+
+        # Re-rank after filtering
+        for i, hf in enumerate(validated_fares):
+            hf["rank"] = i + 1
+        unique_fares = validated_fares
 
         # ---------------------------------------------------------------
         # Step 5: Send results
@@ -709,7 +758,7 @@ def calculate_connection_time(arrival_time_str, departure_time_str):
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    print("\n  Hacker Fare Engine - SerpAPI Edition")
+    print("\n  Hub Hop Engine - SerpAPI Edition")
     print(f"  Trip: {ORIGIN} -> {DESTINATION} | {DEPART_DATE} to {RETURN_DATE}")
     print(f"  Hubs ({len(SERP_HUBS)}): {', '.join(SERP_HUBS)}")
     print(f"  API calls per search: ~{1 + len(SERP_HUBS) * 2}")
