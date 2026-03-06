@@ -2739,7 +2739,8 @@
             if (!params.return_date) { alert('Please select a return date'); return; }
             if (params.return_date <= params.depart_date) { alert('Return date must be after departure date'); return; }
 
-            if (params.hub_compare && params.hub_airport.length === 3) {
+            // Auto-run ORD comparison when searching from MKE, or when checkbox is checked
+            if ((params.origin === 'MKE' || params.hub_compare) && params.hub_airport.length === 3) {
                 pendingHubSearch = Object.assign({}, params, { origin: params.hub_airport, is_hub_search: true });
             } else {
                 pendingHubSearch = null;
