@@ -22,6 +22,7 @@ from dotenv import load_dotenv
 from serp_flights import (
     search_one_way,
     search_round_trip,
+    search_return_flights,
     get_cache_stats,
     clear_cache,
     SerpFlightError,
@@ -560,9 +561,78 @@ def run_hacker_fare_search(q, params):
         })
 
         # ---------------------------------------------------------------
+        # Step 4.5: Fetch return leg details using departure_tokens
+        # ---------------------------------------------------------------
+        MAX_RETURN_LEG_FETCHES = int(os.getenv("MAX_RETURN_LEG_FETCHES", "12"))
+
+        emit(q, "status", {
+            "step": "return_legs",
+            "message": "Fetching return flight details...",
+            "phase": "return_legs",
+        })
+
+        # Collect unique departure_tokens from assembled hacker fares
+        tokens_to_fetch = {}  # dedup key -> (origin, dest, depart, return, token)
+
+        for hf in unique_fares:
+            pos = hf["positioning"]
+            intl = hf["international"]
+
+            pos_token = pos.get("departure_token", "")
+            if pos_token:
+                tkey = ("pos", search_origin, hf["hub"], pos_token[:60])
+                if tkey not in tokens_to_fetch:
+                    tokens_to_fetch[tkey] = (
+                        search_origin, hf["hub"], depart_date, return_date, pos_token
+                    )
+
+            intl_token = intl.get("departure_token", "")
+            if intl_token:
+                tkey = ("intl", hf["hub"], destination, intl_token[:60])
+                if tkey not in tokens_to_fetch:
+                    tokens_to_fetch[tkey] = (
+                        hf["hub"], destination, depart_date, return_date, intl_token
+                    )
+
+            if len(tokens_to_fetch) >= MAX_RETURN_LEG_FETCHES:
+                break
+
+        # Fetch return legs with progress
+        return_leg_cache = {}   # token_short -> best return flight dict
+        fetch_count = 0
+        total_tokens = len(tokens_to_fetch)
+        return_leg_api_calls = 0
+
+        for tk_key, (orig, dest, dd, rd, token) in tokens_to_fetch.items():
+            fetch_count += 1
+            emit(q, "status", {
+                "step": f"return_leg_{fetch_count}",
+                "message": f"Fetching return leg {fetch_count}/{total_tokens}: {dest} → {orig}",
+                "phase": "return_legs",
+            })
+
+            ret_flights = search_return_flights(orig, dest, dd, rd, token, max_results=1)
+            return_leg_api_calls += 1
+
+            if ret_flights:
+                return_leg_cache[token[:60]] = ret_flights[0]
+
+        emit(q, "status", {
+            "step": "return_legs_done",
+            "message": f"Fetched {len(return_leg_cache)} return legs from {total_tokens} tokens.",
+        })
+
+        # Attach return leg data to each hacker fare
+        for hf in unique_fares:
+            pos_token = hf["positioning"].get("departure_token", "")[:60]
+            intl_token = hf["international"].get("departure_token", "")[:60]
+            hf["positioning_return"] = return_leg_cache.get(pos_token, None)
+            hf["international_return"] = return_leg_cache.get(intl_token, None)
+
+        # ---------------------------------------------------------------
         # Step 5: Send results
         # ---------------------------------------------------------------
-        api_calls = 1 + len(active_hubs) * 2  # 1 baseline + 2 RT per hub
+        api_calls = 1 + len(active_hubs) * 2 + return_leg_api_calls
         stats_after = get_cache_stats()
         search_hits = stats_after["hits"] - stats_before["hits"]
         search_misses = stats_after["misses"] - stats_before["misses"]

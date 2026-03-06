@@ -251,6 +251,105 @@ def search_round_trip(origin, destination, depart_date, return_date, max_results
     return parsed[:max_results]
 
 
+def search_return_flights(origin, destination, depart_date, return_date, departure_token, max_results=3):
+    """
+    Fetch return flight options for a specific outbound selection.
+
+    Uses the departure_token from a round-trip search to retrieve the
+    matching return flights.  The round-trip *price* does not change —
+    this reveals the return flight details (times, routing, duration).
+
+    Args:
+        origin:           Original search origin IATA code (e.g. "MKE").
+        destination:      Original search destination IATA code (e.g. "EZE").
+        depart_date:      Original outbound date  YYYY-MM-DD.
+        return_date:      Original return date     YYYY-MM-DD.
+        departure_token:  Token from the outbound flight selection.
+        max_results:      Max return options to return.
+
+    Returns a list of parsed flight dicts (return leg details).
+    """
+    if not departure_token:
+        return []
+
+    # Cache key: use a truncated token (they can be very long)
+    token_short = departure_token[:60]
+    cache_key = ("ret", origin, destination, depart_date, return_date, token_short)
+
+    if cache_key in _cache:
+        _cache_stats["hits"] += 1
+        print(f"  [CACHE HIT] Return flights {destination}->{origin}")
+        return _cache[cache_key][:max_results]
+
+    _cache_stats["misses"] += 1
+
+    params = {
+        "engine": "google_flights",
+        "api_key": SERPAPI_KEY,
+        "departure_id": origin,
+        "arrival_id": destination,
+        "outbound_date": depart_date,
+        "return_date": return_date,
+        "type": "1",           # round-trip (same as original search)
+        "currency": "USD",
+        "hl": "en",
+        "gl": "us",
+        "adults": "1",
+        "departure_token": departure_token,
+    }
+
+    try:
+        resp = requests.get(SERPAPI_BASE, params=params, timeout=45)
+    except requests.RequestException as e:
+        print(f"  [WARNING] Return flight request failed: {e}")
+        _cache[cache_key] = []
+        _cache_timestamps[cache_key] = time.time()
+        _save_cache()
+        return []
+
+    if resp.status_code != 200:
+        print(f"  [WARNING] Return flight search failed (HTTP {resp.status_code})")
+        _cache[cache_key] = []
+        _cache_timestamps[cache_key] = time.time()
+        _save_cache()
+        return []
+
+    data = resp.json()
+
+    if "error" in data:
+        print(f"  [WARNING] Return flight error: {data['error']}")
+        _cache[cache_key] = []
+        _cache_timestamps[cache_key] = time.time()
+        _save_cache()
+        return []
+
+    # Return flights appear in the same best_flights / other_flights structure
+    best = data.get("best_flights", [])
+    other = data.get("other_flights", [])
+    all_flights = best + other
+
+    if not all_flights:
+        print(f"  No return flights found {destination}->{origin}")
+        _cache[cache_key] = []
+        _cache_timestamps[cache_key] = time.time()
+        _save_cache()
+        return []
+
+    # Parse with reversed origin/dest  (the return flies destination -> origin)
+    parsed = []
+    for flight_group in all_flights:
+        offer = parse_offer(flight_group, destination, origin)
+        if offer:
+            parsed.append(offer)
+
+    # Sort by total duration (price is identical across all return options)
+    parsed.sort(key=lambda f: f.get("total_duration", 9999))
+    _cache[cache_key] = parsed
+    _cache_timestamps[cache_key] = time.time()
+    _save_cache()
+    return parsed[:max_results]
+
+
 # ---------------------------------------------------------------------------
 # Offer Parser
 # ---------------------------------------------------------------------------

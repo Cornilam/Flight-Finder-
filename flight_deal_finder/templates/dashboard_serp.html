@@ -822,6 +822,22 @@
             color: #2563eb;
             font-weight: 600;
             border-bottom-color: #2563eb;
+            background: rgba(37, 99, 235, 0.04);
+            border-radius: 8px 8px 0 0;
+        }
+        .results-tab .tab-count {
+            display: inline-block;
+            background: #e5e7eb;
+            color: #6b7280;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 1px 6px;
+            border-radius: 10px;
+            margin-left: 6px;
+        }
+        .results-tab.active .tab-count {
+            background: rgba(37, 99, 235, 0.1);
+            color: #2563eb;
         }
         .tab-content {
             display: none;
@@ -994,8 +1010,9 @@
         .baseline-card {
             background: #ffffff;
             border: none;
+            border-left: 4px solid #2563eb;
             border-radius: 12px;
-            padding: 20px;
+            padding: 20px 20px 20px 24px;
             margin-bottom: 24px;
             display: flex;
             justify-content: space-between;
@@ -1131,6 +1148,201 @@
         .savings-positive { background: rgba(16, 185, 129, 0.1); color: #059669; }
         .savings-negative { background: rgba(220, 38, 38, 0.1); color: #dc2626; }
         .savings-neutral { background: rgba(107, 114, 128, 0.1); color: #6b7280; }
+
+        /* Hacker Fare Cards */
+        .hf-cards { display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px; }
+        .hf-card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .hf-card:hover {
+            border-color: #93c5fd;
+            box-shadow: 0 4px 12px rgba(37,99,235,0.08);
+        }
+        .hf-card.best-card {
+            border-color: #10b981;
+            box-shadow: 0 2px 8px rgba(16,185,129,0.12);
+        }
+        .hf-card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 20px;
+            background: #f8fafc;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .hf-card.best-card .hf-card-header { background: rgba(16,185,129,0.05); }
+        .hf-card-rank {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px; height: 30px;
+            border-radius: 50%;
+            font-size: 14px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        .hf-card-rank.r1 { background: #10b981; color: #fff; }
+        .hf-card-rank.r2 { background: #e5e7eb; color: #374151; }
+        .hf-card-rank.r3 { background: #e5e7eb; color: #374151; }
+        .hf-card-rank.rn { background: #f3f4f6; color: #9ca3af; }
+        .hf-card-hub {
+            font-size: 16px;
+            font-weight: 700;
+            color: #111827;
+        }
+        .hf-card-hub small { font-weight: 400; color: #6b7280; font-size: 13px; }
+        .hf-card-savings { margin-left: auto; }
+
+        .hf-card-body { padding: 0; }
+        .hf-card-direction { padding: 16px 20px; }
+        .hf-card-direction + .hf-card-direction { border-top: 2px solid #f1f5f9; }
+        .hf-direction-label {
+            display: inline-block;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 3px 10px;
+            border-radius: 4px;
+            margin-bottom: 12px;
+        }
+        .hf-direction-label.outbound { color: #2563eb; background: rgba(37,99,235,0.08); }
+        .hf-direction-label.return { color: #7c3aed; background: rgba(124,58,237,0.08); }
+        .hf-return-unavailable {
+            text-align: center;
+            padding: 16px 20px;
+            color: #94a3b8;
+            font-size: 13px;
+            font-style: italic;
+            border-top: 2px solid #f1f5f9;
+        }
+        .hf-outbound-label {
+            display: inline-block;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #2563eb;
+            background: rgba(37,99,235,0.08);
+            padding: 3px 10px;
+            border-radius: 4px;
+            margin-bottom: 12px;
+        }
+        .hf-card-legs {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 0;
+            align-items: start;
+        }
+        .hf-card-leg {
+            padding: 0 8px;
+        }
+        .hf-card-leg-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+        .hf-card-leg-route {
+            font-size: 15px;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 4px;
+        }
+        .hf-card-leg-airline {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: #374151;
+            margin-bottom: 2px;
+        }
+        .hf-card-leg-airline img { width: 20px; height: 20px; border-radius: 3px; }
+        .hf-card-leg-times {
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 2px;
+        }
+        .hf-card-leg-meta {
+            font-size: 12px;
+            color: #6b7280;
+            margin-bottom: 2px;
+        }
+        .hf-card-leg-price {
+            font-size: 15px;
+            font-weight: 700;
+            color: #111827;
+            margin-top: 6px;
+        }
+        .hf-card-hub-time {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 0 12px;
+            min-width: 90px;
+            border-left: 1px dashed #e5e7eb;
+            border-right: 1px dashed #e5e7eb;
+        }
+        .hf-card-hub-time .hub-time-value {
+            font-size: 16px;
+            font-weight: 700;
+        }
+        .hf-card-hub-time .hub-time-label {
+            font-size: 11px;
+            color: #6b7280;
+            margin-top: 2px;
+        }
+        .hf-card-hub-time .hub-time-icon {
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+
+        .hf-card-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 20px;
+            background: #f8fafc;
+            border-top: 1px solid #f1f5f9;
+        }
+        .hf-card-total {
+            font-size: 22px;
+            font-weight: 700;
+            color: #111827;
+        }
+        .hf-card-breakdown {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 2px;
+        }
+        .hf-card-ground {
+            font-size: 11px;
+            color: #7c3aed;
+            margin-top: 2px;
+        }
+
+        @media (max-width: 768px) {
+            .hf-card-legs { grid-template-columns: 1fr; gap: 16px; }
+            .hf-card-hub-time {
+                border-left: none; border-right: none;
+                border-top: 1px dashed #e5e7eb;
+                border-bottom: 1px dashed #e5e7eb;
+                flex-direction: row;
+                gap: 8px;
+                padding: 10px 0;
+                min-width: unset;
+            }
+            .hf-card-header { flex-wrap: wrap; }
+        }
 
         /* Layover display */
         .connection-info { font-size: 12px; }
@@ -1907,6 +2119,148 @@
             startSearch(params, true);
         }
 
+        // --- Hacker Fare Card Helpers ---
+
+        function hfLogoHtml(flight) {
+            if (!flight || !flight.airline_logos || !flight.airline_logos[0]) return '';
+            return '<img src="' + flight.airline_logos[0] + '" alt="' + (flight.airlines ? flight.airlines[0] : '') + '">';
+        }
+
+        function buildHubTimeHtml(hubMins, hubCode) {
+            if (hubMins !== null && hubMins !== undefined) {
+                var hubColor = (hubMins < 60 || hubMins > 480) ? 'color:#ef4444' : (hubMins < 120 || hubMins > 240) ? 'color:#f59e0b' : 'color:#22c55e';
+                return '<div class="hf-card-hub-time">' +
+                    '<div class="hub-time-icon">&#9201;</div>' +
+                    '<div class="hub-time-value" style="' + hubColor + '">' + formatMinutes(hubMins) + '</div>' +
+                    '<div class="hub-time-label">at ' + hubCode + '</div>' +
+                '</div>';
+            }
+            return '<div class="hf-card-hub-time"><div class="hub-time-label" style="color:#94a3b8">&mdash;</div></div>';
+        }
+
+        function buildLegHtml(label, from, to, flight, gfUrl, showPrice) {
+            if (!flight) {
+                return '<div class="hf-card-leg">' +
+                    '<div class="hf-card-leg-label">' + label + '</div>' +
+                    '<div style="color:#94a3b8;font-size:13px;font-style:italic">Details unavailable</div>' +
+                '</div>';
+            }
+            var logo = hfLogoHtml(flight);
+            var timesHtml = (flight.departure_time && flight.arrival_time)
+                ? '<div class="hf-card-leg-times">' + formatTime(flight.departure_time) + ' &ndash; ' + formatTime(flight.arrival_time) + '</div>'
+                : '';
+            var priceHtml = showPrice
+                ? '<div class="hf-card-leg-price">$' + flight.price.toFixed(0) + ' <span style="font-size:12px;font-weight:400;color:#6b7280">RT</span></div>'
+                : '';
+            return '<div class="hf-card-leg">' +
+                '<div class="hf-card-leg-label">' + label + '</div>' +
+                '<div class="hf-card-leg-route">' + from + ' &rarr; ' + to + '</div>' +
+                '<div class="hf-card-leg-airline">' + logo + '<span>' + flight.carrier_display + '</span></div>' +
+                timesHtml +
+                '<div class="hf-card-leg-meta">' + stopsLabel(flight.stops, flight.connections) + ' &middot; ' + formatMinutes(flight.total_duration) + '</div>' +
+                formatLayoverDetails(flight.layover_details) +
+                priceHtml +
+                '<a class="gf-link" href="' + gfUrl + '" target="_blank" rel="noopener">Google Flights</a>' +
+            '</div>';
+        }
+
+        function buildReturnSection(intlRet, posRet, destination, hub, origin, hubCode, posGfUrl, intlGfUrl) {
+            if (!intlRet && !posRet) {
+                return '<div class="hf-return-unavailable">Return flight details not yet available</div>';
+            }
+            // Return hub time: international return arrives at hub, then positioning return departs
+            var retHubMins = null;
+            if (intlRet && posRet) {
+                retHubMins = hubLayoverMinutes(intlRet.arrival_time, posRet.departure_time);
+            }
+            var retHubTimeHtml = buildHubTimeHtml(retHubMins, hubCode);
+
+            return '<div class="hf-card-direction">' +
+                '<div class="hf-direction-label return">Return</div>' +
+                '<div class="hf-card-legs">' +
+                    buildLegHtml('Intl Return', destination, hub, intlRet, intlGfUrl, false) +
+                    retHubTimeHtml +
+                    buildLegHtml('Positioning Return', hub, origin, posRet, posGfUrl, false) +
+                '</div>' +
+            '</div>';
+        }
+
+        function renderHackerFareCards(r, targetId) {
+            var container = document.getElementById(targetId);
+            if (!r.hacker_fares || r.hacker_fares.length === 0) {
+                container.innerHTML = '<div class="hf-table-wrap"><div class="no-results">No valid hacker fare routes found.</div></div>';
+                return;
+            }
+            var gc = (r.is_hub_search && r.ground_cost) ? r.ground_cost : 0;
+            var html = '<div class="hf-cards">';
+
+            for (var i = 0; i < r.hacker_fares.length; i++) {
+                var hf = r.hacker_fares[i];
+                var pos = hf.positioning;
+                var intl = hf.international;
+                var posRet = hf.positioning_return || null;
+                var intlRet = hf.international_return || null;
+                var isBest = (i === 0);
+                var rankClass = hf.rank === 1 ? 'r1' : hf.rank === 2 ? 'r2' : hf.rank === 3 ? 'r3' : 'rn';
+
+                // Savings badge
+                var savingsHtml = '';
+                if (hf.savings_vs_baseline !== null && hf.savings_vs_baseline !== undefined) {
+                    if (hf.savings_vs_baseline > 0) savingsHtml = '<div class="savings-badge savings-positive">Save $' + hf.savings_vs_baseline.toFixed(0) + '</div>';
+                    else if (hf.savings_vs_baseline < 0) savingsHtml = '<div class="savings-badge savings-negative">+$' + Math.abs(hf.savings_vs_baseline).toFixed(0) + ' more</div>';
+                    else savingsHtml = '<div class="savings-badge savings-neutral">Same price</div>';
+                }
+
+                // Outbound hub layover time
+                var outHubMins = hubLayoverMinutes(pos.arrival_time, intl.departure_time);
+                var outHubTimeHtml = buildHubTimeHtml(outHubMins, hf.hub);
+
+                // URLs
+                var posGfUrl = googleFlightsUrl(r.search_origin, hf.hub, r.depart_date, r.return_date);
+                var intlGfUrl = googleFlightsUrl(hf.hub, r.destination, r.depart_date, r.return_date);
+
+                // Ground note
+                var groundNote = '';
+                var displayTotal = hf.total_with_ground || hf.total;
+                if (gc > 0 && hf.ground_cost > 0) {
+                    groundNote = '<div class="hf-card-ground">Flights: $' + hf.total.toFixed(0) + ' + Ground: $' + hf.ground_cost.toFixed(0) + '</div>';
+                }
+
+                html +=
+                    '<div class="hf-card' + (isBest ? ' best-card' : '') + '">' +
+                        // Header
+                        '<div class="hf-card-header">' +
+                            '<span class="hf-card-rank ' + rankClass + '">' + hf.rank + '</span>' +
+                            '<span class="hf-card-hub">via ' + hf.hub + '</span>' +
+                            '<span class="hf-card-savings">' + savingsHtml + '</span>' +
+                        '</div>' +
+                        // Outbound section
+                        '<div class="hf-card-direction">' +
+                            '<div class="hf-direction-label outbound">Outbound</div>' +
+                            '<div class="hf-card-legs">' +
+                                buildLegHtml('Positioning', r.search_origin, hf.hub, pos, posGfUrl, true) +
+                                outHubTimeHtml +
+                                buildLegHtml('International', hf.hub, r.destination, intl, intlGfUrl, true) +
+                            '</div>' +
+                        '</div>' +
+                        // Return section
+                        buildReturnSection(intlRet, posRet, r.destination, hf.hub, r.search_origin, hf.hub, posGfUrl, intlGfUrl) +
+                        // Footer
+                        '<div class="hf-card-footer">' +
+                            '<div>' +
+                                '<div class="hf-card-total">$' + displayTotal.toFixed(0) + '</div>' +
+                                '<div class="hf-card-breakdown">Positioning: $' + pos.price.toFixed(0) + ' RT + International: $' + intl.price.toFixed(0) + ' RT</div>' +
+                                groundNote +
+                            '</div>' +
+                            '<div style="text-align:right">' + savingsHtml + '</div>' +
+                        '</div>' +
+                    '</div>';
+            }
+
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
         function renderFreshnessBanner(r, fromCache) {
             var banner = document.getElementById('freshnessBanner');
             if (!banner) return;
@@ -2027,6 +2381,15 @@
             document.getElementById('tab-' + tabName).classList.add('active');
         }
 
+        function updateTabCounts(r) {
+            var flightCount = (r.baseline_flights || (r.baseline ? [r.baseline] : [])).length;
+            var hfCount = (r.hacker_fares || []).length;
+            var directBtn = document.querySelector('.results-tab[data-tab="direct"]');
+            var hackerBtn = document.querySelector('.results-tab[data-tab="hacker"]');
+            directBtn.innerHTML = 'Google Flights <span class="tab-count">' + flightCount + '</span>';
+            hackerBtn.innerHTML = 'Hacker Fares <span class="tab-count">' + hfCount + '</span>';
+        }
+
         function renderDirectFlights(flights, origin, destination, departDate, returnDate, targetId, groundCost) {
             var container = document.getElementById(targetId || 'directFlightsList');
             groundCost = groundCost || 0;
@@ -2036,7 +2399,8 @@
             }
             var cheapestPrice = flights[0].price;
             var gfUrl = googleFlightsUrl(origin, destination, departDate, returnDate);
-            var html = '<div class="flight-cards">';
+            var html = '<div class="hf-outbound-label" style="margin-bottom:12px;">Outbound flights &middot; prices are round trip</div>';
+            html += '<div class="flight-cards">';
             for (var i = 0; i < flights.length; i++) {
                 var f = flights[i];
                 var isCheapest = (i === 0);
@@ -2568,82 +2932,8 @@
             }
             document.getElementById('chicagoBaselineCard').innerHTML = baseHtml;
 
-            // Hacker fare table
-            var tableHtml = "";
-            if (r.hacker_fares && r.hacker_fares.length > 0) {
-                tableHtml =
-                    '<div class="hf-table-wrap">' +
-                        '<div class="hf-table-header"><h3>Hacker Fare Routes from ' + r.search_origin + '</h3></div>' +
-                        '<table class="hf-table">' +
-                            '<thead><tr>' +
-                                '<th>#</th><th>Hub</th><th>Positioning RT</th><th>Hub Time</th><th>International RT</th>' +
-                                '<th class="right">Total (incl. ground)</th><th class="right">vs Baseline</th>' +
-                            '</tr></thead><tbody>';
-
-                for (var i = 0; i < r.hacker_fares.length; i++) {
-                    var hf = r.hacker_fares[i];
-                    var pos = hf.positioning;
-                    var intl = hf.international;
-                    var rowClass = (i === 0) ? ' class="best-row"' : '';
-                    var rankClass = hf.rank === 1 ? "rank-1" : hf.rank === 2 ? "rank-2" : hf.rank === 3 ? "rank-3" : "rank-other";
-
-                    var savingsHtml = "";
-                    if (hf.savings_vs_baseline !== null && hf.savings_vs_baseline !== undefined) {
-                        if (hf.savings_vs_baseline > 0) savingsHtml = '<div class="savings-badge savings-positive">Save $' + hf.savings_vs_baseline.toFixed(2) + '</div>';
-                        else if (hf.savings_vs_baseline < 0) savingsHtml = '<div class="savings-badge savings-negative">+$' + Math.abs(hf.savings_vs_baseline).toFixed(2) + ' more</div>';
-                        else savingsHtml = '<div class="savings-badge savings-neutral">Same price</div>';
-                    } else {
-                        savingsHtml = '<span style="color:#64748b">N/A</span>';
-                    }
-
-                    var groundNote = gc > 0 ? '<div class="total-ground">Flights: $' + hf.total.toFixed(2) + ' + Ground: $' + gc.toFixed(2) + '</div>' : '';
-                    var posGfUrl = googleFlightsUrl(r.search_origin, hf.hub, r.depart_date, r.return_date);
-                    var intlGfUrl = googleFlightsUrl(hf.hub, r.destination, r.depart_date, r.return_date);
-                    var posLogoHtml = airlineLogoHtml(pos.airline_logos, pos.airlines);
-                    var intlLogoHtml = airlineLogoHtml(intl.airline_logos, intl.airlines);
-
-                    tableHtml +=
-                        '<tr' + rowClass + '>' +
-                            '<td><span class="rank-badge ' + rankClass + '">' + hf.rank + '</span></td>' +
-                            '<td><span class="hub-name">' + hf.hub + '</span></td>' +
-                            '<td>' +
-                                '<div class="leg-price">' + posLogoHtml + '$' + pos.price.toFixed(2) + ' RT</div>' +
-                                '<div class="leg-detail">' + pos.carrier_display + ' | ' + stopsLabel(pos.stops, pos.connections) + ' | ' + formatMinutes(pos.total_duration) + '</div>' +
-                                (pos.departure_time && pos.arrival_time ? '<div class="leg-detail">' + formatTime(pos.departure_time) + ' – ' + formatTime(pos.arrival_time) + '</div>' : '') +
-                                '<div class="leg-detail">' + r.search_origin + ' <-> ' + hf.hub + '</div>' +
-                                formatLayoverDetails(pos.layover_details) +
-                                '<a class="gf-link" href="' + posGfUrl + '" target="_blank" rel="noopener">Google Flights</a>' +
-                            '</td>' +
-                            // Hub layover time
-                            (function() {
-                                var mins = hubLayoverMinutes(pos.arrival_time, intl.departure_time);
-                                if (mins !== null) {
-                                    var hubClass = (mins < 60 || mins > 480) ? 'color:#ef4444' : (mins < 120 || mins > 240) ? 'color:#f59e0b' : 'color:#22c55e';
-                                    return '<td style="text-align:center;"><div style="font-weight:600;' + hubClass + '">' + formatMinutes(mins) + '</div><div class="leg-detail">at ' + hf.hub + '</div></td>';
-                                }
-                                return '<td style="text-align:center; color:#94a3b8;">—</td>';
-                            })() +
-                            '<td>' +
-                                '<div class="leg-price">' + intlLogoHtml + '$' + intl.price.toFixed(2) + ' RT</div>' +
-                                '<div class="leg-detail">' + intl.carrier_display + ' | ' + stopsLabel(intl.stops, intl.connections) + ' | ' + formatMinutes(intl.total_duration) + '</div>' +
-                                (intl.departure_time && intl.arrival_time ? '<div class="leg-detail">' + formatTime(intl.departure_time) + ' – ' + formatTime(intl.arrival_time) + '</div>' : '') +
-                                '<div class="leg-detail">' + hf.hub + ' <-> ' + r.destination + '</div>' +
-                                formatLayoverDetails(intl.layover_details) +
-                                '<a class="gf-link" href="' + intlGfUrl + '" target="_blank" rel="noopener">Google Flights</a>' +
-                            '</td>' +
-                            '<td class="right">' +
-                                '<div class="total-price">$' + hf.total_with_ground.toFixed(2) + '</div>' +
-                                '<div class="leg-detail">Pos: $' + hf.positioning_price.toFixed(2) + ' | Intl: $' + hf.international_price.toFixed(2) + '</div>' +
-                                groundNote +
-                            '</td>' +
-                            '<td class="right">' + savingsHtml + '</td>' +
-                        '</tr>';
-                }
-                tableHtml += '</tbody></table></div>';
-            } else {
-                tableHtml = '<div class="hf-table-wrap"><div class="no-results">No valid hacker fare routes found from ' + r.search_origin + '.</div></div>';
-            }
-            document.getElementById('chicagoHackerFareTable').innerHTML = tableHtml;
+            // Hacker fare cards
+            renderHackerFareCards(r, 'chicagoHackerFareTable');
 
             // Warnings
             var warnHtml = "";
@@ -2653,6 +2943,9 @@
                 }
             }
             document.getElementById('chicagoWarnings').innerHTML = warnHtml;
+
+            // Update tab counts for Chicago
+            updateTabCounts(r);
 
             // Switch to the Chicago tab
             switchTab('chicago');
@@ -2759,115 +3052,11 @@
             }
             document.getElementById("baselineCard").innerHTML = baseHtml;
 
-            // Hacker fare table
-            var tableHtml = "";
-            if (r.hacker_fares && r.hacker_fares.length > 0) {
-                var totalLabel = r.is_hub_search ? "Total (incl. ground)" : "Total";
-                tableHtml =
-                    '<div class="hf-table-wrap">' +
-                        '<div class="hf-table-header"><h3>Hacker Fare Routes - ranked by total price (live Google Flights prices)</h3></div>' +
-                        '<table class="hf-table">' +
-                            '<thead>' +
-                            '<tr>' +
-                                '<th>#</th>' +
-                                '<th>Hub</th>' +
-                                '<th>Positioning RT</th>' +
-                                '<th>Hub Time</th>' +
-                                '<th>International RT</th>' +
-                                '<th class="right">' + totalLabel + '</th>' +
-                                '<th class="right">vs Baseline</th>' +
-                            '</tr>' +
-                            '</thead>' +
-                            '<tbody>';
+            // Hacker fare cards
+            renderHackerFareCards(r, 'hackerFareTable');
 
-                for (var i = 0; i < r.hacker_fares.length; i++) {
-                    var hf = r.hacker_fares[i];
-                    var pos = hf.positioning;
-                    var intl = hf.international;
-                    var rowClass = (i === 0) ? ' class="best-row"' : '';
-                    var rankClass = "rank-other";
-                    if (hf.rank === 1) rankClass = "rank-1";
-                    else if (hf.rank === 2) rankClass = "rank-2";
-                    else if (hf.rank === 3) rankClass = "rank-3";
-
-                    var savingsHtml = "";
-                    if (hf.savings_vs_baseline !== null && hf.savings_vs_baseline !== undefined) {
-                        if (hf.savings_vs_baseline > 0) {
-                            savingsHtml = '<div class="savings-badge savings-positive">Save $' + hf.savings_vs_baseline.toFixed(2) + '</div>';
-                        } else if (hf.savings_vs_baseline < 0) {
-                            savingsHtml = '<div class="savings-badge savings-negative">+$' + Math.abs(hf.savings_vs_baseline).toFixed(2) + ' more</div>';
-                        } else {
-                            savingsHtml = '<div class="savings-badge savings-neutral">Same price</div>';
-                        }
-                    } else {
-                        savingsHtml = '<span style="color:#64748b">N/A</span>';
-                    }
-
-                    var posStops = stopsLabel(pos.stops, pos.connections);
-                    var intlStops = stopsLabel(intl.stops, intl.connections);
-
-                    var displayTotal = hf.total_with_ground;
-                    var groundNote = "";
-                    if (r.is_hub_search && hf.ground_cost > 0) {
-                        groundNote = '<div class="total-ground">Flights: $' + hf.total.toFixed(2) + ' + Ground: $' + hf.ground_cost.toFixed(2) + '</div>';
-                    }
-
-                    var posGfUrl = googleFlightsUrl(r.search_origin, hf.hub, r.depart_date, r.return_date);
-                    var intlGfUrl = googleFlightsUrl(hf.hub, r.destination, r.depart_date, r.return_date);
-
-                    var posLogoHtml = airlineLogoHtml(pos.airline_logos, pos.airlines);
-                    var intlLogoHtml = airlineLogoHtml(intl.airline_logos, intl.airlines);
-
-                    tableHtml +=
-                        '<tr' + rowClass + '>' +
-                            '<td><span class="rank-badge ' + rankClass + '">' + hf.rank + '</span></td>' +
-                            '<td><span class="hub-name">' + hf.hub + '</span></td>' +
-                            // Positioning round-trip
-                            '<td>' +
-                                '<div class="leg-price">' + posLogoHtml + '$' + pos.price.toFixed(2) + ' RT</div>' +
-                                '<div class="leg-detail">' + pos.carrier_display + ' | ' + posStops + ' | ' + formatMinutes(pos.total_duration) + '</div>' +
-                                (pos.departure_time && pos.arrival_time ? '<div class="leg-detail">' + formatTime(pos.departure_time) + ' – ' + formatTime(pos.arrival_time) + '</div>' : '') +
-                                '<div class="leg-detail">' + r.search_origin + ' <-> ' + hf.hub + '</div>' +
-                                formatLayoverDetails(pos.layover_details) +
-                                '<a class="gf-link" href="' + posGfUrl + '" target="_blank" rel="noopener">Google Flights</a>' +
-                            '</td>' +
-                            // Hub layover time
-                            (function() {
-                                var mins = hubLayoverMinutes(pos.arrival_time, intl.departure_time);
-                                if (mins !== null) {
-                                    var hubClass = (mins < 60 || mins > 480) ? 'color:#ef4444' : (mins < 120 || mins > 240) ? 'color:#f59e0b' : 'color:#22c55e';
-                                    return '<td style="text-align:center;"><div style="font-weight:600;' + hubClass + '">' + formatMinutes(mins) + '</div><div class="leg-detail">at ' + hf.hub + '</div></td>';
-                                }
-                                return '<td style="text-align:center; color:#94a3b8;">—</td>';
-                            })() +
-                            // International round-trip
-                            '<td>' +
-                                '<div class="leg-price">' + intlLogoHtml + '$' + intl.price.toFixed(2) + ' RT</div>' +
-                                '<div class="leg-detail">' + intl.carrier_display + ' | ' + intlStops + ' | ' + formatMinutes(intl.total_duration) + '</div>' +
-                                (intl.departure_time && intl.arrival_time ? '<div class="leg-detail">' + formatTime(intl.departure_time) + ' – ' + formatTime(intl.arrival_time) + '</div>' : '') +
-                                '<div class="leg-detail">' + hf.hub + ' <-> ' + r.destination + '</div>' +
-                                formatLayoverDetails(intl.layover_details) +
-                                '<a class="gf-link" href="' + intlGfUrl + '" target="_blank" rel="noopener">Google Flights</a>' +
-                            '</td>' +
-                            // Total
-                            '<td class="right">' +
-                                '<div class="total-price">$' + displayTotal.toFixed(2) + '</div>' +
-                                '<div class="leg-detail">Pos: $' + hf.positioning_price.toFixed(2) + ' | Intl: $' + hf.international_price.toFixed(2) + '</div>' +
-                                groundNote +
-                            '</td>' +
-                            // Savings
-                            '<td class="right">' + savingsHtml + '</td>' +
-                        '</tr>';
-                }
-
-                tableHtml += '</tbody></table></div>';
-            } else {
-                tableHtml =
-                    '<div class="hf-table-wrap">' +
-                        '<div class="no-results">No valid hacker fare routes found. The hubs may not have compatible flight times for the minimum connection window.</div>' +
-                    '</div>';
-            }
-            document.getElementById("hackerFareTable").innerHTML = tableHtml;
+            // Update tab counts
+            updateTabCounts(r);
 
             // Warnings
             var warnHtml = "";
