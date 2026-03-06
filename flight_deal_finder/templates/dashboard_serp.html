@@ -1272,7 +1272,35 @@
         }
         .hf-card-leg {
             padding: 0 8px;
+            display: flex;
+            gap: 12px;
         }
+        .hf-card-leg-info { flex: 1; min-width: 0; }
+        .hf-card-leg-layovers {
+            flex: 0 0 auto;
+            max-width: 160px;
+            padding-left: 12px;
+            border-left: 1px solid #f1f5f9;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 4px;
+        }
+        .hf-card-leg-layovers:empty { display: none; }
+        .hf-card-leg-layovers .layover-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 11px;
+            color: #6b7280;
+        }
+        .hf-card-leg-layovers .layover-dot {
+            width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
+        }
+        .hf-card-leg-layovers .layover-dot.green { background: #22c55e; }
+        .hf-card-leg-layovers .layover-dot.yellow { background: #f59e0b; }
+        .hf-card-leg-layovers .layover-dot.red { background: #ef4444; }
+        .hf-card-leg-layovers .layover-time { font-weight: 600; }
         .hf-card-leg-label {
             font-size: 11px;
             font-weight: 600;
@@ -2169,11 +2197,30 @@
             return '<div class="hf-card-hub-time"><div class="hub-time-label" style="color:#94a3b8">&mdash;</div></div>';
         }
 
+        function buildLayoverSidebar(details) {
+            if (!details || details.length === 0) return '';
+            var html = '<div class="hf-card-leg-layovers">';
+            for (var i = 0; i < details.length; i++) {
+                var d = details[i];
+                var m = d.minutes;
+                var dotClass = (m < 60 || m > 480) ? 'red' : (m < 120 || m > 240) ? 'yellow' : 'green';
+                var name = d.airport || '?';
+                html += '<div class="layover-item">' +
+                    '<span class="layover-dot ' + dotClass + '"></span>' +
+                    '<span class="layover-time">' + formatMinutes(m) + '</span> ' + name +
+                '</div>';
+            }
+            html += '</div>';
+            return html;
+        }
+
         function buildLegHtml(label, from, to, flight, gfUrl, showPrice) {
             if (!flight) {
                 return '<div class="hf-card-leg">' +
-                    '<div class="hf-card-leg-label">' + label + '</div>' +
-                    '<div style="color:#94a3b8;font-size:13px;font-style:italic">Details unavailable</div>' +
+                    '<div class="hf-card-leg-info">' +
+                        '<div class="hf-card-leg-label">' + label + '</div>' +
+                        '<div style="color:#94a3b8;font-size:13px;font-style:italic">Details unavailable</div>' +
+                    '</div>' +
                 '</div>';
             }
             var logo = hfLogoHtml(flight);
@@ -2184,14 +2231,16 @@
                 ? '<div class="hf-card-leg-price">$' + flight.price.toFixed(0) + ' <span style="font-size:12px;font-weight:400;color:#6b7280">RT</span></div>'
                 : '';
             return '<div class="hf-card-leg">' +
-                '<div class="hf-card-leg-label">' + label + '</div>' +
-                '<div class="hf-card-leg-route">' + from + ' &rarr; ' + to + '</div>' +
-                '<div class="hf-card-leg-airline">' + logo + '<span>' + flight.carrier_display + '</span></div>' +
-                timesHtml +
-                '<div class="hf-card-leg-meta">' + stopsLabel(flight.stops, flight.connections) + ' &middot; ' + formatMinutes(flight.total_duration) + '</div>' +
-                formatLayoverDetails(flight.layover_details) +
-                priceHtml +
-                '<a class="gf-link" href="' + gfUrl + '" target="_blank" rel="noopener">Google Flights</a>' +
+                '<div class="hf-card-leg-info">' +
+                    '<div class="hf-card-leg-label">' + label + '</div>' +
+                    '<div class="hf-card-leg-route">' + from + ' &rarr; ' + to + '</div>' +
+                    '<div class="hf-card-leg-airline">' + logo + '<span>' + flight.carrier_display + '</span></div>' +
+                    timesHtml +
+                    '<div class="hf-card-leg-meta">' + stopsLabel(flight.stops, flight.connections) + ' &middot; ' + formatMinutes(flight.total_duration) + '</div>' +
+                    priceHtml +
+                    '<a class="gf-link" href="' + gfUrl + '" target="_blank" rel="noopener">Google Flights</a>' +
+                '</div>' +
+                buildLayoverSidebar(flight.layover_details) +
             '</div>';
         }
 
