@@ -1342,29 +1342,41 @@
             color: #111827;
             margin-top: 6px;
         }
-        .hf-card-hub-time {
+        .hf-card-stops-col {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             padding: 0 12px;
-            min-width: 90px;
+            min-width: 100px;
             border-left: 1px dashed #e5e7eb;
             border-right: 1px dashed #e5e7eb;
+            gap: 10px;
         }
-        .hf-card-hub-time .hub-time-value {
-            font-size: 16px;
+        .hf-stop-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+        }
+        .hf-stop-item .stop-time {
+            font-size: 14px;
             font-weight: 700;
+            white-space: nowrap;
         }
-        .hf-card-hub-time .hub-time-label {
+        .hf-stop-item .stop-label {
             font-size: 11px;
             color: #6b7280;
-            margin-top: 2px;
         }
-        .hf-card-hub-time .hub-time-icon {
-            font-size: 16px;
-            margin-bottom: 4px;
+        .hf-stop-item .stop-dot {
+            width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+            display: inline-block;
+            margin-right: 3px;
+            vertical-align: middle;
         }
+        .hf-stop-item .stop-dot.green { background: #22c55e; }
+        .hf-stop-item .stop-dot.yellow { background: #f59e0b; }
+        .hf-stop-item .stop-dot.red { background: #ef4444; }
 
         .hf-card-footer {
             display: flex;
@@ -1392,12 +1404,12 @@
 
         @media (max-width: 768px) {
             .hf-card-legs { grid-template-columns: 1fr; gap: 16px; }
-            .hf-card-hub-time {
+            .hf-card-stops-col {
                 border-left: none; border-right: none;
                 border-top: 1px dashed #e5e7eb;
                 border-bottom: 1px dashed #e5e7eb;
                 flex-direction: row;
-                gap: 8px;
+                gap: 16px;
                 padding: 10px 0;
                 min-width: unset;
             }
@@ -2458,29 +2470,36 @@
             return '<img src="' + flight.airline_logos[0] + '" alt="' + (flight.airlines ? flight.airlines[0] : '') + '">';
         }
 
-        function buildHubTimeHtml(hubMins, hubCode) {
-            if (hubMins !== null && hubMins !== undefined) {
-                var hubColor = (hubMins < 60 || hubMins > 480) ? 'color:#ef4444' : (hubMins < 120 || hubMins > 240) ? 'color:#f59e0b' : 'color:#22c55e';
-                return '<div class="hf-card-hub-time">' +
-                    '<div class="hub-time-icon">&#9201;</div>' +
-                    '<div class="hub-time-value" style="' + hubColor + '">' + formatMinutes(hubMins) + '</div>' +
-                    '<div class="hub-time-label">at ' + hubCode + '</div>' +
-                '</div>';
+        function buildStopsColumn(hubMins, hubCode, leg1, leg2) {
+            var stops = [];
+            // Within-flight layovers from leg 1
+            if (leg1 && leg1.layover_details) {
+                for (var i = 0; i < leg1.layover_details.length; i++) {
+                    var d = leg1.layover_details[i];
+                    stops.push({ mins: d.minutes, label: d.airport || '?', isHub: false });
+                }
             }
-            return '<div class="hf-card-hub-time"><div class="hub-time-label" style="color:#94a3b8">&mdash;</div></div>';
-        }
-
-        function buildLayoverSidebar(details) {
-            if (!details || details.length === 0) return '';
-            var html = '<div class="hf-card-leg-layovers">';
-            for (var i = 0; i < details.length; i++) {
-                var d = details[i];
-                var m = d.minutes;
-                var dotClass = (m < 60 || m > 480) ? 'red' : (m < 120 || m > 240) ? 'yellow' : 'green';
-                var name = d.airport || '?';
-                html += '<div class="layover-item">' +
-                    '<span class="layover-dot ' + dotClass + '"></span>' +
-                    '<span class="layover-time">' + formatMinutes(m) + '</span> ' + name +
+            // Hub connection time
+            if (hubMins !== null && hubMins !== undefined) {
+                stops.push({ mins: hubMins, label: hubCode, isHub: true });
+            }
+            // Within-flight layovers from leg 2
+            if (leg2 && leg2.layover_details) {
+                for (var i = 0; i < leg2.layover_details.length; i++) {
+                    var d = leg2.layover_details[i];
+                    stops.push({ mins: d.minutes, label: d.airport || '?', isHub: false });
+                }
+            }
+            if (stops.length === 0) {
+                return '<div class="hf-card-stops-col"><div class="stop-label" style="color:#94a3b8">&mdash;</div></div>';
+            }
+            var html = '<div class="hf-card-stops-col">';
+            for (var i = 0; i < stops.length; i++) {
+                var s = stops[i];
+                var dotClass = (s.mins < 60 || s.mins > 480) ? 'red' : (s.mins < 120 || s.mins > 240) ? 'yellow' : 'green';
+                html += '<div class="hf-stop-item">' +
+                    '<div class="stop-time"><span class="stop-dot ' + dotClass + '"></span>' + formatMinutes(s.mins) + '</div>' +
+                    '<div class="stop-label">' + (s.isHub ? 'at ' : '') + s.label + '</div>' +
                 '</div>';
             }
             html += '</div>';
@@ -2513,7 +2532,6 @@
                     priceHtml +
                     '<a class="gf-link" href="' + gfUrl + '" target="_blank" rel="noopener">Google Flights</a>' +
                 '</div>' +
-                buildLayoverSidebar(flight.layover_details) +
             '</div>';
         }
 
@@ -2557,18 +2575,18 @@
             if (!intlRet && !posRet) {
                 return '<div class="hf-return-unavailable">Return flight details not yet available</div>';
             }
-            // Return hub time: international return arrives at hub, then positioning return departs
+            // Return stops column: international return arrives at hub, then positioning return departs
             var retHubMins = null;
             if (intlRet && posRet) {
                 retHubMins = hubLayoverMinutes(intlRet.arrival_time, posRet.departure_time);
             }
-            var retHubTimeHtml = buildHubTimeHtml(retHubMins, hubCode);
+            var retStopsHtml = buildStopsColumn(retHubMins, hubCode, intlRet, posRet);
 
             return '<div class="hf-card-direction">' +
                 '<div class="hf-direction-label return">Return</div>' +
                 '<div class="hf-card-legs">' +
                     buildLegHtml('Leg 1', destination, hub, intlRet, intlGfUrl, false) +
-                    retHubTimeHtml +
+                    retStopsHtml +
                     buildLegHtml('Leg 2', hub, origin, posRet, posGfUrl, false) +
                 '</div>' +
             '</div>';
@@ -2600,9 +2618,9 @@
                     else savingsHtml = '<div class="savings-badge savings-neutral">Same price</div>';
                 }
 
-                // Outbound hub layover time
+                // Outbound stops column (hub connection + within-flight layovers)
                 var outHubMins = hubLayoverMinutes(pos.arrival_time, intl.departure_time);
-                var outHubTimeHtml = buildHubTimeHtml(outHubMins, hf.hub);
+                var outStopsHtml = buildStopsColumn(outHubMins, hf.hub, pos, intl);
 
                 // URLs
                 var posGfUrl = googleFlightsUrl(r.search_origin, hf.hub, r.depart_date, r.return_date);
@@ -2628,7 +2646,7 @@
                             '<div class="hf-direction-label outbound">Outbound</div>' +
                             '<div class="hf-card-legs">' +
                                 buildLegHtml('Leg 1', r.search_origin, hf.hub, pos, posGfUrl, true) +
-                                outHubTimeHtml +
+                                outStopsHtml +
                                 buildLegHtml('Leg 2', hf.hub, r.destination, intl, intlGfUrl, true) +
                             '</div>' +
                         '</div>' +
