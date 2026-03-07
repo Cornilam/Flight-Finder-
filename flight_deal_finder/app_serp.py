@@ -506,9 +506,10 @@ def run_hacker_fare_search(q, params):
             if not pos_list or not intl_list:
                 continue
 
-            # Combine top positioning x top international round-trips
-            for pos in pos_list[:3]:
-                for intl in intl_list[:3]:
+            # Combine all positioning x international round-trips,
+            # filter for valid connections, then keep best by price
+            for pos in pos_list:
+                for intl in intl_list:
                     # Validate outbound connection: positioning must arrive
                     # at the hub BEFORE the international flight departs
                     conn_minutes = calculate_connection_time(
@@ -568,8 +569,10 @@ def run_hacker_fare_search(q, params):
                 seen.add(key)
                 unique_fares.append(hf)
 
-        # Sort by total price (with ground cost)
+        # Sort by total price (with ground cost) and cap results
         unique_fares.sort(key=lambda x: x["total_with_ground"])
+        MAX_RESULTS = 30
+        unique_fares = unique_fares[:MAX_RESULTS]
 
         # Assign ranks
         for i, hf in enumerate(unique_fares):
@@ -649,10 +652,9 @@ def run_hacker_fare_search(q, params):
             hf["positioning_return"] = return_leg_cache.get(pos_token, None)
             hf["international_return"] = return_leg_cache.get(intl_token, None)
 
-        # Validate return connections: international return must arrive
-        # at the hub before the positioning return departs
-        skipped_return = 0
-        validated_fares = []
+        # Flag (don't filter) return connections with bad timing.
+        # Return legs are just one possible option — the user can pick
+        # different return flights, so we warn instead of removing.
         for hf in unique_fares:
             intl_ret = hf.get("international_return")
             pos_ret = hf.get("positioning_return")
@@ -661,22 +663,9 @@ def run_hacker_fare_search(q, params):
                     intl_ret.get("arrival_time"), pos_ret.get("departure_time")
                 )
                 if ret_conn is not None and ret_conn < MIN_CONNECTION_MINUTES:
-                    skipped_return += 1
-                    continue
-                if ret_conn is None and intl_ret.get("arrival_time") and pos_ret.get("departure_time"):
-                    skipped_return += 1
-                    continue
-            validated_fares.append(hf)
-
-        if skipped_return:
-            global_warnings.append(
-                f"Filtered out {skipped_return} route(s) with impossible or too-short return connections."
-            )
-
-        # Re-rank after filtering
-        for i, hf in enumerate(validated_fares):
-            hf["rank"] = i + 1
-        unique_fares = validated_fares
+                    hf["warnings"].append(f"Return connection at hub is only {ret_conn} min — consider alternate return flights")
+                elif ret_conn is None and intl_ret.get("arrival_time") and pos_ret.get("departure_time"):
+                    hf["warnings"].append("Return connection timing may not work — consider alternate return flights")
 
         # ---------------------------------------------------------------
         # Step 5: Send results
