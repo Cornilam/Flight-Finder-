@@ -1821,6 +1821,26 @@
         }
         .tom-skip:hover { color: #6b7280; }
 
+        .tom-nav-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 520px;
+            margin-top: 12px;
+        }
+        .tom-nav-btn {
+            background: none;
+            border: none;
+            color: #b0b8c4;
+            font-size: 14px;
+            font-family: inherit;
+            cursor: pointer;
+            padding: 4px 8px;
+            transition: color 0.2s;
+        }
+        .tom-nav-btn:hover { color: #111827; }
+
         /* User selection echo (shows briefly after picking) */
         .tom-echo {
             font-size: 36px;
@@ -1842,7 +1862,7 @@
             bottom: 24px;
             right: 24px;
             z-index: 9998;
-            display: flex;
+            display: none !important;
             align-items: center;
             gap: 8px;
             padding: 12px 20px;
@@ -1908,7 +1928,7 @@
         </div>
     </div>
 
-    <!-- Floating Re-open Tom Button -->
+    <!-- Floating Re-open Tom Button (hidden) -->
     <button class="tom-fab" id="tomFab" style="display:none;" onclick="reopenTom()">
         <span class="tom-fab-icon">T</span>
         <span class="tom-fab-label">Chat with Tom</span>
@@ -3881,13 +3901,18 @@
         function showAirportInput(fieldType, placeholder) {
             var inputArea = document.getElementById('tomInputArea');
             inputArea.classList.remove('tom-hidden-input');
+            var backBtn = TOM.state !== 'DESTINATION'
+                ? '<button class="tom-nav-btn" onclick="tomPrevStep()">\u2190 Back</button>'
+                : '<span></span>';
             inputArea.innerHTML =
                 '<div class="tom-text-input-wrap">' +
                     '<input type="text" class="tom-text-input" id="tomAirportInput" ' +
                         'placeholder="' + placeholder + '" autocomplete="off">' +
                     '<div class="tom-ac-dropdown" id="tomAcDropdown"></div>' +
                 '</div>' +
-                '<div class="tom-skip" onclick="skipToDashboard()">Skip to dashboard</div>';
+                '<div class="tom-nav-row">' + backBtn +
+                    '<div class="tom-skip" onclick="skipToDashboard()">Skip</div>' +
+                '</div>';
 
             // Trigger fade-in
             inputArea.offsetHeight;
@@ -4039,7 +4064,11 @@
                         '<input type="date" id="tomReturn" min="' + today + '">' +
                     '</div>' +
                 '</div>' +
-                '<button class="tom-btn" id="tomDateBtn" onclick="confirmDates()" disabled>Continue</button>';
+                '<button class="tom-btn" id="tomDateBtn" onclick="confirmDates()" disabled>Continue</button>' +
+                '<div class="tom-nav-row">' +
+                    '<button class="tom-nav-btn" onclick="tomPrevStep()">\u2190 Back</button>' +
+                    '<div class="tom-skip" onclick="skipToDashboard()">Skip</div>' +
+                '</div>';
 
             inputArea.offsetHeight;
             inputArea.classList.add('tom-visible');
@@ -4106,6 +4135,10 @@
             }
             html += '</div>';
             html += '<button class="tom-btn" onclick="confirmHubs()">Search flights \u2708\uFE0F</button>';
+            html += '<div class="tom-nav-row">' +
+                '<button class="tom-nav-btn" onclick="tomPrevStep()">\u2190 Back</button>' +
+                '<div class="tom-skip" onclick="skipToDashboard()">Skip</div>' +
+            '</div>';
             inputArea.innerHTML = html;
             inputArea.offsetHeight;
             inputArea.classList.add('tom-visible');
@@ -4138,6 +4171,69 @@
                     setTimeout(transitionToDashboard, 1800);
                 });
             });
+        }
+
+        /* ── Tom step navigation ── */
+
+        var TOM_STEPS = ['DESTINATION', 'ORIGIN', 'DATES', 'HUBS'];
+
+        function tomPrevStep() {
+            var i = TOM_STEPS.indexOf(TOM.state);
+            if (i > 0) tomGoTo(TOM_STEPS[i - 1]);
+        }
+
+        function tomGoTo(step) {
+            hideInputArea();
+            var echo = document.getElementById('tomEcho');
+            if (echo) { echo.classList.remove('tom-visible'); echo.innerHTML = ''; }
+            exitBigText(function() {
+                if (step === 'DESTINATION') {
+                    TOM.state = 'DESTINATION';
+                    showBigText('Where do you want to go? \uD83C\uDF0D', function() {
+                        showAirportInput('destination', 'Type a destination city or airport...');
+                        prefillTomInput(TOM.collected.destination);
+                    });
+                } else if (step === 'ORIGIN') {
+                    TOM.state = 'ORIGIN';
+                    showBigText('Where are you flying from? \u2708\uFE0F', function() {
+                        showAirportInput('origin', 'Type your departure city or airport...');
+                        prefillTomInput(TOM.collected.origin);
+                    });
+                } else if (step === 'DATES') {
+                    TOM.state = 'DATES';
+                    showBigText('What dates are you flying?', function() {
+                        showDatePickers();
+                        prefillTomDates(TOM.collected.depart_date, TOM.collected.return_date);
+                    });
+                } else if (step === 'HUBS') {
+                    TOM.state = 'HUBS';
+                    showBigText('Pick your routing hubs', function() {
+                        showHubChips();
+                    });
+                }
+            });
+        }
+
+        function prefillTomInput(iata) {
+            if (!iata) return;
+            var input = document.getElementById('tomAirportInput');
+            if (!input) return;
+            var display = iata;
+            for (var i = 0; i < AIRPORTS.length; i++) {
+                if (AIRPORTS[i].iata === iata) { display = AIRPORTS[i].city + ' (' + iata + ')'; break; }
+            }
+            input.value = display;
+            hideTomDropdown();
+        }
+
+        function prefillTomDates(depart, ret) {
+            if (!depart && !ret) return;
+            var dEl = document.getElementById('tomDepart');
+            var rEl = document.getElementById('tomReturn');
+            var btn = document.getElementById('tomDateBtn');
+            if (depart && dEl) { dEl.value = depart; rEl.min = depart; }
+            if (ret && rEl) rEl.value = ret;
+            if (depart && ret && ret > depart && btn) btn.disabled = false;
         }
 
         /* ── Dashboard transition ── */
