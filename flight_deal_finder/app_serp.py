@@ -652,9 +652,11 @@ def run_hacker_fare_search(q, params):
             hf["positioning_return"] = return_leg_cache.get(pos_token, None)
             hf["international_return"] = return_leg_cache.get(intl_token, None)
 
-        # Flag (don't filter) return connections with bad timing.
-        # Return legs are just one possible option — the user can pick
-        # different return flights, so we warn instead of removing.
+        # Filter out return connections that are physically impossible
+        # (connecting flight departs before the first leg arrives) and
+        # warn about tight but possible connections.
+        valid_fares = []
+        skipped_bad_return = 0
         for hf in unique_fares:
             intl_ret = hf.get("international_return")
             pos_ret = hf.get("positioning_return")
@@ -662,10 +664,16 @@ def run_hacker_fare_search(q, params):
                 ret_conn = calculate_connection_time(
                     intl_ret.get("arrival_time"), pos_ret.get("departure_time")
                 )
+                if ret_conn is None and intl_ret.get("arrival_time") and pos_ret.get("departure_time"):
+                    # Negative or unparseable — impossible connection, drop it
+                    skipped_bad_return += 1
+                    continue
                 if ret_conn is not None and ret_conn < MIN_CONNECTION_MINUTES:
                     hf["warnings"].append(f"Return connection at hub is only {ret_conn} min — consider alternate return flights")
-                elif ret_conn is None and intl_ret.get("arrival_time") and pos_ret.get("departure_time"):
-                    hf["warnings"].append("Return connection timing may not work — consider alternate return flights")
+            valid_fares.append(hf)
+        unique_fares = valid_fares
+        if skipped_bad_return:
+            global_warnings.append(f"Dropped {skipped_bad_return} combo(s) with impossible return connections")
 
         # ---------------------------------------------------------------
         # Step 5: Send results
