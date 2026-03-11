@@ -9,7 +9,7 @@
 
         body {
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background: #f8fafc;
+            background: #ffffff;
             color: #1e293b;
             min-height: 100vh;
         }
@@ -41,6 +41,67 @@
             font-size: 15px;
             font-weight: 400;
             margin-bottom: 28px;
+        }
+
+        /* Collapsed search bar after results load */
+        .search-banner.collapsed {
+            padding: 12px 24px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            box-shadow: none;
+            border: 1px solid #e5e7eb;
+        }
+        .search-banner.collapsed h1,
+        .search-banner.collapsed .subtitle,
+        .search-banner.collapsed .search-fields,
+        .search-banner.collapsed .search-options,
+        .search-banner.collapsed .hub-selector,
+        .search-banner.collapsed .budget-note {
+            display: none;
+        }
+        .search-summary {
+            display: none;
+            align-items: center;
+            gap: 16px;
+            font-size: 15px;
+            color: #111827;
+        }
+        .search-banner.collapsed .search-summary {
+            display: flex;
+        }
+        .search-summary-route {
+            font-weight: 700;
+            font-size: 16px;
+        }
+        .search-summary-dates {
+            color: #6b7280;
+            font-size: 14px;
+        }
+        .search-summary-edit {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-edit-search {
+            background: none;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 6px 14px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #6b7280;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-edit-search:hover {
+            border-color: #2563eb;
+            color: #2563eb;
+            background: rgba(37, 99, 235, 0.04);
+        }
+        @media (max-width: 768px) {
+            .search-summary { flex-wrap: wrap; gap: 8px; }
+            .search-summary-edit { margin-left: 0; width: 100%; }
         }
 
         /* Search Fields Row */
@@ -258,7 +319,7 @@
 
         /* Secondary Options Row */
         .search-options {
-            display: flex;
+            display: none; /* hidden — minimalistic UI */
             align-items: center;
             justify-content: center;
             gap: 16px;
@@ -300,6 +361,7 @@
 
         /* Hub Selection Chips */
         .hub-selector {
+            display: none; /* hidden — minimalistic UI */
             max-width: 900px;
             margin: 10px auto 0;
             text-align: center;
@@ -425,6 +487,7 @@
 
         /* Budget note */
         .budget-note {
+            display: none; /* hidden — minimalistic UI */
             text-align: center;
             font-size: 11px;
             color: #9ca3af;
@@ -434,7 +497,7 @@
         /* Recent Searches Banner */
         .recent-searches {
             max-width: 900px;
-            margin: -8px auto 24px;
+            margin: 0 auto 16px;
             display: none;
         }
         .recent-searches.visible { display: block; }
@@ -518,8 +581,9 @@
             color: #9ca3af;
         }
 
-        /* Community Deals Banner */
-        .community-deals {
+        /* Community Deals Banner — hidden for minimalistic UI */
+        .community-deals { display: none !important; }
+        .community-deals-unused {
             max-width: 900px;
             margin: -8px auto 24px;
             display: none;
@@ -637,14 +701,14 @@
         /* Live Status Log */
         /* Search Animation Panel */
         .search-animation {
-            background: #ffffff;
+            background: transparent;
             border: none;
-            border-radius: 12px;
-            padding: 24px 24px 16px;
+            border-radius: 0;
+            padding: 40px 24px 16px;
             margin-bottom: 24px;
             display: none;
             text-align: center;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            box-shadow: none;
         }
         .search-animation.visible { display: block; }
 
@@ -800,7 +864,7 @@
         .results-tabs {
             display: flex;
             gap: 0;
-            margin-bottom: 20px;
+            margin-bottom: 12px;
             border-bottom: 2px solid #e5e7eb;
         }
         .results-tab {
@@ -975,9 +1039,155 @@
             .results-tab { padding: 10px 16px; font-size: 13px; }
         }
 
-        /* Results */
-        .results-panel { display: none; }
-        .results-panel.visible { display: block; }
+        /* Best Deals Banner */
+        .best-deals {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .best-deal-card {
+            flex: 1;
+            border-radius: 12px;
+            padding: 14px 16px;
+            cursor: pointer;
+            transition: box-shadow 0.15s, transform 0.15s;
+            position: relative;
+            overflow: hidden;
+        }
+        .best-deal-card:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+        }
+        .best-deal-card.hub-hop-deal {
+            background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%);
+            border: 1px solid #86efac;
+        }
+        .best-deal-card.layover-deal {
+            background: linear-gradient(135deg, #faf5ff 0%, #f5f3ff 100%);
+            border: 1px solid #c4b5fd;
+        }
+        .best-deal-card.direct-deal {
+            background: linear-gradient(135deg, #eff6ff 0%, #f0f9ff 100%);
+            border: 1px solid #93c5fd;
+        }
+        .best-deal-tag {
+            display: inline-block;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+        }
+        .hub-hop-deal .best-deal-tag {
+            background: #059669;
+            color: #fff;
+        }
+        .layover-deal .best-deal-tag {
+            background: #7c3aed;
+            color: #fff;
+        }
+        .direct-deal .best-deal-tag {
+            background: #2563eb;
+            color: #fff;
+        }
+        .best-deal-route {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+        .best-deal-route img {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+        .best-deal-route .route-text {
+            font-size: 13px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+        .best-deal-price {
+            font-size: 22px;
+            font-weight: 800;
+            color: #111827;
+            line-height: 1;
+        }
+        .best-deal-savings {
+            font-size: 12px;
+            font-weight: 600;
+            color: #059669;
+            margin-left: 6px;
+        }
+        .best-deal-meta {
+            font-size: 11px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+
+        /* Split Layout */
+        .split-layout { display: none; }
+        .split-layout.visible { display: flex; gap: 20px; align-items: flex-start; }
+        .split-layout .results-panel { flex: 1 1 50%; max-width: 50%; min-width: 0; display: block; }
+
+        .map-panel {
+            flex: 1 1 50%;
+            position: sticky;
+            top: 16px;
+            height: calc(100vh - 32px);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            background: #f9fafb;
+        }
+        .route-map { width: 100%; height: 100%; }
+
+        /* Leaflet marker labels */
+        .airport-marker-icon { background: none; border: none; }
+        .airport-marker-label {
+            font-weight: 700; font-size: 12px; color: #111827;
+            background: #fff; border: 2px solid #2563eb; border-radius: 6px;
+            padding: 2px 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.15); white-space: nowrap;
+        }
+        .airport-marker-label.origin { border-color: #059669; color: #059669; }
+        .airport-marker-label.destination { border-color: #dc2626; color: #dc2626; }
+        .airport-marker-label.hub { border-color: #7c3aed; color: #7c3aed; }
+        .marker-highlight .airport-marker-label {
+            animation: markerPulse 0.8s ease-in-out infinite;
+            box-shadow: 0 0 12px rgba(37,99,235,0.5);
+        }
+        @keyframes markerPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+        }
+
+        /* Mobile map toggle */
+        .map-toggle-btn {
+            display: none; position: fixed; bottom: 80px; right: 24px; z-index: 1000;
+            background: #2563eb; color: #fff; border: none; border-radius: 50px;
+            padding: 10px 18px; font-size: 14px; font-weight: 600; font-family: inherit;
+            cursor: pointer; box-shadow: 0 4px 12px rgba(37,99,235,0.3); align-items: center; gap: 6px;
+        }
+        .map-close-btn {
+            display: none; position: absolute; top: 16px; right: 16px; z-index: 1001;
+            background: #fff; border: 1px solid #e5e7eb; border-radius: 50%;
+            width: 36px; height: 36px; align-items: center; justify-content: center;
+            cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.15); font-size: 18px; line-height: 1;
+        }
+
+        @media (max-width: 768px) {
+            .split-layout.visible { flex-direction: column; }
+            .split-layout .results-panel { flex: 1 1 auto; max-width: 100%; }
+            .map-panel {
+                display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+                z-index: 999; height: 100vh; border-radius: 0; border: none;
+            }
+            .map-panel.mobile-visible { display: block; }
+            .map-panel.mobile-visible .map-close-btn { display: flex; }
+            .map-toggle-btn { display: flex; }
+        }
 
         /* Origin Label */
         .origin-label {
@@ -1150,11 +1360,11 @@
         .savings-neutral { background: rgba(107, 114, 128, 0.1); color: #6b7280; }
 
         /* Hub Hop Cards */
-        .hf-cards { display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px; }
+        .hf-cards { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
         .hf-card {
             background: #fff;
             border: 1px solid #e5e7eb;
-            border-radius: 14px;
+            border-radius: 12px;
             overflow: hidden;
             box-shadow: 0 1px 4px rgba(0,0,0,0.06);
             transition: border-color 0.2s, box-shadow 0.2s;
@@ -1170,8 +1380,8 @@
         .hf-card-header {
             display: flex;
             align-items: center;
-            gap: 12px;
-            padding: 14px 20px;
+            gap: 10px;
+            padding: 10px 16px;
             background: #f8fafc;
             border-bottom: 1px solid #f1f5f9;
         }
@@ -1180,9 +1390,9 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 30px; height: 30px;
+            width: 26px; height: 26px;
             border-radius: 50%;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 700;
             flex-shrink: 0;
         }
@@ -1191,203 +1401,117 @@
         .hf-card-rank.r3 { background: #e5e7eb; color: #374151; }
         .hf-card-rank.rn { background: #f3f4f6; color: #9ca3af; }
         .hf-card-hub {
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 700;
             color: #111827;
         }
         .hf-card-hub small { font-weight: 400; color: #6b7280; font-size: 13px; }
         .hf-card-savings { margin-left: auto; }
 
-        .hf-card-body { padding: 0; }
-        .hf-card-direction { padding: 16px 20px; }
-        .hf-card-direction + .hf-card-direction { border-top: 2px solid #f1f5f9; }
-        .hf-direction-label {
-            display: inline-block;
+        /* Outbound / Return sections */
+        .hf-section { padding: 8px 16px; }
+        .hf-section + .hf-section { border-top: 1px solid #f1f5f9; }
+        .hf-section-label {
             font-size: 10px;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 1px;
-            padding: 3px 10px;
-            border-radius: 4px;
-            margin-bottom: 12px;
+            margin-bottom: 2px;
+            color: #9ca3af;
         }
-        .hf-direction-label.outbound { color: #2563eb; background: rgba(37,99,235,0.08); }
-        .hf-direction-label.return { color: #7c3aed; background: rgba(124,58,237,0.08); }
         .hf-return-unavailable {
             text-align: center;
-            padding: 16px 20px;
+            padding: 10px 16px;
             color: #94a3b8;
-            font-size: 13px;
-            font-style: italic;
-            border-top: 2px solid #f1f5f9;
-        }
-        .hf-layover-strip {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px 16px;
-            padding: 10px 20px;
-            background: #f8fafc;
-            border-top: 1px solid #f1f5f9;
-            border-bottom: 1px solid #f1f5f9;
             font-size: 12px;
-            color: #374151;
+            font-style: italic;
+            border-top: 1px solid #f1f5f9;
         }
-        .hf-layover-strip .layover-item {
+
+        /* Single flight leg row — compact horizontal */
+        .hf-leg-row {
             display: flex;
             align-items: center;
-            gap: 4px;
-        }
-        .hf-layover-strip .layover-dot {
-            width: 6px; height: 6px; border-radius: 50%;
-        }
-        .hf-layover-strip .layover-dot.green { background: #22c55e; }
-        .hf-layover-strip .layover-dot.yellow { background: #f59e0b; }
-        .hf-layover-strip .layover-dot.red { background: #ef4444; }
-        .hf-layover-strip .layover-time { font-weight: 600; }
-        .hf-layover-strip .strip-label {
-            font-size: 10px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: #9ca3af;
-            margin-right: 4px;
-        }
-        .hf-outbound-label {
-            display: inline-block;
-            font-size: 10px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: #2563eb;
-            background: rgba(37,99,235,0.08);
-            padding: 3px 10px;
-            border-radius: 4px;
-            margin-bottom: 12px;
-        }
-        .hf-card-legs {
-            display: grid;
-            grid-template-columns: 1fr auto 1fr;
-            gap: 0;
-            align-items: start;
-        }
-        .hf-card-leg {
-            padding: 0 8px;
-            display: flex;
             gap: 12px;
+            padding: 5px 0;
+            min-height: 36px;
         }
-        .hf-card-leg-info { flex: 1; min-width: 0; }
-        .hf-card-leg-layovers {
-            flex: 0 0 auto;
-            min-width: 90px;
-            padding-left: 12px;
-            border-left: 1px solid #f1f5f9;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            gap: 4px;
+        .hf-leg-logo { width: 20px; height: 20px; border-radius: 3px; flex-shrink: 0; }
+        .hf-leg-times {
+            font-size: 14px;
+            font-weight: 700;
+            color: #111827;
+            white-space: nowrap;
+            min-width: 150px;
         }
-        .hf-card-leg-layovers:empty { display: none; }
-        .hf-card-leg-layovers .layover-item {
-            display: flex;
-            align-items: center;
-            gap: 4px;
+        .hf-leg-carrier {
+            font-size: 12px;
+            color: #6b7280;
+            min-width: 65px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .hf-leg-route {
+            font-size: 12px;
+            color: #9ca3af;
+            white-space: nowrap;
+            min-width: 65px;
+        }
+        .hf-leg-duration {
+            font-size: 12px;
+            color: #6b7280;
+            white-space: nowrap;
+            min-width: 48px;
+        }
+        .hf-leg-stops {
             font-size: 11px;
             color: #6b7280;
             white-space: nowrap;
         }
-        .hf-card-leg-layovers .layover-dot {
-            width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
-        }
-        .hf-card-leg-layovers .layover-dot.green { background: #22c55e; }
-        .hf-card-leg-layovers .layover-dot.yellow { background: #f59e0b; }
-        .hf-card-leg-layovers .layover-dot.red { background: #ef4444; }
-        .hf-card-leg-layovers .layover-time { font-weight: 600; }
-        .hf-card-leg-label {
-            font-size: 11px;
-            font-weight: 600;
-            color: #9ca3af;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 6px;
-        }
-        .hf-card-leg-route {
-            font-size: 15px;
+        .hf-leg-stops .nonstop { color: #059669; font-weight: 600; }
+        .hf-leg-price {
+            font-size: 14px;
             font-weight: 700;
             color: #111827;
-            margin-bottom: 4px;
+            margin-left: auto;
+            white-space: nowrap;
         }
-        .hf-card-leg-airline {
+        .hf-leg-gf {
+            font-size: 11px;
+            color: #2563eb;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+        .hf-leg-gf:hover { text-decoration: underline; }
+
+        /* Connection strip between legs */
+        .hf-connection {
             display: flex;
             align-items: center;
             gap: 6px;
-            font-size: 13px;
-            color: #374151;
-            margin-bottom: 2px;
-        }
-        .hf-card-leg-airline img { width: 20px; height: 20px; border-radius: 3px; }
-        .hf-card-leg-times {
-            font-size: 14px;
-            font-weight: 600;
-            color: #374151;
-            margin-bottom: 2px;
-        }
-        .hf-card-leg-meta {
-            font-size: 12px;
-            color: #6b7280;
-            margin-bottom: 2px;
-        }
-        .hf-card-leg-price {
-            font-size: 15px;
-            font-weight: 700;
-            color: #111827;
-            margin-top: 6px;
-        }
-        .hf-card-stops-col {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 0 12px;
-            min-width: 100px;
-            border-left: 1px dashed #e5e7eb;
-            border-right: 1px dashed #e5e7eb;
-            gap: 10px;
-        }
-        .hf-stop-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 2px;
-        }
-        .hf-stop-item .stop-time {
-            font-size: 14px;
-            font-weight: 700;
-            white-space: nowrap;
-        }
-        .hf-stop-item .stop-label {
+            padding: 1px 0 1px 32px;
             font-size: 11px;
             color: #6b7280;
         }
-        .hf-stop-item .stop-dot {
-            width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
-            display: inline-block;
-            margin-right: 3px;
-            vertical-align: middle;
+        .hf-conn-dot {
+            width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
         }
-        .hf-stop-item .stop-dot.green { background: #22c55e; }
-        .hf-stop-item .stop-dot.yellow { background: #f59e0b; }
-        .hf-stop-item .stop-dot.red { background: #ef4444; }
+        .hf-conn-dot.green { background: #22c55e; }
+        .hf-conn-dot.yellow { background: #f59e0b; }
+        .hf-conn-dot.red { background: #ef4444; }
 
+        /* Footer */
         .hf-card-footer {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 12px 20px;
+            padding: 10px 16px;
             background: #f8fafc;
             border-top: 1px solid #f1f5f9;
         }
         .hf-card-total {
-            font-size: 22px;
+            font-size: 20px;
             font-weight: 700;
             color: #111827;
         }
@@ -1403,17 +1527,13 @@
         }
 
         @media (max-width: 768px) {
-            .hf-card-legs { grid-template-columns: 1fr; gap: 16px; }
-            .hf-card-stops-col {
-                border-left: none; border-right: none;
-                border-top: 1px dashed #e5e7eb;
-                border-bottom: 1px dashed #e5e7eb;
-                flex-direction: row;
-                gap: 16px;
-                padding: 10px 0;
-                min-width: unset;
-            }
+            .hf-leg-row { flex-wrap: wrap; gap: 4px 8px; }
+            .hf-leg-times { min-width: unset; }
+            .hf-leg-carrier { min-width: unset; }
+            .hf-leg-route { display: none; }
+            .hf-leg-price { margin-left: 0; }
             .hf-card-header { flex-wrap: wrap; }
+            .hf-connection { padding-left: 0; }
         }
 
         /* Layover display */
@@ -1554,6 +1674,27 @@
             25% { transform: rotate(20deg); }
             50% { transform: rotate(-10deg); }
             75% { transform: rotate(15deg); }
+        }
+
+        /* Sub-text (explanation line under big text) */
+        .tom-sub-text {
+            font-size: 22px;
+            font-weight: 500;
+            color: #6b7280;
+            line-height: 1.5;
+            margin-bottom: 32px;
+            opacity: 0;
+            transform: translateY(16px);
+            transition: opacity 0.5s ease 0.15s, transform 0.5s ease 0.15s;
+        }
+        .tom-sub-text.tom-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .tom-sub-text.tom-exit {
+            opacity: 0;
+            transform: translateY(-16px);
+            transition: opacity 0.4s ease, transform 0.4s ease;
         }
 
         /* Input area below the big text */
@@ -1742,8 +1883,10 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
+
         @media (max-width: 768px) {
             .tom-big-text { font-size: 32px; }
+            .tom-sub-text { font-size: 17px; }
             .tom-echo { font-size: 26px; }
             .tom-text-input { font-size: 18px; }
             .tom-stage { padding: 0 16px; }
@@ -1751,12 +1894,15 @@
             .tom-date-field { max-width: 100%; width: 100%; }
         }
     </style>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body>
     <!-- Tom Onboarding Overlay -->
     <div id="tomOverlay" class="tom-overlay">
         <div class="tom-stage">
             <div class="tom-big-text" id="tomBigText"></div>
+            <div class="tom-sub-text" id="tomSubText"></div>
             <div class="tom-echo" id="tomEcho"></div>
             <div class="tom-input-area" id="tomInputArea"></div>
         </div>
@@ -1770,7 +1916,15 @@
 
     <div class="container">
         <!-- Search Banner -->
-        <div class="search-banner">
+        <div class="search-banner" id="searchBanner">
+            <div class="search-summary" id="searchSummary">
+                <span class="search-summary-route" id="summaryRoute"></span>
+                <span class="search-summary-dates" id="summaryDates"></span>
+                <span class="search-summary-edit">
+                    <button class="btn-edit-search" onclick="expandSearchForm()">Edit</button>
+                    <button class="btn-search" style="padding:8px 18px;font-size:13px;border-radius:8px;" onclick="runSearch()">Search</button>
+                </span>
+            </div>
             <h1>Milwaukee Flight Finder</h1>
             <div class="subtitle">Find cheaper flights by splitting your ticket</div>
 
@@ -1893,6 +2047,9 @@
             <div id="recentSearchesList" class="recent-searches-list"></div>
         </div>
 
+        <!-- Best Deals Banner (above split layout) -->
+        <div id="bestDeals" class="best-deals" style="display:none"></div>
+
         <!-- Search Animation Panel -->
         <div class="search-animation" id="searchAnimation">
             <svg class="flight-arc" viewBox="0 0 600 120" xmlns="http://www.w3.org/2000/svg">
@@ -1935,7 +2092,8 @@
         <!-- Error Banner -->
         <div class="error-banner" id="errorBanner"></div>
 
-        <!-- Results Panel -->
+        <!-- Split Layout: Results + Map -->
+        <div class="split-layout" id="splitLayout">
         <div class="results-panel" id="resultsPanel">
             <div id="freshnessBanner"></div>
             <div id="originLabel"></div>
@@ -1969,6 +2127,19 @@
                 <div class="warnings-section" id="chicagoWarnings"></div>
             </div>
         </div>
+
+        <!-- Map Panel -->
+        <div class="map-panel" id="mapPanel">
+            <button class="map-close-btn" onclick="toggleMapPanel()">&times;</button>
+            <div id="routeMap" class="route-map"></div>
+        </div>
+        </div><!-- /splitLayout -->
+
+        <!-- Mobile map toggle -->
+        <button class="map-toggle-btn" id="mapToggleBtn" onclick="toggleMapPanel()">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+            Map
+        </button>
     </div>
 
     <script>
@@ -2408,7 +2579,7 @@
             localStorage.removeItem(LS_KEY);
             document.getElementById('recentSearches').classList.remove('visible');
             document.getElementById('recentSearchesList').innerHTML = '';
-            document.getElementById('resultsPanel').classList.remove('visible');
+            document.getElementById('splitLayout').classList.remove('visible');
         }
 
         function fetchCommunityDeals() {
@@ -2470,104 +2641,66 @@
             return '<img src="' + flight.airline_logos[0] + '" alt="' + (flight.airlines ? flight.airlines[0] : '') + '">';
         }
 
-        function buildStopsColumn(hubMins, hubCode, leg1, leg2) {
-            var stops = [];
-            // Within-flight layovers from leg 1
-            if (leg1 && leg1.layover_details) {
-                for (var i = 0; i < leg1.layover_details.length; i++) {
-                    var d = leg1.layover_details[i];
-                    stops.push({ mins: d.minutes, label: d.airport || '?', isHub: false });
-                }
-            }
-            // Hub connection time
-            if (hubMins !== null && hubMins !== undefined) {
-                stops.push({ mins: hubMins, label: hubCode, isHub: true });
-            }
-            // Within-flight layovers from leg 2
-            if (leg2 && leg2.layover_details) {
-                for (var i = 0; i < leg2.layover_details.length; i++) {
-                    var d = leg2.layover_details[i];
-                    stops.push({ mins: d.minutes, label: d.airport || '?', isHub: false });
-                }
-            }
-            if (stops.length === 0) {
-                return '<div class="hf-card-stops-col"><div class="stop-label" style="color:#94a3b8">&mdash;</div></div>';
-            }
-            var html = '<div class="hf-card-stops-col">';
-            for (var i = 0; i < stops.length; i++) {
-                var s = stops[i];
-                var dotClass = (s.mins < 60 || s.mins > 480) ? 'red' : (s.mins < 120 || s.mins > 240) ? 'yellow' : 'green';
-                html += '<div class="hf-stop-item">' +
-                    '<div class="stop-time"><span class="stop-dot ' + dotClass + '"></span>' + formatMinutes(s.mins) + '</div>' +
-                    '<div class="stop-label">' + (s.isHub ? 'at ' : '') + s.label + '</div>' +
-                '</div>';
-            }
-            html += '</div>';
-            return html;
-        }
-
-        function buildLegHtml(label, from, to, flight, gfUrl, showPrice) {
+        // Build a single compact leg row (like Google Flights)
+        function buildLegRow(flight, from, to, gfUrl, showPrice) {
             if (!flight) {
-                return '<div class="hf-card-leg">' +
-                    '<div class="hf-card-leg-info">' +
-                        '<div class="hf-card-leg-label">' + label + '</div>' +
-                        '<div style="color:#94a3b8;font-size:13px;font-style:italic">Details unavailable</div>' +
-                    '</div>' +
-                '</div>';
+                return '<div class="hf-leg-row"><span style="color:#94a3b8;font-size:12px;font-style:italic">Details unavailable</span></div>';
             }
-            var logo = hfLogoHtml(flight);
+            var logoSrc = (flight.airline_logos && flight.airline_logos.length) ? flight.airline_logos[0] : '';
+            var logoHtml = logoSrc ? '<img class="hf-leg-logo" src="' + logoSrc + '" alt="">' : '';
             var timesHtml = (flight.departure_time && flight.arrival_time)
-                ? '<div class="hf-card-leg-times">' + formatTime(flight.departure_time) + ' &ndash; ' + formatTime(flight.arrival_time) + '</div>'
+                ? formatTime(flight.departure_time) + ' – ' + formatTime(flight.arrival_time)
                 : '';
+            var stopsHtml = '';
+            if (flight.stops === 0) {
+                stopsHtml = '<span class="nonstop">Nonstop</span>';
+            } else {
+                var connStr = (flight.connections && flight.connections.length) ? ' (' + flight.connections.join(', ') + ')' : '';
+                stopsHtml = flight.stops + ' stop' + (flight.stops > 1 ? 's' : '') + connStr;
+            }
             var priceHtml = showPrice
-                ? '<div class="hf-card-leg-price">$' + flight.price.toFixed(0) + ' <span style="font-size:12px;font-weight:400;color:#6b7280">RT</span></div>'
+                ? '<span class="hf-leg-price">$' + flight.price.toFixed(0) + '</span>'
                 : '';
-            return '<div class="hf-card-leg">' +
-                '<div class="hf-card-leg-info">' +
-                    '<div class="hf-card-leg-label">' + label + '</div>' +
-                    '<div class="hf-card-leg-route">' + from + ' &rarr; ' + to + '</div>' +
-                    '<div class="hf-card-leg-airline">' + logo + '<span>' + flight.carrier_display + '</span></div>' +
-                    timesHtml +
-                    '<div class="hf-card-leg-meta">' + stopsLabel(flight.stops, flight.connections) + ' &middot; ' + formatMinutes(flight.total_duration) + '</div>' +
-                    priceHtml +
-                    '<a class="gf-link" href="' + gfUrl + '" target="_blank" rel="noopener">Google Flights</a>' +
-                '</div>' +
+            return '<div class="hf-leg-row">' +
+                logoHtml +
+                '<span class="hf-leg-times">' + timesHtml + '</span>' +
+                '<span class="hf-leg-carrier">' + flight.carrier_display + '</span>' +
+                '<span class="hf-leg-route">' + from + '\u2192' + to + '</span>' +
+                '<span class="hf-leg-duration">' + formatMinutes(flight.total_duration) + '</span>' +
+                '<span class="hf-leg-stops">' + stopsHtml + '</span>' +
+                priceHtml +
+                '<a class="hf-leg-gf" href="' + gfUrl + '" target="_blank" rel="noopener">Book</a>' +
             '</div>';
         }
 
-        function buildLayoverStrip(label, leg1, leg2, hubMins, hubCode) {
-            var items = [];
-            // Leg 1 layovers (within-flight stops)
+        // Build connection strips between two legs (hub + within-flight layovers)
+        function buildConnectionStrip(hubMins, hubCode, leg1, leg2) {
+            var stops = [];
             if (leg1 && leg1.layover_details) {
                 for (var i = 0; i < leg1.layover_details.length; i++) {
                     var d = leg1.layover_details[i];
-                    items.push({ mins: d.minutes, name: d.airport_name || d.airport, type: 'layover' });
+                    stops.push({ mins: d.minutes, label: d.airport || '?', isHub: false });
                 }
             }
-            // Hub connection time
             if (hubMins !== null && hubMins !== undefined) {
-                items.push({ mins: hubMins, name: hubCode + ' (connection)', type: 'hub' });
+                stops.push({ mins: hubMins, label: hubCode, isHub: true });
             }
-            // Leg 2 layovers (within-flight stops)
             if (leg2 && leg2.layover_details) {
                 for (var i = 0; i < leg2.layover_details.length; i++) {
                     var d = leg2.layover_details[i];
-                    items.push({ mins: d.minutes, name: d.airport_name || d.airport, type: 'layover' });
+                    stops.push({ mins: d.minutes, label: d.airport || '?', isHub: false });
                 }
             }
-            if (items.length === 0) return '';
-            var html = '<div class="hf-layover-strip"><span class="strip-label">' + label + ':</span>';
-            for (var i = 0; i < items.length; i++) {
-                var m = items[i].mins;
-                var dotClass = (m < 60 || m > 480) ? 'red' : (m < 120 || m > 240) ? 'yellow' : 'green';
-                html += '<span class="layover-item">' +
-                    '<span class="layover-dot ' + dotClass + '"></span>' +
-                    '<span class="layover-time">' + formatMinutes(m) + '</span> ' +
-                    items[i].name +
-                '</span>';
-                if (i < items.length - 1) html += '<span style="color:#d1d5db">→</span>';
+            if (stops.length === 0) return '';
+            var html = '';
+            for (var i = 0; i < stops.length; i++) {
+                var s = stops[i];
+                var dotClass = (s.mins < 60 || s.mins > 480) ? 'red' : (s.mins < 120 || s.mins > 240) ? 'yellow' : 'green';
+                html += '<div class="hf-connection">' +
+                    '<span class="hf-conn-dot ' + dotClass + '"></span>' +
+                    formatMinutes(s.mins) + (s.isHub ? ' at ' : ' in ') + s.label +
+                '</div>';
             }
-            html += '</div>';
             return html;
         }
 
@@ -2575,20 +2708,15 @@
             if (!intlRet && !posRet) {
                 return '<div class="hf-return-unavailable">Return flight details not yet available</div>';
             }
-            // Return stops column: international return arrives at hub, then positioning return departs
             var retHubMins = null;
             if (intlRet && posRet) {
                 retHubMins = hubLayoverMinutes(intlRet.arrival_time, posRet.departure_time);
             }
-            var retStopsHtml = buildStopsColumn(retHubMins, hubCode, intlRet, posRet);
-
-            return '<div class="hf-card-direction">' +
-                '<div class="hf-direction-label return">Return</div>' +
-                '<div class="hf-card-legs">' +
-                    buildLegHtml('Leg 1', destination, hub, intlRet, intlGfUrl, false) +
-                    retStopsHtml +
-                    buildLegHtml('Leg 2', hub, origin, posRet, posGfUrl, false) +
-                '</div>' +
+            return '<div class="hf-section">' +
+                '<div class="hf-section-label">Return</div>' +
+                buildLegRow(intlRet, destination, hub, intlGfUrl, false) +
+                buildConnectionStrip(retHubMins, hubCode, intlRet, posRet) +
+                buildLegRow(posRet, hub, origin, posGfUrl, false) +
             '</div>';
         }
 
@@ -2618,9 +2746,8 @@
                     else savingsHtml = '<div class="savings-badge savings-neutral">Same price</div>';
                 }
 
-                // Outbound stops column (hub connection + within-flight layovers)
+                // Hub connection time
                 var outHubMins = hubLayoverMinutes(pos.arrival_time, intl.departure_time);
-                var outStopsHtml = buildStopsColumn(outHubMins, hf.hub, pos, intl);
 
                 // URLs
                 var posGfUrl = googleFlightsUrl(r.search_origin, hf.hub, r.depart_date, r.return_date);
@@ -2634,23 +2761,21 @@
                 }
 
                 html +=
-                    '<div class="hf-card' + (isBest ? ' best-card' : '') + '">' +
+                    '<div class="hf-card' + (isBest ? ' best-card' : '') + '" data-hub="' + hf.hub + '">' +
                         // Header
                         '<div class="hf-card-header">' +
                             '<span class="hf-card-rank ' + rankClass + '">' + hf.rank + '</span>' +
                             '<span class="hf-card-hub">via ' + hf.hub + '</span>' +
                             '<span class="hf-card-savings">' + savingsHtml + '</span>' +
                         '</div>' +
-                        // Outbound section
-                        '<div class="hf-card-direction">' +
-                            '<div class="hf-direction-label outbound">Outbound</div>' +
-                            '<div class="hf-card-legs">' +
-                                buildLegHtml('Leg 1', r.search_origin, hf.hub, pos, posGfUrl, true) +
-                                outStopsHtml +
-                                buildLegHtml('Leg 2', hf.hub, r.destination, intl, intlGfUrl, true) +
-                            '</div>' +
+                        // Outbound
+                        '<div class="hf-section">' +
+                            '<div class="hf-section-label">Outbound</div>' +
+                            buildLegRow(pos, r.search_origin, hf.hub, posGfUrl, true) +
+                            buildConnectionStrip(outHubMins, hf.hub, pos, intl) +
+                            buildLegRow(intl, hf.hub, r.destination, intlGfUrl, true) +
                         '</div>' +
-                        // Return section
+                        // Return
                         buildReturnSection(intlRet, posRet, r.destination, hf.hub, r.search_origin, hf.hub, posGfUrl, intlGfUrl) +
                         // Footer
                         '<div class="hf-card-footer">' +
@@ -2848,7 +2973,8 @@
                     badgeHtml = '<span class="fc-badge fc-badge-cheapest">Cheapest</span> ';
                 }
 
-                html += '<a class="' + cardClass + '" href="' + gfUrl + '" target="_blank" rel="noopener">';
+                var connData = (f.connections && f.connections.length) ? f.connections.join(',') : '';
+                html += '<a class="' + cardClass + '" href="' + gfUrl + '" target="_blank" rel="noopener" data-connections="' + connData + '">';
                 html += logoHtml;
 
                 // Times column
@@ -3115,7 +3241,7 @@
             // Initialize animation (hubs will be updated when start event arrives)
             initAnimation(params.origin, params.destination, []);
 
-            document.getElementById("resultsPanel").classList.remove("visible");
+            document.getElementById("splitLayout").classList.remove("visible");
             document.getElementById("errorBanner").classList.remove("visible");
             document.getElementById("freshnessBanner").innerHTML = "";
             document.getElementById("originLabel").innerHTML = "";
@@ -3359,8 +3485,141 @@
             switchTab('chicago');
         }
 
+        // Collapse search form into compact summary bar
+        function collapseSearchForm(origin, dest, depart, ret) {
+            var banner = document.getElementById('searchBanner');
+            var routeEl = document.getElementById('summaryRoute');
+            var datesEl = document.getElementById('summaryDates');
+            // Format dates nicely
+            function fmtDate(d) {
+                if (!d) return '';
+                var parts = d.split('-');
+                var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+                return months[parseInt(parts[1], 10) - 1] + ' ' + parseInt(parts[2], 10);
+            }
+            routeEl.textContent = origin + ' \u2192 ' + dest;
+            datesEl.textContent = fmtDate(depart) + ' \u2013 ' + fmtDate(ret);
+            banner.classList.add('collapsed');
+        }
+
+        // Expand search form back to full
+        function expandSearchForm() {
+            var banner = document.getElementById('searchBanner');
+            banner.classList.remove('collapsed');
+            banner.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function findBestLayoverFlight(flights) {
+            // Find cheapest flight where ALL layovers are 1-6 hours (60-360 min)
+            var best = null;
+            for (var i = 0; i < flights.length; i++) {
+                var f = flights[i];
+                if (!f.layover_details || f.layover_details.length === 0) continue;
+                var allGood = true;
+                for (var j = 0; j < f.layover_details.length; j++) {
+                    var m = f.layover_details[j].minutes;
+                    if (m < 60 || m > 360) { allGood = false; break; }
+                }
+                if (allGood && (!best || f.price < best.price)) best = f;
+            }
+            return best;
+        }
+
+        function renderBestDeals(r) {
+            var el = document.getElementById('bestDeals');
+            var hf = r.hacker_fares && r.hacker_fares.length > 0 ? r.hacker_fares[0] : null;
+            var bf = r.baseline_flights && r.baseline_flights.length > 0 ? r.baseline_flights[0] : null;
+            var blf = findBestLayoverFlight(r.baseline_flights || []);
+            if (!hf && !bf) { el.style.display = 'none'; return; }
+
+            // Hide recent searches when showing deals
+            var rs = document.getElementById('recentSearches');
+            if (rs) rs.classList.remove('visible');
+
+            var html = '';
+
+            // Best Hub Hop deal
+            if (hf) {
+                var posLogo = hf.positioning && hf.positioning.airline_logos && hf.positioning.airline_logos[0] ? hf.positioning.airline_logos[0] : '';
+                var intlLogo = hf.international && hf.international.airline_logos && hf.international.airline_logos[0] ? hf.international.airline_logos[0] : '';
+                var posAirline = hf.positioning && hf.positioning.airlines ? hf.positioning.airlines[0] : '';
+                var intlAirline = hf.international && hf.international.airlines ? hf.international.airlines[0] : '';
+                html += '<div class="best-deal-card hub-hop-deal" onclick="switchTab(\'hacker\')">';
+                html += '<div class="best-deal-tag">Best Deal</div>';
+                html += '<div class="best-deal-route">';
+                if (posLogo) html += '<img src="' + posLogo + '" alt="">';
+                if (intlLogo && intlLogo !== posLogo) html += '<img src="' + intlLogo + '" alt="">';
+                html += '<span class="route-text">via ' + hf.hub + '</span>';
+                html += '</div>';
+                html += '<div style="display:flex;align-items:baseline;">';
+                html += '<span class="best-deal-price">$' + hf.total + '</span>';
+                if (hf.savings_vs_baseline > 0) {
+                    html += '<span class="best-deal-savings">Save $' + hf.savings_vs_baseline + '</span>';
+                }
+                html += '</div>';
+                html += '<div class="best-deal-meta">' + posAirline + ' + ' + intlAirline + ' · round trip</div>';
+                html += '</div>';
+            }
+
+            // Cheapest direct flight
+            if (bf) {
+                var logo = bf.airline_logos && bf.airline_logos[0] ? bf.airline_logos[0] : '';
+                var dur = bf.total_duration;
+                var durStr = Math.floor(dur / 60) + 'h ' + (dur % 60) + 'm';
+                var stopStr = bf.stops === 0 ? 'Nonstop' : bf.stops + ' stop' + (bf.stops > 1 ? 's' : '');
+                var isBestLayoverToo = blf && blf.price === bf.price;
+                var cheapTag = isBestLayoverToo ? 'Cheapest + Best Layover' : 'Cheapest Flight';
+                var cheapClass = isBestLayoverToo ? 'direct-deal combined-deal' : 'direct-deal';
+                html += '<div class="best-deal-card ' + cheapClass + '" onclick="switchTab(\'direct\')">';
+                html += '<div class="best-deal-tag">' + cheapTag + '</div>';
+                html += '<div class="best-deal-route">';
+                if (logo) html += '<img src="' + logo + '" alt="">';
+                html += '<span class="route-text">' + bf.carrier_display + '</span>';
+                html += '</div>';
+                html += '<div style="display:flex;align-items:baseline;">';
+                html += '<span class="best-deal-price">$' + bf.price + '</span>';
+                html += '</div>';
+                if (isBestLayoverToo && bf.layover_details && bf.layover_details.length > 0) {
+                    var layStr = bf.layover_details.map(function(l) {
+                        var lh = Math.floor(l.minutes / 60); var lm = l.minutes % 60;
+                        return (lh > 0 ? lh + 'h ' : '') + (lm > 0 ? lm + 'm' : '') + ' in ' + l.airport;
+                    }).join(' · ');
+                    html += '<div class="best-deal-meta">' + durStr + ' · ' + layStr + '</div>';
+                } else {
+                    html += '<div class="best-deal-meta">' + durStr + ' · ' + stopStr + ' · round trip</div>';
+                }
+                html += '</div>';
+            }
+
+            // Best Layover flight (all layovers 1-6h) — only if different from cheapest
+            if (blf && (!bf || blf.price !== bf.price)) {
+                var blogo = blf.airline_logos && blf.airline_logos[0] ? blf.airline_logos[0] : '';
+                var bdur = blf.total_duration;
+                var bdurStr = Math.floor(bdur / 60) + 'h ' + (bdur % 60) + 'm';
+                var layoverStr = blf.layover_details.map(function(l) {
+                    var h = Math.floor(l.minutes / 60);
+                    var m = l.minutes % 60;
+                    return (h > 0 ? h + 'h ' : '') + (m > 0 ? m + 'm' : '') + ' in ' + l.airport;
+                }).join(' · ');
+                html += '<div class="best-deal-card layover-deal" onclick="switchTab(\'direct\')">';
+                html += '<div class="best-deal-tag">Best Layover</div>';
+                html += '<div class="best-deal-route">';
+                if (blogo) html += '<img src="' + blogo + '" alt="">';
+                html += '<span class="route-text">' + blf.carrier_display + '</span>';
+                html += '</div>';
+                html += '<div style="display:flex;align-items:baseline;">';
+                html += '<span class="best-deal-price">$' + blf.price + '</span>';
+                html += '</div>';
+                html += '<div class="best-deal-meta">' + bdurStr + ' · ' + layoverStr + '</div>';
+                html += '</div>';
+            }
+
+            el.innerHTML = html;
+            el.style.display = 'flex';
+        }
+
         function renderResults(r, fromCache) {
-            document.getElementById("resultsPanel").classList.add("visible");
+            document.getElementById("splitLayout").classList.add("visible");
             lastRenderedOrigin = r._cache_key || r.search_origin;
 
             // Hide Chicago tab on fresh MKE results (unless we have hub results)
@@ -3386,82 +3645,20 @@
                 r.return_date
             );
 
-            // Freshness banner
-            renderFreshnessBanner(r, fromCache);
+            // Minimalistic: skip freshness banner, origin label, price insights, baseline card
+            document.getElementById("freshnessBanner").innerHTML = '';
+            document.getElementById("originLabel").innerHTML = '';
+            document.getElementById("priceInsights").innerHTML = '';
+            document.getElementById("baselineCard").innerHTML = '';
 
-            // Origin label
-            var labelHtml = '<div class="origin-label">';
-            labelHtml += '<span class="airport">' + r.search_origin + '</span>';
-            var statsLine = (r.hubs_searched ? r.hubs_searched.length : 0) + ' hubs searched';
-            labelHtml += '<span style="display:block; font-size:12px; color:#64748b; margin-top:4px;">' + statsLine + '</span>';
-
-            if (r.is_hub_search && r.ground_cost > 0) {
-                labelHtml += '<span class="ground-note">Includes $' + r.ground_cost.toFixed(2) + ' ground transit (driving + parking) in all totals</span>';
-            }
-            labelHtml += '</div>';
-            document.getElementById("originLabel").innerHTML = labelHtml;
-
-            // Price insights
-            var piHtml = "";
-            if (r.price_insights && r.price_insights.price_level) {
-                var pi = r.price_insights;
-                var piClass = "price-typical";
-                var piLabel = "Prices are typical";
-                if (pi.price_level === "low") { piClass = "price-low"; piLabel = "Prices are currently low"; }
-                else if (pi.price_level === "high") { piClass = "price-high"; piLabel = "Prices are currently high"; }
-                var rangeStr = "";
-                if (pi.typical_price_range && pi.typical_price_range.length === 2) {
-                    rangeStr = " | Typical range: $" + pi.typical_price_range[0] + " - $" + pi.typical_price_range[1];
-                }
-                piHtml = '<div class="price-insights ' + piClass + '">' + piLabel + rangeStr + '</div>';
-            }
-            document.getElementById("priceInsights").innerHTML = piHtml;
-
-            // Baseline card
-            var baseHtml = "";
-            if (r.baseline) {
-                var b = r.baseline;
-                var bStops = stopsLabel(b.stops, b.connections);
-                var displayPrice = b.price;
-                var breakdownHtml = "";
-                if (r.is_hub_search && b.total_with_ground) {
-                    displayPrice = b.total_with_ground;
-                    breakdownHtml = '<div class="price-breakdown">Flight: $' + b.price.toFixed(2) + ' + Ground: $' + b.ground_cost.toFixed(2) + '</div>';
-                }
-                var baseGfUrl = googleFlightsUrl(r.search_origin, r.destination, r.depart_date, r.return_date);
-                var logoHtml = airlineLogoHtml(b.airline_logos, b.airlines);
-                var layoverHtml = formatLayoverDetails(b.layover_details);
-
-                baseHtml =
-                    '<div class="baseline-card">' +
-                        '<div>' +
-                            '<div class="label">Baseline: Standard Round-Trip</div>' +
-                            '<div class="route">' + r.search_origin + ' &#8594; ' + r.destination + ' (single ticket)</div>' +
-                            layoverHtml +
-                            '<div style="margin-top:8px;">' +
-                                '<a class="gf-link gf-link-baseline" href="' + baseGfUrl + '" target="_blank" rel="noopener">View on Google Flights</a>' +
-                            '</div>' +
-                        '</div>' +
-                        '<div>' +
-                            '<div class="price">$' + displayPrice.toFixed(2) + '</div>' +
-                            breakdownHtml +
-                            '<div class="detail">' + logoHtml + b.carrier_display + ' | ' + bStops + ' | ' + formatMinutes(b.total_duration) + '</div>' +
-                        '</div>' +
-                    '</div>';
-            } else {
-                baseHtml =
-                    '<div class="baseline-card">' +
-                        '<div>' +
-                            '<div class="label">Baseline: No Flights Found</div>' +
-                            '<div class="route">' + r.search_origin + ' &#8594; ' + r.destination + '</div>' +
-                        '</div>' +
-                        '<div><div class="price">N/A</div></div>' +
-                    '</div>';
-            }
-            document.getElementById("baselineCard").innerHTML = baseHtml;
+            // Collapse search form to compact bar
+            collapseSearchForm(r.search_origin, r.destination, r.depart_date, r.return_date);
 
             // Hub Hop cards
             renderHackerFareCards(r, 'hackerFareTable');
+
+            // Best Deals banner
+            renderBestDeals(r);
 
             // Update tab counts
             updateTabCounts(r);
@@ -3474,7 +3671,52 @@
                 }
             }
             document.getElementById("warnings").innerHTML = warnHtml;
+
+            // Render map
+            renderMap(r);
         }
+
+        /* ── Map: Early declarations (must precede page-load IIFE) ── */
+        var AIRPORT_COORDS = {
+            'ATL':[33.6407,-84.4277],'DFW':[32.8998,-97.0403],'DEN':[39.8561,-104.6737],
+            'ORD':[41.9742,-87.9073],'LAX':[33.9425,-118.4081],'JFK':[40.6413,-73.7781],
+            'MKE':[42.9472,-87.8966],'SFO':[37.6213,-122.3790],'SEA':[47.4502,-122.3088],
+            'MIA':[25.7959,-80.2870],'EWR':[40.6895,-74.1745],'BOS':[42.3656,-71.0096],
+            'MCO':[28.4312,-81.3081],'PHX':[33.4373,-112.0078],'IAH':[29.9902,-95.3368],
+            'MSP':[44.8848,-93.2223],'DTW':[42.2124,-83.3534],'PHL':[39.8744,-75.2424],
+            'CLT':[35.2140,-80.9431],'IAD':[38.9531,-77.4565],'BWI':[39.1754,-76.6684],
+            'DCA':[38.8512,-77.0402],'SAN':[32.7338,-117.1933],'TPA':[27.9755,-82.5332],
+            'FLL':[26.0726,-80.1527],'SLC':[40.7884,-111.9778],'MDW':[41.7868,-87.7416],
+            'HNL':[21.3187,-157.9225],'AUS':[30.1975,-97.6664],'RDU':[35.8776,-78.7875],
+            'BNA':[36.1263,-86.6774],'STL':[38.7487,-90.3700],'PDX':[45.5898,-122.5951],
+            'MCI':[39.2976,-94.7139],'SJC':[37.3626,-121.9291],'OAK':[37.7213,-122.2208],
+            'LHR':[51.4700,-0.4543],'CDG':[49.0097,2.5479],'ATH':[37.9364,23.9445],
+            'FRA':[50.0379,8.5622],'AMS':[52.3105,4.7683],'FCO':[41.8003,12.2389],
+            'MAD':[40.4983,-3.5676],'BCN':[41.2971,2.0785],'IST':[41.2753,28.7519],
+            'MUC':[48.3538,11.7861],'DXB':[25.2528,55.3644],'DOH':[25.2731,51.6081],
+            'NRT':[35.7720,140.3929],'HND':[35.5494,139.7798],'ICN':[37.4602,126.4407],
+            'SIN':[1.3644,103.9915],'HKG':[22.3080,113.9185],'BKK':[13.6900,100.7501],
+            'SYD':[-33.9461,151.1772],'MEL':[-37.6690,144.8410],
+            'YYZ':[43.6777,-79.6248],'YUL':[45.4707,-73.7408],'YVR':[49.1967,-123.1815],
+            'MEX':[19.4363,-99.0721],'CUN':[21.0365,-86.8771],'SJO':[9.9939,-84.2088],
+            'GRU':[-23.4356,-46.4731],'SCL':[-33.3930,-70.7858],'BOG':[4.7016,-74.1469],
+            'LIM':[-12.0219,-77.1143],'PEK':[40.0799,116.6031],'PVG':[31.1443,121.8083],
+            'DEL':[28.5562,77.1000],'BOM':[19.0896,72.8656],'TPE':[25.0777,121.2330],
+            'MNL':[14.5086,121.0198],'JNB':[-26.1392,28.2460],'NBO':[-1.3192,36.9278],
+            'CAI':[30.1219,31.4056],'LGW':[51.1537,-0.1821],'ZRH':[47.4647,8.5492],
+            'VIE':[48.1103,16.5697],'CPH':[55.6180,12.6508],'OSL':[60.1976,11.1004],
+            'ARN':[59.6519,17.9186],'HEL':[60.3172,24.9633],'LIS':[38.7742,-9.1342],
+            'DUB':[53.4264,-6.2499],'EDI':[55.9500,-3.3725],'BRU':[50.9014,4.4844],
+            'WAW':[52.1657,20.9671],'PRG':[50.1008,14.2600],'BUD':[47.4369,19.2556],
+            'BEG':[44.8184,20.3091],'SKG':[40.5197,22.9709],'SPU':[43.5389,16.2980],
+            'DBV':[42.5614,18.2682],'TLV':[32.0114,34.8867],'AMM':[31.7226,35.9932]
+        };
+        function getAirportCoords(iata) { return AIRPORT_COORDS[iata] || null; }
+        var routeMap = null;
+        var mapMarkers = {};
+        var mapRoutes = [];
+        var mapHighlight = null;
+        var mapCurrentData = null;
 
         // Page load: hydrate from localStorage and render most recent cached results
         (function() {
@@ -3498,6 +3740,16 @@
             }
             if (mostRecent) {
                 renderResults(resultsCache[mostRecent], true);
+            }
+
+            // Dev shortcut: ?dev=1 skips Tom and auto-searches MKE→ATH
+            if (new URLSearchParams(window.location.search).get('dev') === '1') {
+                var overlay = document.getElementById('tomOverlay');
+                if (overlay) overlay.style.display = 'none';
+                document.body.classList.remove('tom-active');
+                document.querySelector('.container').classList.add('tom-reveal');
+                document.getElementById('tomFab').style.display = 'flex';
+                startSearch({ origin: 'MKE', destination: 'ATH', depart_date: '2026-05-22', return_date: '2026-05-30' }, false);
             }
         })();
 
@@ -3524,6 +3776,28 @@
         // Exit big text with fade-out-up, call back when gone
         function exitBigText(callback) {
             var el = document.getElementById('tomBigText');
+            el.classList.add('tom-exit');
+            el.classList.remove('tom-visible');
+            setTimeout(function() {
+                el.innerHTML = '';
+                el.classList.remove('tom-exit');
+                if (callback) callback();
+            }, 450);
+        }
+
+        // Show sub-text with delayed fade-in (appears after big text)
+        function showSubText(text, callback) {
+            var el = document.getElementById('tomSubText');
+            el.classList.remove('tom-visible', 'tom-exit');
+            el.innerHTML = text;
+            el.offsetHeight;
+            el.classList.add('tom-visible');
+            setTimeout(function() { if (callback) callback(); }, 600);
+        }
+
+        // Exit sub-text
+        function exitSubText(callback) {
+            var el = document.getElementById('tomSubText');
             el.classList.add('tom-exit');
             el.classList.remove('tom-visible');
             setTimeout(function() {
@@ -3575,15 +3849,29 @@
 
             TOM.state = 'GREETING';
             setTimeout(function() {
-                showBigText('Hi, I\'m Tom. <span class="tom-emoji">\uD83D\uDC4B</span>', function() {
-                    setTimeout(function() {
-                        exitBigText(function() {
-                            showBigText('Where do you want to go? \uD83D\uDCCD', function() {
-                                TOM.state = 'DESTINATION';
-                                showAirportInput('destination', 'Type a destination city or airport...');
+                // Step 1: "Hey MKE Flyer!"
+                showBigText('Hey MKE Flyer!', function() {
+                    // Step 2: "I'm Tom." appears below
+                    showSubText("I'm Tom \u2014 your flight deal finder.", function() {
+                        setTimeout(function() {
+                            // Step 3: Both exit together
+                            exitSubText();
+                            exitBigText(function() {
+                                // Step 4: Explanation
+                                showBigText('Fly MKE or hit the road? Let\u2019s find out \uD83D\uDE0F', function() {
+                                    setTimeout(function() {
+                                        // Step 5: Exit, then show destination input
+                                        exitBigText(function() {
+                                            showBigText('Where do you want to go? \uD83C\uDF0D', function() {
+                                                TOM.state = 'DESTINATION';
+                                                showAirportInput('destination', 'Type a destination city or airport...');
+                                            });
+                                        });
+                                    }, 2000);
+                                });
                             });
-                        });
-                    }, 1200);
+                        }, 1400);
+                    });
                 });
             }, 400);
         }
@@ -3923,10 +4211,13 @@
             TOM.collected = { destination: null, origin: null, depart_date: null, return_date: null, hubs: [] };
 
             var bigText = document.getElementById('tomBigText');
+            var subText = document.getElementById('tomSubText');
             var echo = document.getElementById('tomEcho');
             var inputArea = document.getElementById('tomInputArea');
             bigText.innerHTML = '';
             bigText.classList.remove('tom-visible', 'tom-exit');
+            subText.innerHTML = '';
+            subText.classList.remove('tom-visible', 'tom-exit');
             echo.textContent = '';
             echo.classList.remove('tom-visible');
             inputArea.innerHTML = '';
@@ -3940,10 +4231,10 @@
             document.getElementById('tomFab').style.display = 'none';
 
             setTimeout(function() {
-                showBigText('Hi again! <span class="tom-emoji">\uD83D\uDC4B</span>', function() {
+                showBigText('Welcome back!', function() {
                     setTimeout(function() {
                         exitBigText(function() {
-                            showBigText('Where do you want to go? \uD83D\uDCCD', function() {
+                            showBigText('Where do you want to go? \uD83C\uDF0D', function() {
                                 TOM.state = 'DESTINATION';
                                 showAirportInput('destination', 'Type a destination city or airport...');
                             });
@@ -3953,17 +4244,204 @@
             }, 300);
         }
 
-        // Initialize Tom when airports data is ready
-        var tomInitInterval = setInterval(function() {
-            if (AIRPORTS.length > 0) {
+        // Initialize Tom when airports data is ready (skip in dev mode)
+        var isDevMode = new URLSearchParams(window.location.search).get('dev') === '1';
+        if (!isDevMode) {
+            var tomInitInterval = setInterval(function() {
+                if (AIRPORTS.length > 0) {
+                    clearInterval(tomInitInterval);
+                    initTom();
+                }
+            }, 100);
+            setTimeout(function() {
                 clearInterval(tomInitInterval);
-                initTom();
+                if (TOM.state === 'INIT') initTom();
+            }, 3000);
+        }
+
+        /* ── Map: Core ───────────────────────────────────────── */
+        function initMap() {
+            if (routeMap) return;
+            if (typeof L === 'undefined') return;
+            routeMap = L.map('routeMap', {
+                zoomControl: true, scrollWheelZoom: true, attributionControl: false
+            }).setView([40, -40], 3);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                maxZoom: 18
+            }).addTo(routeMap);
+        }
+
+        function clearMap() {
+            if (!routeMap) return;
+            for (var k in mapMarkers) { routeMap.removeLayer(mapMarkers[k]); }
+            mapMarkers = {};
+            for (var i = 0; i < mapRoutes.length; i++) { routeMap.removeLayer(mapRoutes[i]); }
+            mapRoutes = [];
+            if (mapHighlight) { routeMap.removeLayer(mapHighlight); mapHighlight = null; }
+        }
+
+        function addAirportMarker(iata, type) {
+            var coords = getAirportCoords(iata);
+            if (!coords || mapMarkers[iata]) return;
+            var icon = L.divIcon({
+                className: 'airport-marker-icon',
+                html: '<div class="airport-marker-label ' + type + '">' + iata + '</div>',
+                iconSize: [50, 24], iconAnchor: [25, 12]
+            });
+            mapMarkers[iata] = L.marker(coords, { icon: icon }).addTo(routeMap);
+        }
+
+        function computeArc(from, to, n) {
+            var pts = [];
+            var midLat = (from[0] + to[0]) / 2;
+            var midLng = (from[1] + to[1]) / 2;
+            var dist = Math.sqrt(Math.pow(to[0]-from[0],2) + Math.pow(to[1]-from[1],2));
+            var offset = dist * 0.2;
+            var dx = to[1] - from[1], dy = to[0] - from[0];
+            var len = Math.sqrt(dx*dx + dy*dy) || 1;
+            var ctrlLat = midLat + (dx/len) * offset;
+            var ctrlLng = midLng - (dy/len) * offset;
+            for (var i = 0; i <= n; i++) {
+                var t = i / n;
+                var lat = (1-t)*(1-t)*from[0] + 2*(1-t)*t*ctrlLat + t*t*to[0];
+                var lng = (1-t)*(1-t)*from[1] + 2*(1-t)*t*ctrlLng + t*t*to[1];
+                pts.push([lat, lng]);
             }
-        }, 100);
-        setTimeout(function() {
-            clearInterval(tomInitInterval);
-            if (TOM.state === 'INIT') initTom();
-        }, 3000);
+            return pts;
+        }
+
+        function drawFlightArc(fromIata, toIata, color, weight, opacity, dashed) {
+            var from = getAirportCoords(fromIata);
+            var to = getAirportCoords(toIata);
+            if (!from || !to) return null;
+            var latlngs = computeArc(from, to, 50);
+            var line = L.polyline(latlngs, {
+                color: color || '#2563eb', weight: weight || 2,
+                opacity: opacity || 0.5, dashArray: dashed ? '6 4' : null, smoothFactor: 1
+            }).addTo(routeMap);
+            mapRoutes.push(line);
+            return line;
+        }
+
+        function renderMap(r) {
+            if (typeof L === 'undefined') return;
+            mapCurrentData = r;
+            initMap();
+            clearMap();
+            var origin = r.search_origin;
+            var dest = r.destination;
+            addAirportMarker(origin, 'origin');
+            addAirportMarker(dest, 'destination');
+            // Draw direct route
+            drawFlightArc(origin, dest, '#2563eb', 2.5, 0.6, false);
+            // Hub airports from hacker fares
+            var hubs = {};
+            if (r.hacker_fares) {
+                for (var i = 0; i < r.hacker_fares.length; i++) {
+                    var hub = r.hacker_fares[i].hub;
+                    if (hub && !hubs[hub]) {
+                        hubs[hub] = true;
+                        addAirportMarker(hub, 'hub');
+                        drawFlightArc(origin, hub, '#a78bfa', 1.5, 0.3, true);
+                        drawFlightArc(hub, dest, '#a78bfa', 1.5, 0.3, true);
+                    }
+                }
+            }
+            // Connection airports from direct flights
+            var flights = r.baseline_flights || (r.baseline ? [r.baseline] : []);
+            for (var i = 0; i < flights.length; i++) {
+                var f = flights[i];
+                if (f.connections) {
+                    for (var j = 0; j < f.connections.length; j++) {
+                        var c = f.connections[j];
+                        if (!mapMarkers[c]) addAirportMarker(c, 'hub');
+                    }
+                }
+            }
+            setTimeout(function() {
+                if (routeMap) {
+                    routeMap.invalidateSize();
+                    fitMapBounds();
+                }
+            }, 200);
+        }
+
+        function fitMapBounds() {
+            if (!routeMap || Object.keys(mapMarkers).length === 0) return;
+            var bounds = L.latLngBounds([]);
+            for (var k in mapMarkers) { bounds.extend(mapMarkers[k].getLatLng()); }
+            routeMap.fitBounds(bounds, { padding: [80, 50], maxZoom: 4 });
+        }
+
+        /* ── Map: Hover Interactions ─────────────────────────── */
+        document.addEventListener('mouseenter', function(e) {
+            var hf = e.target.closest('.hf-card');
+            if (hf && routeMap) { highlightHubRoute(hf.dataset.hub); return; }
+            var fc = e.target.closest('.flight-card');
+            if (fc && routeMap) { highlightDirectRoute(); return; }
+        }, true);
+        document.addEventListener('mouseleave', function(e) {
+            var hf = e.target.closest('.hf-card');
+            var fc = e.target.closest('.flight-card');
+            if ((hf || fc) && routeMap) { clearHighlight(); }
+        }, true);
+
+        function highlightHubRoute(hubIata) {
+            clearHighlight();
+            if (!mapCurrentData || !hubIata) return;
+            var origin = mapCurrentData.search_origin;
+            var dest = mapCurrentData.destination;
+            var lines = [];
+            var l1 = drawHighlightArc(origin, hubIata);
+            var l2 = drawHighlightArc(hubIata, dest);
+            if (l1) lines.push(l1);
+            if (l2) lines.push(l2);
+            if (lines.length) {
+                mapHighlight = L.layerGroup(lines).addTo(routeMap);
+            }
+            if (mapMarkers[hubIata]) {
+                var el = mapMarkers[hubIata].getElement();
+                if (el) el.classList.add('marker-highlight');
+            }
+        }
+
+        function highlightDirectRoute() {
+            clearHighlight();
+            if (!mapCurrentData) return;
+            var line = drawHighlightArc(mapCurrentData.search_origin, mapCurrentData.destination);
+            if (line) { mapHighlight = L.layerGroup([line]).addTo(routeMap); }
+        }
+
+        function drawHighlightArc(fromIata, toIata) {
+            var from = getAirportCoords(fromIata);
+            var to = getAirportCoords(toIata);
+            if (!from || !to) return null;
+            return L.polyline(computeArc(from, to, 50), {
+                color: '#2563eb', weight: 4, opacity: 0.9
+            });
+        }
+
+        function clearHighlight() {
+            if (mapHighlight && routeMap) {
+                routeMap.removeLayer(mapHighlight);
+                mapHighlight = null;
+            }
+            for (var k in mapMarkers) {
+                var el = mapMarkers[k].getElement();
+                if (el) el.classList.remove('marker-highlight');
+            }
+        }
+
+        /* ── Map: Mobile Toggle ──────────────────────────────── */
+        function toggleMapPanel() {
+            var panel = document.getElementById('mapPanel');
+            if (panel.classList.contains('mobile-visible')) {
+                panel.classList.remove('mobile-visible');
+            } else {
+                panel.classList.add('mobile-visible');
+                if (routeMap) setTimeout(function() { routeMap.invalidateSize(); }, 100);
+            }
+        }
 
     </script>
 </body>
