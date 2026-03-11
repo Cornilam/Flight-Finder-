@@ -3968,7 +3968,10 @@
                 }
             });
 
-            setTimeout(function() { input.focus(); }, 200);
+            setTimeout(function() {
+                if (TOM.skipAutoFocus) { TOM.skipAutoFocus = false; return; }
+                input.focus();
+            }, 200);
         }
 
         function renderTomDropdown(matches) {
@@ -4224,6 +4227,19 @@
             }
             input.value = display;
             hideTomDropdown();
+            // Suppress auto-focus so "No airports found" doesn't appear
+            TOM.skipAutoFocus = true;
+            // Add Continue button to advance without re-selecting
+            var fieldType = TOM.state === 'DESTINATION' ? 'destination' : 'origin';
+            var navRow = input.closest('.tom-text-input-wrap').parentNode.querySelector('.tom-nav-row');
+            if (navRow) {
+                var btn = document.createElement('button');
+                btn.className = 'tom-btn';
+                btn.textContent = 'Continue';
+                btn.style.marginTop = '12px';
+                btn.onclick = function() { selectTomAirport(iata, fieldType); };
+                navRow.parentNode.insertBefore(btn, navRow);
+            }
         }
 
         function prefillTomDates(depart, ret) {
