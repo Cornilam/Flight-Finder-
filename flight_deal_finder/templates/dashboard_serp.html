@@ -3968,10 +3968,7 @@
                 }
             });
 
-            setTimeout(function() {
-                if (TOM.skipAutoFocus) { TOM.skipAutoFocus = false; return; }
-                input.focus();
-            }, 200);
+            // No auto-focus — dropdown only appears when user clicks in
         }
 
         function renderTomDropdown(matches) {
@@ -4041,13 +4038,18 @@
             });
         }
 
-        // Mousedown delegate for Tom's autocomplete
+        // Mousedown delegate for Tom's autocomplete + click-outside-to-close
         document.addEventListener('mousedown', function(e) {
             var item = e.target.closest('.tom-ac-dropdown .ac-item');
-            if (!item) return;
-            e.preventDefault();
-            var fieldType = TOM.state === 'DESTINATION' ? 'destination' : 'origin';
-            selectTomAirport(item.dataset.iata, fieldType);
+            if (item) {
+                e.preventDefault();
+                var fieldType = TOM.state === 'DESTINATION' ? 'destination' : 'origin';
+                selectTomAirport(item.dataset.iata, fieldType);
+                return;
+            }
+            // Close dropdown when clicking outside the input area
+            var inInput = e.target.closest('.tom-text-input-wrap');
+            if (!inInput) hideTomDropdown();
         });
 
         /* ── Date pickers ── */
