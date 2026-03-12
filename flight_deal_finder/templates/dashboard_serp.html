@@ -700,52 +700,70 @@
 
         /* Live Status Log */
         /* Search Animation Panel */
-        .search-animation {
-            background: transparent;
-            border: none;
-            border-radius: 0;
-            padding: 40px 24px 16px;
-            margin-bottom: 24px;
-            display: none;
-            text-align: center;
-            box-shadow: none;
+        /* Full-screen search overlay */
+        .search-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 9998;
+            background: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.4s ease;
         }
-        .search-animation.visible { display: block; }
-
-        .flight-arc {
+        .search-overlay.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .search-overlay-content {
+            text-align: center;
             width: 100%;
-            max-width: 600px;
-            height: 120px;
-            margin: 0 auto 16px;
+            max-width: 560px;
+            padding: 0 24px;
+        }
+        .search-overlay-arc {
+            width: 100%;
+            max-width: 520px;
+            height: auto;
+            margin: 0 auto 28px;
             display: block;
         }
-        .arc-label {
+        .so-origin-dot { fill: #2563eb; }
+        .so-dest-dot { fill: #059669; }
+        .so-dest-pulse {
+            fill: none;
+            stroke: #059669;
+            stroke-width: 2;
+            animation: destPulse 2s ease-in-out infinite;
+        }
+        @keyframes destPulse {
+            0% { r: 7; opacity: 1; }
+            100% { r: 20; opacity: 0; }
+        }
+        .so-label {
             fill: #111827;
             font-family: inherit;
-            font-size: 14px;
+            font-size: 15px;
             font-weight: 700;
             letter-spacing: 1px;
         }
-        .arc-path {
+        .so-arc-path {
             fill: none;
             stroke: #e5e7eb;
             stroke-width: 2;
             stroke-dasharray: 8 6;
         }
-        .arc-path-glow {
+        .so-arc-trail {
             fill: none;
             stroke: #2563eb;
-            stroke-width: 2;
+            stroke-width: 3;
             stroke-dasharray: 8 6;
-            opacity: 0.3;
+            opacity: 0.2;
         }
-        .plane-icon {
-            fill: #1e293b;
-            font-size: 18px;
-        }
-        .origin-dot, .dest-dot {
-            fill: #059669;
-        }
+        .so-plane text { fill: #1e293b; }
 
         /* Hub Tracker */
         .hub-tracker {
@@ -1037,6 +1055,172 @@
             .fc-stops { min-width: unset; }
             .fc-price { margin-left: 0; width: 100%; text-align: left; }
             .results-tab { padding: 10px 16px; font-size: 13px; }
+        }
+
+        /* ── Landing Page ── */
+        .landing-page {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            padding: 48px 20px 60px;
+            max-width: 960px;
+            margin: 0 auto;
+            animation: landingFadeIn 0.6s ease;
+        }
+        @keyframes landingFadeIn {
+            from { opacity: 0; transform: translateY(18px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .landing-page.visible { display: flex; }
+        .landing-hero {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .landing-hero h1 {
+            font-size: 36px;
+            font-weight: 800;
+            color: #111827;
+            margin: 0 0 8px;
+            letter-spacing: -0.5px;
+        }
+        .landing-hero p {
+            font-size: 16px;
+            color: #6b7280;
+            margin: 0 0 24px;
+        }
+        .landing-search-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 32px;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s;
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+        }
+        .landing-search-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+        }
+        .landing-section-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #111827;
+            margin: 0 0 16px;
+            align-self: flex-start;
+        }
+        .landing-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            width: 100%;
+            margin-bottom: 40px;
+        }
+        .landing-card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 14px;
+            padding: 20px;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+            position: relative;
+            overflow: hidden;
+        }
+        .landing-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+            border-color: #93c5fd;
+        }
+        .landing-card-flag {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+        .landing-card-dest {
+            font-size: 18px;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 2px;
+        }
+        .landing-card-country {
+            font-size: 13px;
+            color: #9ca3af;
+            margin-bottom: 12px;
+        }
+        .landing-card-price {
+            font-size: 14px;
+            color: #059669;
+            font-weight: 600;
+        }
+        .landing-card-tag {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: #ecfdf5;
+            color: #059669;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 6px;
+        }
+        .landing-explainer {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 14px;
+            padding: 28px 32px;
+            width: 100%;
+            text-align: center;
+        }
+        .landing-explainer h3 {
+            font-size: 16px;
+            font-weight: 700;
+            color: #111827;
+            margin: 0 0 12px;
+        }
+        .landing-explainer p {
+            font-size: 14px;
+            color: #6b7280;
+            margin: 0;
+            line-height: 1.6;
+        }
+        .landing-steps {
+            display: flex;
+            justify-content: center;
+            gap: 32px;
+            margin-top: 16px;
+        }
+        .landing-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+        .landing-step-num {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #2563eb;
+            color: #fff;
+            font-size: 13px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .landing-step-label {
+            font-size: 13px;
+            color: #374151;
+            font-weight: 500;
+        }
+        @media (max-width: 640px) {
+            .landing-grid { grid-template-columns: repeat(2, 1fr); }
+            .landing-hero h1 { font-size: 28px; }
+            .landing-steps { gap: 16px; }
         }
 
         /* Best Deals Banner */
@@ -1841,6 +2025,47 @@
         }
         .tom-nav-btn:hover { color: #111827; }
 
+        /* Tom Hub-Hop Explainer (onboarding) */
+        .tom-explainer {
+            max-width: 480px;
+            margin: 0 auto 20px;
+            text-align: center;
+        }
+        .tom-explainer-desc {
+            font-size: 16px;
+            color: #6b7280;
+            line-height: 1.6;
+            margin: 0 0 24px;
+        }
+        .tom-explainer-steps {
+            display: flex;
+            justify-content: center;
+            gap: 36px;
+        }
+        .tom-explainer-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        .tom-explainer-num {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #2563eb;
+            color: #fff;
+            font-size: 17px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .tom-explainer-label {
+            font-size: 14px;
+            color: #374151;
+            font-weight: 500;
+        }
+
         /* User selection echo (shows briefly after picking) */
         .tom-echo {
             font-size: 36px;
@@ -1928,6 +2153,38 @@
         </div>
     </div>
 
+    <!-- Search Loading Overlay -->
+    <div id="searchOverlay" class="search-overlay">
+        <div class="search-overlay-content">
+            <svg class="search-overlay-arc" viewBox="0 0 600 200" xmlns="http://www.w3.org/2000/svg">
+                <circle class="so-origin-dot" cx="60" cy="140" r="7" />
+                <circle class="so-dest-dot" cx="540" cy="140" r="7" />
+                <circle class="so-dest-pulse" cx="540" cy="140" r="7" />
+                <text class="so-label" id="soOrigin" x="60" y="170" text-anchor="middle">MKE</text>
+                <text class="so-label" id="soDest" x="540" y="170" text-anchor="middle">ATH</text>
+                <path class="so-arc-path" d="M 60,140 Q 300,15 540,140" />
+                <path class="so-arc-trail" d="M 60,140 Q 300,15 540,140" />
+                <g class="so-plane">
+                    <text font-size="26" dy="7">&#9992;</text>
+                    <animateMotion dur="3s" repeatCount="indefinite"
+                                   rotate="auto"
+                                   path="M 60,140 Q 300,15 540,140" />
+                </g>
+            </svg>
+            <div class="hub-tracker" id="soHubTracker"></div>
+            <div class="search-progress" style="max-width:400px;margin:0 auto;">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="soProgressFill"></div>
+                </div>
+                <div class="progress-text" id="soProgressText">Preparing search...</div>
+            </div>
+            <div class="details-toggle" onclick="toggleOverlayDetails()">
+                <span id="soDetailsArrow">&#9656;</span> Show details
+            </div>
+            <div class="status-log" id="soStatusLog" style="display:none;max-width:500px;margin:8px auto 0;"></div>
+        </div>
+    </div>
+
     <!-- Floating Re-open Tom Button (hidden) -->
     <button class="tom-fab" id="tomFab" style="display:none;" onclick="reopenTom()">
         <span class="tom-fab-icon">T</span>
@@ -1935,6 +2192,75 @@
     </button>
 
     <div class="container">
+        <!-- Landing Page (shown on Skip) -->
+        <div class="landing-page" id="landingPage">
+            <div class="landing-hero">
+                <h1>Find Your Next Adventure</h1>
+                <p>Save up to 50% on international flights from Milwaukee with hub-hopping</p>
+                <button class="landing-search-btn" onclick="restartTom()">Search flights &rarr;</button>
+            </div>
+
+            <div class="landing-section-title">Trending Destinations</div>
+            <div class="landing-grid">
+                <div class="landing-card" onclick="landingSearch('ATH')">
+                    <div class="landing-card-flag">&#127963;</div>
+                    <div class="landing-card-dest">Athens</div>
+                    <div class="landing-card-country">Greece</div>
+                    <div class="landing-card-price">Hub-hop from ~$1,200</div>
+                </div>
+                <div class="landing-card" onclick="landingSearch('BKK')">
+                    <div class="landing-card-flag">&#9968;</div>
+                    <div class="landing-card-dest">Bangkok</div>
+                    <div class="landing-card-country">Thailand</div>
+                    <div class="landing-card-price">Hub-hop from ~$1,400</div>
+                </div>
+                <div class="landing-card" onclick="landingSearch('NRT')">
+                    <div class="landing-card-flag">&#128332;</div>
+                    <div class="landing-card-dest">Tokyo</div>
+                    <div class="landing-card-country">Japan</div>
+                    <div class="landing-card-price">Hub-hop from ~$900</div>
+                </div>
+                <div class="landing-card" onclick="landingSearch('LHR')">
+                    <div class="landing-card-flag">&#127751;</div>
+                    <div class="landing-card-dest">London</div>
+                    <div class="landing-card-country">United Kingdom</div>
+                    <div class="landing-card-price">Hub-hop from ~$650</div>
+                </div>
+                <div class="landing-card" onclick="landingSearch('FCO')">
+                    <div class="landing-card-flag">&#127837;</div>
+                    <div class="landing-card-dest">Rome</div>
+                    <div class="landing-card-country">Italy</div>
+                    <div class="landing-card-price">Hub-hop from ~$720</div>
+                </div>
+                <div class="landing-card" onclick="landingSearch('CUN')">
+                    <div class="landing-card-tag">Popular</div>
+                    <div class="landing-card-flag">&#127796;</div>
+                    <div class="landing-card-dest">Cancun</div>
+                    <div class="landing-card-country">Mexico</div>
+                    <div class="landing-card-price">Hub-hop from ~$380</div>
+                </div>
+            </div>
+
+            <div class="landing-explainer">
+                <h3>How Hub-Hopping Works</h3>
+                <p>Instead of one pricey round-trip, we book two cheaper ones through a hub city &mdash; saving you hundreds.</p>
+                <div class="landing-steps">
+                    <div class="landing-step">
+                        <div class="landing-step-num">1</div>
+                        <div class="landing-step-label">Pick a destination</div>
+                    </div>
+                    <div class="landing-step">
+                        <div class="landing-step-num">2</div>
+                        <div class="landing-step-label">We find the best hubs</div>
+                    </div>
+                    <div class="landing-step">
+                        <div class="landing-step-num">3</div>
+                        <div class="landing-step-label">Save up to 50%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Search Banner -->
         <div class="search-banner" id="searchBanner">
             <div class="search-summary" id="searchSummary">
@@ -2071,44 +2397,6 @@
         <div id="bestDeals" class="best-deals" style="display:none"></div>
 
         <!-- Search Animation Panel -->
-        <div class="search-animation" id="searchAnimation">
-            <svg class="flight-arc" viewBox="0 0 600 120" xmlns="http://www.w3.org/2000/svg">
-                <!-- Origin/Destination dots -->
-                <circle class="origin-dot" cx="40" cy="80" r="5" />
-                <circle class="dest-dot" cx="560" cy="80" r="5" />
-                <!-- Labels -->
-                <text class="arc-label" id="arcOrigin" x="40" y="105" text-anchor="middle">MKE</text>
-                <text class="arc-label" id="arcDest" x="560" y="105" text-anchor="middle">ATH</text>
-                <!-- Dotted arc path -->
-                <path class="arc-path" d="M 40,80 Q 300,5 560,80" />
-                <path class="arc-path-glow" d="M 40,80 Q 300,5 560,80" />
-                <!-- Animated plane -->
-                <g class="plane-icon">
-                    <text font-size="18" dy="5">&#9992;</text>
-                    <animateMotion dur="3.5s" repeatCount="indefinite"
-                                   rotate="auto"
-                                   path="M 40,80 Q 300,5 560,80" />
-                </g>
-            </svg>
-
-            <!-- Hub tracker dots -->
-            <div class="hub-tracker" id="hubTracker"></div>
-
-            <!-- Progress bar + current step -->
-            <div class="search-progress">
-                <div class="progress-bar">
-                    <div class="progress-fill" id="progressFill"></div>
-                </div>
-                <div class="progress-text" id="progressText">Preparing search...</div>
-            </div>
-
-            <!-- Collapsible details log -->
-            <div class="details-toggle" onclick="toggleDetails()">
-                <span id="detailsArrow">&#9656;</span> Show details
-            </div>
-            <div class="status-log" id="statusLog" style="display:none;"></div>
-        </div>
-
         <!-- Error Banner -->
         <div class="error-banner" id="errorBanner"></div>
 
@@ -3083,12 +3371,12 @@
             completedSteps = 0;
             totalSteps = 1 + (searchHubs.length * 4) + 1; // baseline + 4 phases/hub + assembly
 
-            // Set arc labels
-            document.getElementById('arcOrigin').textContent = origin;
-            document.getElementById('arcDest').textContent = destination;
+            // Set arc labels on overlay
+            document.getElementById('soOrigin').textContent = origin;
+            document.getElementById('soDest').textContent = destination;
 
             // Build hub tracker dots
-            var tracker = document.getElementById('hubTracker');
+            var tracker = document.getElementById('soHubTracker');
             tracker.innerHTML = '';
             for (var i = 0; i < searchHubs.length; i++) {
                 var h = searchHubs[i];
@@ -3102,15 +3390,15 @@
             }
 
             // Reset progress
-            document.getElementById('progressFill').style.width = '0%';
-            document.getElementById('progressText').textContent = 'Preparing search...';
+            document.getElementById('soProgressFill').style.width = '0%';
+            document.getElementById('soProgressText').textContent = 'Preparing search...';
         }
 
         function updateProgress(message) {
             var pct = totalSteps > 0 ? Math.min((completedSteps / totalSteps) * 100, 100) : 0;
-            document.getElementById('progressFill').style.width = pct + '%';
+            document.getElementById('soProgressFill').style.width = pct + '%';
             if (message) {
-                document.getElementById('progressText').textContent = message;
+                document.getElementById('soProgressText').textContent = message;
             }
         }
 
@@ -3169,8 +3457,12 @@
         }
 
         function toggleDetails() {
-            var log = document.getElementById('statusLog');
-            var arrow = document.getElementById('detailsArrow');
+            // legacy alias
+            toggleOverlayDetails();
+        }
+        function toggleOverlayDetails() {
+            var log = document.getElementById('soStatusLog');
+            var arrow = document.getElementById('soDetailsArrow');
             if (log.style.display === 'none') {
                 log.style.display = 'block';
                 arrow.innerHTML = '&#9662;';
@@ -3181,7 +3473,7 @@
         }
 
         function addLog(message, type) {
-            var log = document.getElementById("statusLog");
+            var log = document.getElementById("soStatusLog");
             var now = new Date();
             var ts = now.toLocaleTimeString("en-US", { hour12: false });
             var entry = document.createElement("div");
@@ -3238,7 +3530,7 @@
             var cacheKey = makeCacheKey(params.origin, params.destination, params.depart_date, params.return_date);
 
             if (!forceRefresh && resultsCache[cacheKey]) {
-                document.getElementById("searchAnimation").classList.remove("visible");
+                document.getElementById("searchOverlay").classList.remove("visible");
                 document.getElementById("errorBanner").classList.remove("visible");
                 renderResults(resultsCache[cacheKey], true);
                 // If hub compare is pending, also load/run Chicago results
@@ -3252,12 +3544,12 @@
 
             setButtonsDisabled(true);
 
-            // Show animation panel
-            var animPanel = document.getElementById("searchAnimation");
-            animPanel.classList.add("visible");
-            document.getElementById("statusLog").innerHTML = "";
-            document.getElementById("statusLog").style.display = "none";
-            document.getElementById("detailsArrow").innerHTML = "&#9656;";
+            // Show full-screen search overlay
+            var overlay = document.getElementById("searchOverlay");
+            overlay.classList.add("visible");
+            document.getElementById("soStatusLog").innerHTML = "";
+            document.getElementById("soStatusLog").style.display = "none";
+            document.getElementById("soDetailsArrow").innerHTML = "&#9656;";
 
             // Initialize animation (hubs will be updated when start event arrives)
             initAnimation(params.origin, params.destination, []);
@@ -3356,9 +3648,9 @@
                 completedSteps = totalSteps;
                 updateProgress("Search complete!");
 
-                // Hide animation after a brief moment
+                // Fade out overlay after a brief moment
                 setTimeout(function() {
-                    document.getElementById("searchAnimation").classList.remove("visible");
+                    document.getElementById("searchOverlay").classList.remove('visible');
                 }, 1500);
 
                 setButtonsDisabled(false);
@@ -3381,7 +3673,7 @@
             }
 
             setButtonsDisabled(true);
-            document.getElementById("searchAnimation").classList.add("visible");
+            document.getElementById("searchOverlay").classList.add("visible");
 
             fetch('/search', {
                 method: 'POST',
@@ -3415,7 +3707,7 @@
                 evtSource.addEventListener("done", function(e) {
                     evtSource.close();
                     setTimeout(function() {
-                        document.getElementById("searchAnimation").classList.remove("visible");
+                        document.getElementById("searchOverlay").classList.remove('visible');
                     }, 1000);
                     setButtonsDisabled(false);
                 });
@@ -3859,6 +4151,44 @@
             el.classList.add('tom-hidden-input');
         }
 
+        /* ── Hub-Hop Explainer (onboarding) ── */
+
+        function showHubHopExplainer(callback) {
+            var inputArea = document.getElementById('tomInputArea');
+            inputArea.classList.remove('tom-hidden-input');
+            inputArea.innerHTML =
+                '<div class="tom-explainer">' +
+                    '<p class="tom-explainer-desc">Instead of one pricey round-trip, we book two cheaper ones through a hub city &mdash; saving you hundreds.</p>' +
+                    '<div class="tom-explainer-steps">' +
+                        '<div class="tom-explainer-step">' +
+                            '<div class="tom-explainer-num">1</div>' +
+                            '<div class="tom-explainer-label">Pick a destination</div>' +
+                        '</div>' +
+                        '<div class="tom-explainer-step">' +
+                            '<div class="tom-explainer-num">2</div>' +
+                            '<div class="tom-explainer-label">We find the best hubs</div>' +
+                        '</div>' +
+                        '<div class="tom-explainer-step">' +
+                            '<div class="tom-explainer-num">3</div>' +
+                            '<div class="tom-explainer-label">Save up to 50%</div>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>' +
+                '<button class="tom-btn" onclick="dismissExplainer()">Got it!</button>';
+            inputArea.offsetHeight;
+            inputArea.classList.add('tom-visible');
+            TOM._explainerCallback = callback;
+        }
+
+        function dismissExplainer() {
+            TOM._explainerCallback && (function() {
+                var cb = TOM._explainerCallback;
+                TOM._explainerCallback = null;
+                hideInputArea();
+                exitBigText(function() { cb(); });
+            })();
+        }
+
         /* ── Init & greeting ── */
 
         function initTom() {
@@ -3878,14 +4208,19 @@
                             // Step 3: Both exit together
                             exitSubText();
                             exitBigText(function() {
-                                // Step 4: Explanation
+                                // Step 4: Teaser
                                 showBigText('Fly MKE or hit the road? Let\u2019s find out \uD83D\uDE0F', function() {
                                     setTimeout(function() {
-                                        // Step 5: Exit, then show destination input
+                                        // Step 5: Exit, then show hub-hop explainer
                                         exitBigText(function() {
-                                            showBigText('Where do you want to go? \uD83C\uDF0D', function() {
-                                                TOM.state = 'DESTINATION';
-                                                showAirportInput('destination', 'Type a destination city or airport...');
+                                            showBigText('How Hub-Hopping Works', function() {
+                                                showHubHopExplainer(function() {
+                                                    // Step 6: Destination input
+                                                    showBigText('Where do you want to go? \uD83C\uDF0D', function() {
+                                                        TOM.state = 'DESTINATION';
+                                                        showAirportInput('destination', 'Type a destination city or airport...');
+                                                    });
+                                                });
                                             });
                                         });
                                     }, 2000);
@@ -4104,15 +4439,114 @@
 
             var dateDisplay = formatShortDate(depart) + ' \u2013 ' + formatShortDate(ret);
 
+            // Auto-select best hubs for this route (free tier: top 2)
+            var autoHubs = getAutoHubs(TOM.collected.destination);
+            var freeHubs = autoHubs.slice(0, 2);
+            TOM.collected.hubs = freeHubs;
+
             hideInputArea();
             exitBigText(function() {
                 showEcho(dateDisplay, function() {
-                    showBigText('Pick your routing hubs', function() {
-                        TOM.state = 'HUBS';
-                        showHubChips();
+                    showBigText('Searching via ' + freeHubs.join(' & ') + ' \u2708\uFE0F', function() {
+                        TOM.state = 'SEARCHING';
+                        setTimeout(transitionToDashboard, 1800);
                     });
                 });
             });
+        }
+
+        /* ── Auto hub selection by region ── */
+
+        var REGION_HUBS = {
+            europe:       ['JFK', 'EWR', 'ORD', 'ATL', 'BOS', 'IAD'],
+            asia:         ['LAX', 'JFK', 'ORD', 'DFW'],
+            oceania:      ['LAX', 'DFW'],
+            middle_east:  ['JFK', 'EWR', 'IAD', 'ORD'],
+            africa:       ['JFK', 'EWR', 'IAD', 'ATL'],
+            south_america:['MIA', 'DFW', 'ATL', 'IAD'],
+            central_america: ['MIA', 'DFW', 'ATL', 'IAD'],
+            caribbean:    ['MIA', 'ATL', 'JFK', 'DFW'],
+            canada:       ['ORD', 'JFK', 'ATL', 'DFW'],
+            mexico:       ['DFW', 'MIA', 'ATL', 'ORD']
+        };
+
+        var COUNTRY_REGION = {
+            // Europe
+            'United Kingdom':'europe','France':'europe','Germany':'europe','Italy':'europe',
+            'Spain':'europe','Greece':'europe','Portugal':'europe','Netherlands':'europe',
+            'Belgium':'europe','Switzerland':'europe','Austria':'europe','Ireland':'europe',
+            'Sweden':'europe','Norway':'europe','Denmark':'europe','Finland':'europe',
+            'Poland':'europe','Czech Republic':'europe','Hungary':'europe','Romania':'europe',
+            'Croatia':'europe','Iceland':'europe','Turkey':'europe','Serbia':'europe',
+            'Bulgaria':'europe','Slovakia':'europe','Slovenia':'europe','Estonia':'europe',
+            'Latvia':'europe','Lithuania':'europe','Luxembourg':'europe','Malta':'europe',
+            'Cyprus':'europe','Montenegro':'europe','Albania':'europe','North Macedonia':'europe',
+            'Bosnia and Herzegovina':'europe','Moldova':'europe','Ukraine':'europe',
+            // Asia
+            'Japan':'asia','China':'asia','South Korea':'asia','Thailand':'asia',
+            'Vietnam':'asia','Philippines':'asia','Indonesia':'asia','Malaysia':'asia',
+            'Singapore':'asia','India':'asia','Taiwan':'asia','Cambodia':'asia',
+            'Myanmar':'asia','Laos':'asia','Nepal':'asia','Sri Lanka':'asia',
+            'Bangladesh':'asia','Pakistan':'asia','Mongolia':'asia','Hong Kong':'asia',
+            'Macao':'asia',
+            // Oceania
+            'Australia':'oceania','New Zealand':'oceania','Fiji':'oceania',
+            'Papua New Guinea':'oceania',
+            // Middle East
+            'United Arab Emirates':'middle_east','Qatar':'middle_east','Saudi Arabia':'middle_east',
+            'Israel':'middle_east','Jordan':'middle_east','Oman':'middle_east',
+            'Kuwait':'middle_east','Bahrain':'middle_east','Lebanon':'middle_east',
+            'Iraq':'middle_east','Iran':'middle_east',
+            // Africa
+            'South Africa':'africa','Egypt':'africa','Morocco':'africa','Kenya':'africa',
+            'Nigeria':'africa','Ethiopia':'africa','Tanzania':'africa','Ghana':'africa',
+            'Tunisia':'africa','Senegal':'africa','Uganda':'africa','Rwanda':'africa',
+            'Mozambique':'africa','Zimbabwe':'africa','Namibia':'africa','Botswana':'africa',
+            // South America
+            'Brazil':'south_america','Argentina':'south_america','Chile':'south_america',
+            'Colombia':'south_america','Peru':'south_america','Ecuador':'south_america',
+            'Bolivia':'south_america','Uruguay':'south_america','Paraguay':'south_america',
+            'Venezuela':'south_america','Guyana':'south_america','Suriname':'south_america',
+            // Central America
+            'Costa Rica':'central_america','Panama':'central_america','Guatemala':'central_america',
+            'Honduras':'central_america','El Salvador':'central_america','Nicaragua':'central_america',
+            'Belize':'central_america',
+            // Caribbean
+            'Jamaica':'caribbean','Bahamas':'caribbean','Dominican Republic':'caribbean',
+            'Cuba':'caribbean','Trinidad and Tobago':'caribbean','Barbados':'caribbean',
+            'Puerto Rico':'caribbean','Haiti':'caribbean','Aruba':'caribbean',
+            'Cayman Islands':'caribbean','Bermuda':'caribbean',
+            'Turks and Caicos Islands':'caribbean','Saint Lucia':'caribbean',
+            'Antigua and Barbuda':'caribbean','Grenada':'caribbean',
+            // Canada
+            'Canada':'canada',
+            // Mexico
+            'Mexico':'mexico'
+        };
+
+        function getAutoHubs(destIata) {
+            // Look up destination country from AIRPORTS array
+            var country = null;
+            for (var i = 0; i < AIRPORTS.length; i++) {
+                if (AIRPORTS[i].iata === destIata) {
+                    country = AIRPORTS[i].country;
+                    break;
+                }
+            }
+            if (!country) return ['JFK', 'ORD'];  // fallback
+
+            var region = COUNTRY_REGION[country];
+            if (!region) return ['JFK', 'ORD'];  // fallback
+
+            var regionHubs = REGION_HUBS[region] || ['JFK', 'ORD'];
+
+            // Filter out origin airport if it's in the hub list
+            var origin = TOM.collected.origin;
+            var filtered = [];
+            for (var i = 0; i < regionHubs.length; i++) {
+                if (regionHubs[i] !== origin) filtered.push(regionHubs[i]);
+            }
+            return filtered.length > 0 ? filtered : ['JFK', 'ORD'];
         }
 
         /* ── Hub chips ── */
@@ -4181,7 +4615,7 @@
 
         /* ── Tom step navigation ── */
 
-        var TOM_STEPS = ['DESTINATION', 'ORIGIN', 'DATES', 'HUBS'];
+        var TOM_STEPS = ['DESTINATION', 'ORIGIN', 'DATES'];
 
         function tomPrevStep() {
             var i = TOM_STEPS.indexOf(TOM.state);
@@ -4266,6 +4700,54 @@
             document.querySelector('.container').classList.add('tom-reveal');
             document.getElementById('tomFab').style.display = 'flex';
             setTimeout(function() { overlay.style.display = 'none'; }, 600);
+            // Show the landing page, hide search/results
+            document.getElementById('landingPage').classList.add('visible');
+            document.getElementById('searchBanner').style.display = 'none';
+            document.getElementById('splitLayout').style.display = 'none';
+            document.getElementById('bestDeals').style.display = 'none';
+        }
+
+        function landingSearch(destIata) {
+            // Hide landing page, restore search UI
+            document.getElementById('landingPage').classList.remove('visible');
+            document.getElementById('searchBanner').style.display = '';
+            document.getElementById('splitLayout').style.display = '';
+            // Pre-fill origin as MKE and the selected destination
+            var oEl = document.getElementById('inputOrigin');
+            oEl.value = 'Milwaukee (MKE)';
+            oEl.dataset.selectedIata = 'MKE';
+            var dEl = document.getElementById('inputDestination');
+            var destName = destIata;
+            for (var i = 0; i < AIRPORTS.length; i++) {
+                if (AIRPORTS[i].iata === destIata) {
+                    destName = AIRPORTS[i].city + ' (' + destIata + ')';
+                    break;
+                }
+            }
+            dEl.value = destName;
+            dEl.dataset.selectedIata = destIata;
+            // Set default dates ~4 weeks out
+            var d = new Date();
+            d.setDate(d.getDate() + 28);
+            var depart = d.toISOString().split('T')[0];
+            d.setDate(d.getDate() + 8);
+            var ret = d.toISOString().split('T')[0];
+            document.getElementById('inputDepart').value = depart;
+            document.getElementById('inputReturn').value = ret;
+            expandSearchForm();
+        }
+
+        function restartTom() {
+            // Hide landing, restart Tom onboarding
+            document.getElementById('landingPage').classList.remove('visible');
+            var overlay = document.getElementById('tomOverlay');
+            overlay.style.display = '';
+            overlay.classList.remove('tom-hidden');
+            document.body.classList.add('tom-active');
+            document.querySelector('.container').classList.remove('tom-reveal');
+            TOM.state = 'GREETING';
+            TOM.collected = { origin: '', destination: '', depart_date: '', return_date: '', hubs: [] };
+            initTom();
         }
 
         function transitionToDashboard() {
