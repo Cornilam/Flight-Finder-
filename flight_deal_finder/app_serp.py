@@ -14,7 +14,7 @@ import time
 import queue
 import threading
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from flask import Flask, render_template, request, jsonify, Response
 from dotenv import load_dotenv
@@ -434,7 +434,14 @@ def run_hacker_fare_search(q, params):
 
         # ---------------------------------------------------------------
         # Step 3: Search international round-trips (each hub <-> dest)
+        # Also search with depart_date+1 for next-day connections
+        # (common for transpacific/long-haul where you fly to the hub
+        # the day before the international leg departs)
         # ---------------------------------------------------------------
+        next_day = (datetime.strptime(depart_date, "%Y-%m-%d") + timedelta(days=1)).strftime("%Y-%m-%d")
+        # Return date stays the same — the return positioning leg is flexible
+        return_minus1 = (datetime.strptime(return_date, "%Y-%m-%d") - timedelta(days=1)).strftime("%Y-%m-%d")
+
         international_rt_offers = {}
         for hi, hub in enumerate(active_hubs):
             emit(q, "status", {
@@ -443,11 +450,27 @@ def run_hacker_fare_search(q, params):
                 "hub": hub, "phase": "intl", "hub_index": hi, "hub_total": hub_total,
             })
 
+            # Search same-day departure
             results = search_round_trip(hub, destination, depart_date, return_date, max_results=3)
 
-            if results:
-                international_rt_offers[hub] = results
-                best = results[0]
+            # Also search next-day departure (fly to hub day before)
+            results_next = search_round_trip(hub, destination, next_day, return_date, max_results=3)
+            # And day-earlier return (arrive at hub, fly home next day)
+            results_early_ret = search_round_trip(hub, destination, depart_date, return_minus1, max_results=3)
+
+            # Merge and deduplicate by price (keep cheapest unique options)
+            all_intl = list(results or [])
+            seen_prices = {r["price"] for r in all_intl}
+            for r in (results_next or []) + (results_early_ret or []):
+                if r["price"] not in seen_prices:
+                    all_intl.append(r)
+                    seen_prices.add(r["price"])
+            all_intl.sort(key=lambda x: x["price"])
+            all_intl = all_intl[:5]  # Keep top 5
+
+            if all_intl:
+                international_rt_offers[hub] = all_intl
+                best = all_intl[0]
                 emit(q, "status", {
                     "step": f"intl_{hub}_done",
                     "message": f"  {hub}<->{destination}: ${best['price']:.2f} RT ({best['carrier_display']})",
@@ -516,6 +539,10 @@ def run_hacker_fare_search(q, params):
                         pos.get("arrival_time"), intl.get("departure_time")
                     )
                     if conn_minutes is not None and conn_minutes < MIN_CONNECTION_MINUTES:
+                        skipped_bad_connection += 1
+                        continue
+                    # Skip connections longer than 36 hours (unreasonable layover)
+                    if conn_minutes is not None and conn_minutes > 36 * 60:
                         skipped_bad_connection += 1
                         continue
                     # conn_minutes is None when times can't be parsed or
