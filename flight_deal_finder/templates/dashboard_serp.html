@@ -878,6 +878,93 @@
         .status-log .msg.searching { color: #2563eb; }
         .status-log .msg.done { color: #7c3aed; }
 
+        /* Tom Commentary */
+        .tom-commentary {
+            margin: 24px auto;
+            max-width: 500px;
+            text-align: center;
+        }
+        .tom-commentary-bubble {
+            opacity: 1;
+            transition: opacity 0.3s ease;
+        }
+        .tom-commentary-bubble.fade-out {
+            opacity: 0;
+        }
+        .tom-commentary-name {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            color: #9ca3af;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .tom-commentary-text {
+            font-size: 24px;
+            color: #1f2937;
+            line-height: 1.5;
+            display: block;
+        }
+
+        /* Search Overlay Ad Slot */
+        .so-ad-slot {
+            margin: 60px auto 8px;
+            max-width: 420px;
+            text-align: left;
+        }
+        .so-ad-label {
+            font-size: 10px;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+        .so-ad-card {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            background: #fafafa;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 14px 16px;
+            text-decoration: none;
+            color: inherit;
+            transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+        }
+        .so-ad-card:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+            border-color: #93c5fd;
+        }
+        .so-ad-icon {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+        .so-ad-body { flex-grow: 1; min-width: 0; }
+        .so-ad-title {
+            font-weight: 600;
+            color: #111827;
+            font-size: 14px;
+        }
+        .so-ad-desc {
+            color: #6b7280;
+            font-size: 12px;
+            margin-top: 2px;
+        }
+        .so-ad-cta {
+            color: #2563eb;
+            font-size: 12px;
+            font-weight: 600;
+            flex-shrink: 0;
+            white-space: nowrap;
+        }
+
         /* Results Tabs */
         .results-tabs {
             display: flex;
@@ -2172,11 +2259,28 @@
                 </g>
             </svg>
             <div class="hub-tracker" id="soHubTracker"></div>
-            <div class="search-progress" style="max-width:400px;margin:0 auto;">
+            <div class="tom-commentary" id="soTomCommentary">
+                <div class="tom-commentary-bubble">
+                    <span class="tom-commentary-name">Tom</span>
+                    <span class="tom-commentary-text" id="soTomText">Let me check the best routes for you...</span>
+                </div>
+            </div>
+            <div class="search-progress" style="max-width:400px;margin:0 auto;display:none;">
                 <div class="progress-bar">
                     <div class="progress-fill" id="soProgressFill"></div>
                 </div>
                 <div class="progress-text" id="soProgressText">Preparing search...</div>
+            </div>
+            <div class="so-ad-slot" id="soAdSlot">
+                <div class="so-ad-label">Sponsored</div>
+                <a class="so-ad-card" id="soAdLink" href="#" target="_blank" rel="noopener sponsored">
+                    <div class="so-ad-icon" id="soAdIcon"></div>
+                    <div class="so-ad-body">
+                        <div class="so-ad-title" id="soAdTitle"></div>
+                        <div class="so-ad-desc" id="soAdDesc"></div>
+                    </div>
+                    <div class="so-ad-cta" id="soAdCta"></div>
+                </a>
             </div>
             <div class="details-toggle" onclick="toggleOverlayDetails()">
                 <span id="soDetailsArrow">&#9656;</span> Show details
@@ -3364,12 +3468,156 @@
         var hubPhases = {};   // { "JFK": {domestic:false, intl:false, ret_intl:false, ret_dom:false} }
         var completedSteps = 0;
         var totalSteps = 0;
+        var tomQuipUsed = {};  // track which hubs already got a quip
+
+        /* Tom's hub-specific commentary — cycles through per hub */
+        var TOM_QUIPS = {
+            'JFK': [
+                "Checking JFK... New Yorkers pay too much for everything \uD83D\uDE0F",
+                "JFK is a goldmine for international deals \u2708\uFE0F",
+                "Scanning the biggest transatlantic hub in the US...",
+                "JFK has more European nonstops than anywhere else"
+            ],
+            'LAX': [
+                "Searching LAX... hope you like palm trees with your layover \uD83C\uDF34",
+                "LA is the gateway to Asia and the Pacific \uD83C\uDF0A",
+                "Checking fares out of the City of Angels...",
+                "LAX to anywhere in Asia? Let's see what we've got"
+            ],
+            'ORD': [
+                "O'Hare never sleeps... let's find you something good \uD83C\uDF03",
+                "Chicago's hub power = your savings \uD83D\uDCB0",
+                "United and American both fight for ORD fares...",
+                "Your neighbor to the south might save you big"
+            ],
+            'ATL': [
+                "Atlanta \u2014 the world's busiest airport has to be good for something \uD83D\uDE04",
+                "ATL connects to everywhere... literally everywhere",
+                "Delta's fortress hub \u2014 great for transatlantic deals",
+                "100 million passengers a year can't be wrong"
+            ],
+            'MIA': [
+                "Miami checking in... great for Caribbean & South America \uD83C\uDFD6\uFE0F",
+                "MIA = sun, sand, and cheap flights south \u2600\uFE0F",
+                "Latin America's gateway airport... let's see those fares",
+                "American Airlines basically lives here"
+            ],
+            'EWR': [
+                "Newark's got some hidden gems to Europe \u2728",
+                "EWR \u2014 JFK's scrappy little sibling has deals too",
+                "United's East Coast hub... often cheaper than JFK",
+                "Don't sleep on Newark for transatlantic routes"
+            ],
+            'IAD': [
+                "Dulles has solid routes to the Middle East & Europe \uD83C\uDF0D",
+                "IAD \u2014 underrated and underpriced",
+                "United's DC hub quietly has great international fares",
+                "Dulles is a hidden gem for long-haul flights"
+            ],
+            'DFW': [
+                "Big things from Big D... DFW covers a lot of ground \uD83E\uDD20",
+                "Dallas connects you everywhere in the Americas",
+                "American Airlines' mega-hub... tons of options",
+                "DFW is sneaky good for international routes"
+            ],
+            'BOS': [
+                "Boston checking in \u2014 great European connections \u2618\uFE0F",
+                "Logan's got some surprisingly cheap transatlantic deals",
+                "Boston to Europe is shorter than you think \u2708\uFE0F",
+                "JetBlue and Delta duke it out here... good for your wallet"
+            ],
+            'SEA': [
+                "Seattle \u2014 your gateway to Asia from the West Coast \uD83C\uDFD4\uFE0F",
+                "SEA is amazing for transpacific routes",
+                "Delta's West Coast hub... Asia deals incoming",
+                "Seattle to Tokyo is only 10 hours \u23F0"
+            ],
+            'SFO': [
+                "San Francisco scanning... tech money keeps these routes busy \u2708\uFE0F",
+                "SFO loves a good Pacific crossing \uD83C\uDF09",
+                "United's Pacific gateway... let's find a deal",
+                "Silicon Valley flies a LOT \u2014 lots of competition here"
+            ],
+            'IAH': [
+                "Houston, we have... cheap flights? Let's see \uD83D\uDE80",
+                "IAH is a Latin America powerhouse",
+                "United's southern hub \u2014 great for Central & South America",
+                "Houston to Cancun for how much?! Let me check..."
+            ],
+            'YYZ': [
+                "Oh Canada! Toronto has some great international fares \uD83C\uDF41",
+                "YYZ \u2014 sometimes going north saves you money",
+                "Air Canada's home base... solid European routes",
+                "Cross the border, save some dollars \u2014 worth a look"
+            ],
+            '_default': [
+                "Searching for the best deals... \u2708\uFE0F",
+                "Almost there, hang tight! \u23F3",
+                "Comparing prices across airlines... \uD83D\uDCB0",
+                "Crunching the numbers for you..."
+            ]
+        };
+
+        /* Placeholder ads — replace URLs with real affiliate links */
+        var SEARCH_ADS = [
+            {
+                icon: '\uD83E\uDDF3',
+                title: 'Travel Insurance from $42/mo',
+                desc: 'Protect your trip with SafetyWing \u2014 coverage worldwide.',
+                url: '#',
+                cta: 'Learn more \u2192'
+            },
+            {
+                icon: '\uD83D\uDCF1',
+                title: 'Stay Connected Abroad',
+                desc: 'Airalo eSIM \u2014 instant data in 200+ countries.',
+                url: '#',
+                cta: 'Get eSIM \u2192'
+            },
+            {
+                icon: '\uD83C\uDFE8',
+                title: 'Hotels from $35/night',
+                desc: 'Book your stay on Booking.com \u2014 free cancellation.',
+                url: '#',
+                cta: 'Browse deals \u2192'
+            }
+        ];
+
+        function updateTomCommentary(text) {
+            var bubble = document.querySelector('.tom-commentary-bubble');
+            var el = document.getElementById('soTomText');
+            if (!bubble || !el) return;
+            bubble.classList.add('fade-out');
+            setTimeout(function() {
+                el.textContent = text;
+                bubble.classList.remove('fade-out');
+            }, 300);
+        }
+
+        function getTomQuip(hub) {
+            var quips = TOM_QUIPS[hub] || TOM_QUIPS['_default'];
+            var idx = tomQuipUsed[hub] || 0;
+            tomQuipUsed[hub] = idx + 1;
+            return quips[idx % quips.length];
+        }
+
+        function showSearchAd() {
+            var ad = SEARCH_ADS[Math.floor(Math.random() * SEARCH_ADS.length)];
+            document.getElementById('soAdIcon').textContent = ad.icon;
+            document.getElementById('soAdTitle').textContent = ad.title;
+            document.getElementById('soAdDesc').textContent = ad.desc;
+            document.getElementById('soAdLink').href = ad.url;
+            document.getElementById('soAdCta').textContent = ad.cta;
+        }
 
         function initAnimation(origin, destination, hubs) {
             searchHubs = hubs || [];
             hubPhases = {};
             completedSteps = 0;
             totalSteps = 1 + (searchHubs.length * 4) + 1; // baseline + 4 phases/hub + assembly
+            tomQuipUsed = {};
+            updateTomCommentary("Let me check the best routes for you... \uD83D\uDD0D");
+            showSearchAd();
 
             // Set arc labels on overlay
             document.getElementById('soOrigin').textContent = origin;
@@ -3422,9 +3670,10 @@
             var phase = data.phase;
             var isDone = step.endsWith('_done');
 
-            // Update hub dot state
+            // Update hub dot state + Tom commentary (cycles through quips)
             if (hub && phase && !isDone) {
                 setHubState(hub, 'searching');
+                updateTomCommentary(getTomQuip(hub));
             }
 
             if (hub && phase && isDone && hubPhases[hub]) {
@@ -3440,6 +3689,7 @@
 
             // Track non-hub steps
             if (step === 'baseline_done') completedSteps++;
+            if (step === 'assembly') updateTomCommentary("Crunching the numbers \u2014 finding your best combos... \uD83E\uDDEE");
             if (step === 'assembly_done') completedSteps++;
 
             // Build progress message
@@ -3647,6 +3897,7 @@
                 // Fill progress to 100%
                 completedSteps = totalSteps;
                 updateProgress("Search complete!");
+                updateTomCommentary("Found your deals! Let's see what we got \uD83C\uDF89");
 
                 // Fade out overlay after a brief moment
                 setTimeout(function() {
@@ -4466,7 +4717,7 @@
         /* ── Auto hub selection by region ── */
 
         var REGION_HUBS = {
-            europe:       ['JFK', 'EWR', 'ORD', 'ATL', 'BOS', 'IAD'],
+            europe:       ['JFK', 'ATL', 'EWR', 'ORD', 'BOS', 'IAD'],
             asia:         ['LAX', 'SEA', 'SFO', 'JFK', 'ORD', 'DFW'],
             oceania:      ['LAX', 'SFO', 'SEA', 'DFW'],
             middle_east:  ['JFK', 'EWR', 'IAD', 'ORD'],
