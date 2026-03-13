@@ -434,12 +434,10 @@ def run_hacker_fare_search(q, params):
 
         # ---------------------------------------------------------------
         # Step 3: Search international round-trips (each hub <-> dest)
-        # Also search with depart_date+1 for next-day connections
-        # (common for transpacific/long-haul where you fly to the hub
-        # the day before the international leg departs)
+        # Same-day search first; next-day/early-return only as fallback
+        # when same-day finds no results (saves API calls on easy routes)
         # ---------------------------------------------------------------
         next_day = (datetime.strptime(depart_date, "%Y-%m-%d") + timedelta(days=1)).strftime("%Y-%m-%d")
-        # Return date stays the same — the return positioning leg is flexible
         return_minus1 = (datetime.strptime(return_date, "%Y-%m-%d") - timedelta(days=1)).strftime("%Y-%m-%d")
 
         international_rt_offers = {}
@@ -450,21 +448,28 @@ def run_hacker_fare_search(q, params):
                 "hub": hub, "phase": "intl", "hub_index": hi, "hub_total": hub_total,
             })
 
-            # Search same-day departure
+            # Search same-day departure first
             results = search_round_trip(hub, destination, depart_date, return_date, max_results=3)
-
-            # Also search next-day departure (fly to hub day before)
-            results_next = search_round_trip(hub, destination, next_day, return_date, max_results=3)
-            # And day-earlier return (arrive at hub, fly home next day)
-            results_early_ret = search_round_trip(hub, destination, depart_date, return_minus1, max_results=3)
-
-            # Merge and deduplicate by price (keep cheapest unique options)
             all_intl = list(results or [])
-            seen_prices = {r["price"] for r in all_intl}
-            for r in (results_next or []) + (results_early_ret or []):
-                if r["price"] not in seen_prices:
-                    all_intl.append(r)
-                    seen_prices.add(r["price"])
+
+            # Fallback: if same-day found nothing, try next-day & early-return
+            if not all_intl:
+                emit(q, "status", {
+                    "step": f"intl_{hub}_fallback",
+                    "message": f"  No same-day flights — trying adjacent dates for {hub}...",
+                    "hub": hub, "phase": "intl", "hub_index": hi, "hub_total": hub_total,
+                })
+                # Next-day departure (fly to hub the day before)
+                results_next = search_round_trip(hub, destination, next_day, return_date, max_results=3)
+                # Day-earlier return (arrive at hub, fly home next day)
+                results_early_ret = search_round_trip(hub, destination, depart_date, return_minus1, max_results=3)
+
+                seen_prices = set()
+                for r in (results_next or []) + (results_early_ret or []):
+                    if r["price"] not in seen_prices:
+                        all_intl.append(r)
+                        seen_prices.add(r["price"])
+
             all_intl.sort(key=lambda x: x["price"])
             all_intl = all_intl[:5]  # Keep top 5
 
