@@ -2243,7 +2243,7 @@
 
             <div class="landing-explainer">
                 <h3>How Hub-Hopping Works</h3>
-                <p>Instead of one pricey round-trip, we book two cheaper ones through a hub city &mdash; saving you hundreds.</p>
+                <p>Instead of one pricey round-trip, we book two cheaper ones through a hub city.</p>
                 <div class="landing-steps">
                     <div class="landing-step">
                         <div class="landing-step-num">1</div>
@@ -4158,7 +4158,7 @@
             inputArea.classList.remove('tom-hidden-input');
             inputArea.innerHTML =
                 '<div class="tom-explainer">' +
-                    '<p class="tom-explainer-desc">Instead of one pricey round-trip, we book two cheaper ones through a hub city &mdash; saving you hundreds.</p>' +
+                    '<p class="tom-explainer-desc">Instead of one pricey round-trip, we book two cheaper ones through a hub city.</p>' +
                     '<div class="tom-explainer-steps">' +
                         '<div class="tom-explainer-step">' +
                             '<div class="tom-explainer-num">1</div>' +
@@ -4200,33 +4200,41 @@
 
             TOM.state = 'GREETING';
             setTimeout(function() {
-                // Step 1: "Hey MKE Flyer!"
+                // Step 1: "Hey MKE Flyer!" + "I'm Tom"
                 showBigText('Hey MKE Flyer!', function() {
-                    // Step 2: "I'm Tom." appears below
                     showSubText("I'm Tom \u2014 your flight deal finder.", function() {
                         setTimeout(function() {
-                            // Step 3: Both exit together
                             exitSubText();
                             exitBigText(function() {
-                                // Step 4: Teaser
-                                showBigText('Fly MKE or hit the road? Let\u2019s find out \uD83D\uDE0F', function() {
+                                // Step 2: What Tom does
+                                showBigText("I'll find you flights from MKE and compare them to ORD", function() {
                                     setTimeout(function() {
-                                        // Step 5: Exit, then show hub-hop explainer
                                         exitBigText(function() {
-                                            showBigText('How Hub-Hopping Works', function() {
-                                                showHubHopExplainer(function() {
-                                                    // Step 6: Destination input
-                                                    showBigText('Where do you want to go? \uD83C\uDF0D', function() {
-                                                        TOM.state = 'DESTINATION';
-                                                        showAirportInput('destination', 'Type a destination city or airport...');
-                                                    });
+                                            // Step 3: Hub-Hop pitch (its own page)
+                                            showBigText('I can also "Hub-Hop"', function() {
+                                                showSubText('You could save up to 50% flying through another airport!', function() {
+                                                    setTimeout(function() {
+                                                        exitSubText();
+                                                        exitBigText(function() {
+                                                            // Step 4: Explainer
+                                                            showBigText('How Hub-Hopping Works', function() {
+                                                                showHubHopExplainer(function() {
+                                                                    // Step 5: Destination input
+                                                                    showBigText('Where do you want to go? \uD83C\uDF0D', function() {
+                                                                        TOM.state = 'DESTINATION';
+                                                                        showAirportInput('destination', 'Type a destination city or airport...');
+                                                                    });
+                                                                });
+                                                            });
+                                                        });
+                                                    }, 1900);
                                                 });
                                             });
                                         });
-                                    }, 2000);
+                                    }, 1500);
                                 });
                             });
-                        }, 1400);
+                        }, 900);
                     });
                 });
             }, 400);
