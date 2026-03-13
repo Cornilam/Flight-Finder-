@@ -40,7 +40,7 @@ DEPART_DATE = os.getenv("DEPART_DATE", "2026-05-22")
 RETURN_DATE = os.getenv("RETURN_DATE", "2026-05-30")
 
 # Full list of hub airports available for user selection in the UI
-ALL_HUBS = [h.strip() for h in os.getenv("ALL_HUBS", "JFK,EWR,ORD,IAD,ATL,YYZ,DFW,BOS,LAX,MIA").split(",") if h.strip()]
+ALL_HUBS = [h.strip() for h in os.getenv("ALL_HUBS", "JFK,EWR,ORD,IAD,ATL,YYZ,DFW,BOS,LAX,MIA,SEA,SFO,IAH").split(",") if h.strip()]
 
 # Default checked hubs (smaller list to conserve API calls)
 SERP_HUBS = [h.strip() for h in os.getenv("SERP_HUBS", "JFK,ORD,ATL").split(",") if h.strip()]
