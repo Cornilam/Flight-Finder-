@@ -4123,6 +4123,15 @@
             }
             routeEl.textContent = origin + ' \u2192 ' + dest;
             datesEl.textContent = fmtDate(depart) + ' \u2013 ' + fmtDate(ret);
+            // Sync hidden input fields so Search button works from collapsed state
+            var oEl = document.getElementById('inputOrigin');
+            var dEl = document.getElementById('inputDestination');
+            oEl.value = origin;
+            oEl.dataset.selectedIata = origin;
+            dEl.value = dest;
+            dEl.dataset.selectedIata = dest;
+            document.getElementById('inputDepart').value = depart;
+            document.getElementById('inputReturn').value = ret;
             banner.classList.add('collapsed');
         }
 
