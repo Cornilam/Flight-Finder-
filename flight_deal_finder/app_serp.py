@@ -281,25 +281,23 @@ def stream(search_id):
                 try:
                     event = msg_queue.get(timeout=30)
                 except queue.Empty:
-                    yield ": heartbeat\n\n"
+                    yield b": heartbeat\n\n"
                     continue
 
                 event_type = event.get("type", "status")
                 payload = json.dumps(event.get("data", {}))
-                yield f"event: {event_type}\ndata: {payload}\n\n"
+                yield f"event: {event_type}\ndata: {payload}\n\n".encode("utf-8")
 
                 if event_type == "done":
                     break
             else:
-                yield "event: done\ndata: {}\n\n"
+                yield b"event: done\ndata: {}\n\n"
         finally:
             active_searches.pop(search_id, None)
 
-    resp = Response(generate(), mimetype="text/event-stream")
-    resp.headers["Cache-Control"] = "no-cache"
-    resp.headers["X-Accel-Buffering"] = "no"
-    resp.direct_passthrough = True
-    return resp
+    return Response(generate(), mimetype="text/event-stream",
+                    headers={"Cache-Control": "no-cache",
+                             "X-Accel-Buffering": "no"})
 
 
 @app.route("/clear-cache", methods=["POST"])
