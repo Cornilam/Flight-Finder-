@@ -66,8 +66,8 @@ TRIP_DAYS = (_r - _d).days
 app = Flask(__name__)
 app.config["TEMPLATES_AUTO_RELOAD"] = True
 
-# Gzip compression for all responses
-Compress(app)
+# Gzip compression for all responses (SSE streams exempted below)
+compress = Compress(app)
 
 # Rate limiting
 limiter = Limiter(
@@ -267,6 +267,7 @@ def start_search():
 
 
 @app.route("/stream/<search_id>")
+@compress.exempt
 def stream(search_id):
     msg_queue = active_searches.get(search_id)
     if not msg_queue:
@@ -297,8 +298,6 @@ def stream(search_id):
     resp = Response(generate(), mimetype="text/event-stream")
     resp.headers["Cache-Control"] = "no-cache"
     resp.headers["X-Accel-Buffering"] = "no"
-    # Disable gzip for SSE — compression buffers chunks and breaks streaming
-    resp.direct_passthrough = True
     return resp
 
 
