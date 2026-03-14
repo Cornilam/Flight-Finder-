@@ -907,6 +907,39 @@
             display: block;
         }
 
+        /* Search Complete Celebration */
+        .so-celebration {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            animation: celebratePop 0.5s ease;
+        }
+        .so-celebration.visible { display: flex; }
+        .so-celebration-emoji {
+            font-size: 48px;
+            animation: celebrateBounce 0.6s ease;
+        }
+        .so-celebration-count {
+            font-size: 32px;
+            font-weight: 800;
+            color: #059669;
+        }
+        .so-celebration-label {
+            font-size: 16px;
+            color: #6b7280;
+        }
+        @keyframes celebratePop {
+            0% { transform: scale(0.5); opacity: 0; }
+            60% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes celebrateBounce {
+            0%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-12px); }
+            60% { transform: translateY(-6px); }
+        }
+
         /* Search Overlay Ad Slot */
         .so-ad-slot {
             margin: 60px auto 8px;
@@ -2264,6 +2297,11 @@
                     <span class="tom-commentary-name">Tom</span>
                     <span class="tom-commentary-text" id="soTomText">Let me check the best routes for you...</span>
                 </div>
+            </div>
+            <div class="so-celebration" id="soCelebration">
+                <div class="so-celebration-emoji">&#127881;</div>
+                <div class="so-celebration-count" id="soCelebrationCount"></div>
+                <div class="so-celebration-label" id="soCelebrationLabel"></div>
             </div>
             <div class="search-progress" style="max-width:400px;margin:0 auto;display:none;">
                 <div class="progress-bar">
@@ -3880,6 +3918,7 @@
                 } catch(err) {}
             });
 
+            var _lastResultCount = 0;
             evtSource.addEventListener("results", function(e) {
                 var results = JSON.parse(e.data);
                 results._cached_at = results.searched_at || new Date().toISOString();
@@ -3889,6 +3928,10 @@
                 renderRecentSearches();
                 fetchCommunityDeals();
                 renderResults(results, false);
+                // Count deals for celebration
+                var hh = (results.hacker_fares || []).length;
+                var gf = (results.google_flights || []).length;
+                _lastResultCount = hh + gf;
             });
 
             evtSource.addEventListener("done", function(e) {
@@ -3897,12 +3940,29 @@
                 // Fill progress to 100%
                 completedSteps = totalSteps;
                 updateProgress("Search complete!");
-                updateTomCommentary("Found your deals! Let's see what we got \uD83C\uDF89");
 
-                // Fade out overlay after a brief moment
+                // Celebration: hide Tom commentary, show deal count
+                document.getElementById('soTomCommentary').style.display = 'none';
+                document.getElementById('soAdSlot').style.display = 'none';
+                var celeb = document.getElementById('soCelebration');
+                var count = _lastResultCount;
+                if (count > 0) {
+                    document.getElementById('soCelebrationCount').textContent = count + ' deal' + (count !== 1 ? 's' : '') + ' found!';
+                    document.getElementById('soCelebrationLabel').textContent = 'Let\u2019s see what Tom dug up for you';
+                } else {
+                    document.getElementById('soCelebrationCount').textContent = 'Search complete!';
+                    document.getElementById('soCelebrationLabel').textContent = 'Let\u2019s check the results';
+                }
+                celeb.classList.add('visible');
+
+                // Fade out overlay after celebration
                 setTimeout(function() {
                     document.getElementById("searchOverlay").classList.remove('visible');
-                }, 1500);
+                    // Reset for next search
+                    celeb.classList.remove('visible');
+                    document.getElementById('soTomCommentary').style.display = '';
+                    document.getElementById('soAdSlot').style.display = '';
+                }, 2500);
 
                 setButtonsDisabled(false);
 

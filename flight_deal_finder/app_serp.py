@@ -546,8 +546,10 @@ def run_hacker_fare_search(q, params):
                     if conn_minutes is not None and conn_minutes < MIN_CONNECTION_MINUTES:
                         skipped_bad_connection += 1
                         continue
-                    # Skip connections longer than 36 hours (unreasonable layover)
-                    if conn_minutes is not None and conn_minutes > 36 * 60:
+                    # Skip connections longer than 48 hours (unreasonable layover)
+                    # Note: transpacific routes often need 20-30 hr layovers
+                    # (fly to hub evening, catch next-day international departure)
+                    if conn_minutes is not None and conn_minutes > 48 * 60:
                         skipped_bad_connection += 1
                         continue
                     # conn_minutes is None when times can't be parsed or
