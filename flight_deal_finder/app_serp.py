@@ -16,6 +16,7 @@ import queue
 import threading
 from pathlib import Path
 from datetime import datetime, timedelta
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from flask import Flask, render_template, request, jsonify, Response
 from flask_compress import Compress
@@ -436,21 +437,30 @@ def run_hacker_fare_search(q, params):
             price_insights = baseline_results[0].get("price_insights", {})
 
         # ---------------------------------------------------------------
-        # Step 2: Search positioning round-trips (origin <-> each hub)
+        # Steps 2+3: Search ALL hubs in parallel (positioning + intl)
+        # Each hub runs both searches concurrently via ThreadPoolExecutor
         # ---------------------------------------------------------------
+        next_day = (datetime.strptime(depart_date, "%Y-%m-%d") + timedelta(days=1)).strftime("%Y-%m-%d")
+        return_minus1_dt = datetime.strptime(return_date, "%Y-%m-%d") - timedelta(days=1)
+        depart_dt = datetime.strptime(depart_date, "%Y-%m-%d")
+        return_minus1 = return_minus1_dt.strftime("%Y-%m-%d") if return_minus1_dt > depart_dt else None
+
         positioning_offers = {}
-        for hi, hub in enumerate(active_hubs):
+        international_rt_offers = {}
+
+        def search_hub(hub, hi):
+            """Search both positioning and international for one hub."""
+            # --- Positioning (domestic) ---
             emit(q, "status", {
                 "step": f"positioning_{hub}",
                 "message": f"Searching positioning: {search_origin} <-> {hub} (round-trip)...",
                 "hub": hub, "phase": "domestic", "hub_index": hi, "hub_total": hub_total,
             })
 
-            results = search_round_trip(search_origin, hub, depart_date, return_date, max_results=3)
+            pos_results = search_round_trip(search_origin, hub, depart_date, return_date, max_results=3)
 
-            if results:
-                positioning_offers[hub] = results
-                best = results[0]
+            if pos_results:
+                best = pos_results[0]
                 emit(q, "status", {
                     "step": f"positioning_{hub}_done",
                     "message": f"  {search_origin}<->{hub}: ${best['price']:.2f} RT ({best['carrier_display']})",
@@ -463,39 +473,23 @@ def run_hacker_fare_search(q, params):
                     "hub": hub, "phase": "domestic", "hub_index": hi, "hub_total": hub_total,
                 })
 
-        # ---------------------------------------------------------------
-        # Step 3: Search international round-trips (each hub <-> dest)
-        # Same-day search first; next-day/early-return only as fallback
-        # when same-day finds no results (saves API calls on easy routes)
-        # ---------------------------------------------------------------
-        next_day = (datetime.strptime(depart_date, "%Y-%m-%d") + timedelta(days=1)).strftime("%Y-%m-%d")
-        return_minus1_dt = datetime.strptime(return_date, "%Y-%m-%d") - timedelta(days=1)
-        depart_dt = datetime.strptime(depart_date, "%Y-%m-%d")
-        # Only use early-return fallback if it still produces a valid date range
-        return_minus1 = return_minus1_dt.strftime("%Y-%m-%d") if return_minus1_dt > depart_dt else None
-
-        international_rt_offers = {}
-        for hi, hub in enumerate(active_hubs):
+            # --- International ---
             emit(q, "status", {
                 "step": f"intl_{hub}",
                 "message": f"Searching international: {hub} <-> {destination} (round-trip)...",
                 "hub": hub, "phase": "intl", "hub_index": hi, "hub_total": hub_total,
             })
 
-            # Search same-day departure first
             results = search_round_trip(hub, destination, depart_date, return_date, max_results=3)
             all_intl = list(results or [])
 
-            # Fallback: if same-day found nothing, try next-day & early-return
             if not all_intl:
                 emit(q, "status", {
                     "step": f"intl_{hub}_fallback",
                     "message": f"  No same-day flights — trying adjacent dates for {hub}...",
                     "hub": hub, "phase": "intl", "hub_index": hi, "hub_total": hub_total,
                 })
-                # Next-day departure (fly to hub the day before)
                 results_next = search_round_trip(hub, destination, next_day, return_date, max_results=3)
-                # Day-earlier return (arrive at hub, fly home next day) — skip if dates too close
                 results_early_ret = []
                 if return_minus1:
                     results_early_ret = search_round_trip(hub, destination, depart_date, return_minus1, max_results=3) or []
@@ -506,23 +500,37 @@ def run_hacker_fare_search(q, params):
                         all_intl.append(r)
                         seen_prices.add(r["price"])
 
-            all_intl.sort(key=lambda x: x["price"])
-            all_intl = all_intl[:5]  # Keep top 5
+            return hub, pos_results, all_intl
 
-            if all_intl:
-                international_rt_offers[hub] = all_intl
-                best = all_intl[0]
-                emit(q, "status", {
-                    "step": f"intl_{hub}_done",
-                    "message": f"  {hub}<->{destination}: ${best['price']:.2f} RT ({best['carrier_display']})",
-                    "hub": hub, "phase": "intl", "hub_index": hi, "hub_total": hub_total,
-                })
-            else:
-                emit(q, "status", {
-                    "step": f"intl_{hub}_done",
-                    "message": f"  {hub}<->{destination}: No flights found",
-                    "hub": hub, "phase": "intl", "hub_index": hi, "hub_total": hub_total,
-                })
+        # Run all hubs in parallel (max 4 threads to respect API limits)
+        with ThreadPoolExecutor(max_workers=min(len(active_hubs), 4)) as executor:
+            futures = {
+                executor.submit(search_hub, hub, hi): hub
+                for hi, hub in enumerate(active_hubs)
+            }
+            for future in as_completed(futures):
+                hub, pos_results, all_intl = future.result()
+                hi = active_hubs.index(hub)
+                if pos_results:
+                    positioning_offers[hub] = pos_results
+
+                all_intl.sort(key=lambda x: x["price"])
+                all_intl = all_intl[:5]  # Keep top 5
+
+                if all_intl:
+                    international_rt_offers[hub] = all_intl
+                    best = all_intl[0]
+                    emit(q, "status", {
+                        "step": f"intl_{hub}_done",
+                        "message": f"  {hub}<->{destination}: ${best['price']:.2f} RT ({best['carrier_display']})",
+                        "hub": hub, "phase": "intl", "hub_index": hi, "hub_total": hub_total,
+                    })
+                else:
+                    emit(q, "status", {
+                        "step": f"intl_{hub}_done",
+                        "message": f"  {hub}<->{destination}: No flights found",
+                        "hub": hub, "phase": "intl", "hub_index": hi, "hub_total": hub_total,
+                    })
 
         # ---------------------------------------------------------------
         # ARCHIVED: One-way search approach (4 calls per hub)
