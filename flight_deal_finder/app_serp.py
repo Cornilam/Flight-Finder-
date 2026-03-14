@@ -298,6 +298,7 @@ def stream(search_id):
     resp = Response(generate(), mimetype="text/event-stream")
     resp.headers["Cache-Control"] = "no-cache"
     resp.headers["X-Accel-Buffering"] = "no"
+    resp.direct_passthrough = True
     return resp
 
 
