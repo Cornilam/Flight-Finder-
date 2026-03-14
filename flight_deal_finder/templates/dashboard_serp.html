@@ -4691,6 +4691,7 @@
         }
 
         function confirmDates() {
+            localStorage.setItem('tom_seen', '1');
             var depart = document.getElementById('tomDepart').value;
             var ret = document.getElementById('tomReturn').value;
             TOM.collected.depart_date = depart;
@@ -4951,6 +4952,7 @@
         /* ── Dashboard transition ── */
 
         function skipToDashboard() {
+            localStorage.setItem('tom_seen', '1');
             var el = document.getElementById('tomBigText');
             el.classList.remove('tom-visible', 'tom-exit');
             var overlay = document.getElementById('tomOverlay');
@@ -5103,15 +5105,22 @@
         // Initialize Tom when airports data is ready (skip in dev mode)
         var isDevMode = new URLSearchParams(window.location.search).get('dev') === '1';
         if (!isDevMode) {
+            var tomSeen = localStorage.getItem('tom_seen') === '1';
             var tomInitInterval = setInterval(function() {
                 if (AIRPORTS.length > 0) {
                     clearInterval(tomInitInterval);
-                    initTom();
+                    if (tomSeen) {
+                        reopenTom(); // Returning user — short "Welcome back!" flow
+                    } else {
+                        initTom();   // First visit — full onboarding
+                    }
                 }
             }, 100);
             setTimeout(function() {
                 clearInterval(tomInitInterval);
-                if (TOM.state === 'INIT') initTom();
+                if (TOM.state === 'INIT') {
+                    if (tomSeen) { reopenTom(); } else { initTom(); }
+                }
             }, 3000);
         }
 
