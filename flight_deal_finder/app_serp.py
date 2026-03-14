@@ -11,12 +11,16 @@ Usage:
 import os
 import json
 import time
+import uuid
 import queue
 import threading
 from pathlib import Path
 from datetime import datetime, timedelta
 
 from flask import Flask, render_template, request, jsonify, Response
+from flask_compress import Compress
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from dotenv import load_dotenv
 
 from serp_flights import (
@@ -61,6 +65,17 @@ TRIP_DAYS = (_r - _d).days
 
 app = Flask(__name__)
 app.config["TEMPLATES_AUTO_RELOAD"] = True
+
+# Gzip compression for all responses
+Compress(app)
+
+# Rate limiting
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=["200 per hour"],
+    storage_uri="memory://",
+)
 
 # Active search streams
 active_searches = {}
@@ -168,6 +183,7 @@ def index():
 
 
 @app.route("/search", methods=["POST"])
+@limiter.limit("10 per minute")
 def start_search():
     data = request.get_json() or {}
     search_origin = data.get("origin", ORIGIN).upper().strip()
@@ -190,10 +206,23 @@ def start_search():
     except ValueError:
         return jsonify({"error": "Invalid date format. Use YYYY-MM-DD."}), 400
 
+    # Validate: origin != destination
+    if search_origin == destination:
+        return jsonify({"error": "Origin and destination cannot be the same airport."}), 400
+
+    # Validate: departure date not in the past
+    today = datetime.now().date()
+    if d < today:
+        return jsonify({"error": "Departure date cannot be in the past."}), 400
+
     # Hub comparison parameters
     hub_airport = data.get("hub_airport", HUB_AIRPORT).upper().strip()
-    driving_cost = float(data.get("driving_cost", DRIVING_COST))
-    parking_rate = float(data.get("parking_rate", PARKING_RATE_PER_DAY))
+    try:
+        driving_cost = float(data.get("driving_cost", DRIVING_COST))
+        parking_rate = float(data.get("parking_rate", PARKING_RATE_PER_DAY))
+    except (ValueError, TypeError):
+        driving_cost = DRIVING_COST
+        parking_rate = PARKING_RATE_PER_DAY
 
     is_hub_search = data.get("is_hub_search", False)
 
@@ -223,7 +252,7 @@ def start_search():
         "hubs": selected_hubs,
     }
 
-    search_id = f"serp-{search_origin}-{destination}-{id(request)}"
+    search_id = f"serp-{uuid.uuid4().hex[:12]}"
     msg_queue = queue.Queue()
     active_searches[search_id] = msg_queue
 
@@ -265,7 +294,12 @@ def stream(search_id):
         finally:
             active_searches.pop(search_id, None)
 
-    return Response(generate(), mimetype="text/event-stream")
+    resp = Response(generate(), mimetype="text/event-stream")
+    resp.headers["Cache-Control"] = "no-cache"
+    resp.headers["X-Accel-Buffering"] = "no"
+    # Disable gzip for SSE — compression buffers chunks and breaks streaming
+    resp.direct_passthrough = True
+    return resp
 
 
 @app.route("/clear-cache", methods=["POST"])
@@ -438,7 +472,10 @@ def run_hacker_fare_search(q, params):
         # when same-day finds no results (saves API calls on easy routes)
         # ---------------------------------------------------------------
         next_day = (datetime.strptime(depart_date, "%Y-%m-%d") + timedelta(days=1)).strftime("%Y-%m-%d")
-        return_minus1 = (datetime.strptime(return_date, "%Y-%m-%d") - timedelta(days=1)).strftime("%Y-%m-%d")
+        return_minus1_dt = datetime.strptime(return_date, "%Y-%m-%d") - timedelta(days=1)
+        depart_dt = datetime.strptime(depart_date, "%Y-%m-%d")
+        # Only use early-return fallback if it still produces a valid date range
+        return_minus1 = return_minus1_dt.strftime("%Y-%m-%d") if return_minus1_dt > depart_dt else None
 
         international_rt_offers = {}
         for hi, hub in enumerate(active_hubs):
@@ -461,8 +498,10 @@ def run_hacker_fare_search(q, params):
                 })
                 # Next-day departure (fly to hub the day before)
                 results_next = search_round_trip(hub, destination, next_day, return_date, max_results=3)
-                # Day-earlier return (arrive at hub, fly home next day)
-                results_early_ret = search_round_trip(hub, destination, depart_date, return_minus1, max_results=3)
+                # Day-earlier return (arrive at hub, fly home next day) — skip if dates too close
+                results_early_ret = []
+                if return_minus1:
+                    results_early_ret = search_round_trip(hub, destination, depart_date, return_minus1, max_results=3) or []
 
                 seen_prices = set()
                 for r in (results_next or []) + (results_early_ret or []):
@@ -760,7 +799,8 @@ def run_hacker_fare_search(q, params):
         emit(q, "error", {"message": str(e)})
         emit(q, "done", {})
     except Exception as e:
-        emit(q, "error", {"message": f"Unexpected error: {str(e)}"})
+        print(f"  [ERROR] Unexpected search error: {e}")
+        emit(q, "error", {"message": "An unexpected error occurred. Please try again."})
         emit(q, "done", {})
 
 

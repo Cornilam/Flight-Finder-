@@ -3503,7 +3503,7 @@
 
         /* ── Animation Control ─────────────────────────────── */
         var searchHubs = [];
-        var hubPhases = {};   // { "JFK": {domestic:false, intl:false, ret_intl:false, ret_dom:false} }
+        var hubPhases = {};   // { "JFK": {domestic:false, intl:false} }
         var completedSteps = 0;
         var totalSteps = 0;
         var tomQuipUsed = {};  // track which hubs already got a quip
@@ -3652,7 +3652,7 @@
             searchHubs = hubs || [];
             hubPhases = {};
             completedSteps = 0;
-            totalSteps = 1 + (searchHubs.length * 4) + 1; // baseline + 4 phases/hub + assembly
+            totalSteps = 1 + (searchHubs.length * 2) + 1; // baseline + 2 phases/hub (domestic+intl) + assembly
             tomQuipUsed = {};
             updateTomCommentary("Let me check the best routes for you... \uD83D\uDD0D");
             showSearchAd();
@@ -3666,7 +3666,7 @@
             tracker.innerHTML = '';
             for (var i = 0; i < searchHubs.length; i++) {
                 var h = searchHubs[i];
-                hubPhases[h] = { domestic: false, intl: false, ret_intl: false, ret_dom: false };
+                hubPhases[h] = { domestic: false, intl: false };
                 var dot = document.createElement('div');
                 dot.className = 'hub-dot pending';
                 dot.id = 'hubDot_' + h;
@@ -3718,9 +3718,9 @@
                 hubPhases[hub][phase] = true;
                 completedSteps++;
 
-                // Check if all 4 phases done for this hub
+                // Check if both phases done for this hub
                 var hp = hubPhases[hub];
-                if (hp.domestic && hp.intl && hp.ret_intl && hp.ret_dom) {
+                if (hp.domestic && hp.intl) {
                     setHubState(hub, 'done');
                 }
             }
@@ -3736,7 +3736,7 @@
                 var doneCount = 0;
                 for (var h in hubPhases) {
                     var hp2 = hubPhases[h];
-                    if (hp2.domestic && hp2.intl && hp2.ret_intl && hp2.ret_dom) doneCount++;
+                    if (hp2.domestic && hp2.intl) doneCount++;
                 }
                 msg = doneCount + '/' + searchHubs.length + ' hubs · ' + data.message;
             }
@@ -3887,6 +3887,24 @@
 
         function listenForUpdates(searchId, cacheKey) {
             var evtSource = new EventSource("/stream/" + searchId);
+            var _reconnectAttempts = 0;
+
+            evtSource.onerror = function() {
+                _reconnectAttempts++;
+                if (_reconnectAttempts > 3) {
+                    evtSource.close();
+                    addLog("Connection lost. Please try searching again.", "error");
+                    var banner = document.getElementById("errorBanner");
+                    banner.textContent = "Connection lost — please try your search again.";
+                    banner.classList.add("visible");
+                    setButtonsDisabled(false);
+                    // Fade out search overlay if visible
+                    var overlay = document.getElementById('searchOverlay');
+                    if (overlay) {
+                        overlay.classList.remove('visible');
+                    }
+                }
+            };
 
             evtSource.addEventListener("status", function(e) {
                 var data = JSON.parse(e.data);
@@ -3930,8 +3948,8 @@
                 renderResults(results, false);
                 // Count deals for celebration
                 var hh = (results.hacker_fares || []).length;
-                var gf = (results.google_flights || []).length;
-                _lastResultCount = hh + gf;
+                var bf = (results.baseline_flights || (results.baseline ? [results.baseline] : [])).length;
+                _lastResultCount = hh + bf;
             });
 
             evtSource.addEventListener("done", function(e) {

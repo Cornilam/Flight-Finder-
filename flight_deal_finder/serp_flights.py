@@ -34,7 +34,7 @@ _cache_timestamps = {}  # key_tuple -> float (unix timestamp)
 
 CACHE_DIR = os.getenv("CACHE_DIR", str(Path(__file__).parent / "cache"))
 CACHE_FILE = Path(CACHE_DIR) / "serp_cache.json"
-CACHE_MAX_AGE_SECONDS = 30 * 24 * 60 * 60  # 30 days (dev)
+CACHE_MAX_AGE_SECONDS = 6 * 60 * 60  # 6 hours — flight prices change frequently
 
 
 def _cache_key_to_str(key_tuple):
