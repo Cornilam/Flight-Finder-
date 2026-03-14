@@ -940,6 +940,98 @@
             60% { transform: translateY(-6px); }
         }
 
+        /* Pro Upsell Card */
+        .so-upsell {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            animation: celebratePop 0.5s ease;
+            max-width: 440px;
+            margin: 0 auto;
+        }
+        .so-upsell.visible { display: flex; }
+        .so-upsell-card {
+            background: #fafafa;
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            padding: 24px 28px 20px;
+            text-align: center;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+            width: 100%;
+        }
+        .so-upsell-pitch {
+            font-size: 20px;
+            color: #1f2937;
+            line-height: 1.5;
+            display: block;
+            margin-top: 4px;
+        }
+        .so-upsell-missed {
+            margin: 16px 0;
+        }
+        .so-upsell-missed-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+        }
+        .so-upsell-missed-hubs {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 6px;
+        }
+        .so-upsell-hub-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 20px;
+            padding: 4px 12px;
+            font-size: 13px;
+            color: #374151;
+        }
+        .so-upsell-hub-pill .pill-code {
+            font-weight: 700;
+            color: #111827;
+        }
+        .so-upsell-hub-pill .pill-city {
+            color: #6b7280;
+            font-size: 12px;
+        }
+        .so-upsell-cta {
+            display: inline-block;
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            color: #fff;
+            font-size: 15px;
+            font-weight: 700;
+            padding: 12px 28px;
+            border-radius: 10px;
+            text-decoration: none;
+            margin-top: 8px;
+            transition: transform 0.15s, box-shadow 0.15s;
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
+        }
+        .so-upsell-cta:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(37, 99, 235, 0.35);
+            color: #fff;
+        }
+        .so-upsell-skip {
+            font-size: 12px;
+            color: #9ca3af;
+            margin-top: 12px;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .so-upsell-skip:hover {
+            color: #6b7280;
+        }
+
         /* Search Overlay Ad Slot */
         .so-ad-slot {
             margin: 60px auto 8px;
@@ -2303,6 +2395,23 @@
                 <div class="so-celebration-count" id="soCelebrationCount"></div>
                 <div class="so-celebration-label" id="soCelebrationLabel"></div>
             </div>
+            <!-- Pro Upsell Card (shown after celebration) -->
+            <div class="so-upsell" id="soUpsell">
+                <div class="so-upsell-card">
+                    <div class="tom-commentary-bubble">
+                        <span class="tom-commentary-name">Tom</span>
+                        <span class="so-upsell-pitch" id="soUpsellPitch"></span>
+                    </div>
+                    <div class="so-upsell-missed">
+                        <div class="so-upsell-missed-label">Hubs I didn't search:</div>
+                        <div class="so-upsell-missed-hubs" id="soUpsellMissedHubs"></div>
+                    </div>
+                    <a class="so-upsell-cta" id="soUpsellCta" href="/pro?ref=search_overlay">
+                        Search all 13 hubs for $1.99
+                    </a>
+                    <div class="so-upsell-skip" id="soUpsellSkip">No thanks, I'll stick with free</div>
+                </div>
+            </div>
             <div class="search-progress" style="max-width:400px;margin:0 auto;display:none;">
                 <div class="progress-bar">
                     <div class="progress-fill" id="soProgressFill"></div>
@@ -3621,6 +3730,23 @@
             }
         ];
 
+        /* Hub code → city name for upsell display */
+        var HUB_CITY_NAMES = {
+            'JFK': 'New York', 'EWR': 'Newark', 'ORD': 'Chicago',
+            'IAD': 'Washington DC', 'ATL': 'Atlanta', 'YYZ': 'Toronto',
+            'DFW': 'Dallas', 'BOS': 'Boston', 'LAX': 'Los Angeles',
+            'MIA': 'Miami', 'SEA': 'Seattle', 'SFO': 'San Francisco',
+            'IAH': 'Houston'
+        };
+
+        var ALL_HUB_CODES = {{ all_hubs | tojson }};
+
+        var TOM_UPSELL_QUIPS = [
+            "I only searched {searched} hubs... but there are {missed} more that might have even better deals! \uD83D\uDC40",
+            "Not bad for {searched} hubs! But imagine what I could find across all 13... just saying \uD83D\uDE0F",
+            "Those {searched} hubs were solid, but I'm itching to check {missed} more airports for you! \uD83D\uDD25"
+        ];
+
         function updateTomCommentary(text) {
             var bubble = document.querySelector('.tom-commentary-bubble');
             var el = document.getElementById('soTomText');
@@ -3646,6 +3772,57 @@
             document.getElementById('soAdDesc').textContent = ad.desc;
             document.getElementById('soAdLink').href = ad.url;
             document.getElementById('soAdCta').textContent = ad.cta;
+        }
+
+        function showProUpsell() {
+            // Calculate missed hubs
+            var missedHubs = [];
+            for (var i = 0; i < ALL_HUB_CODES.length; i++) {
+                if (searchHubs.indexOf(ALL_HUB_CODES[i]) === -1) {
+                    missedHubs.push(ALL_HUB_CODES[i]);
+                }
+            }
+
+            // Edge case: user searched all hubs — skip upsell
+            if (missedHubs.length === 0) {
+                closeOverlayClean();
+                return false;
+            }
+
+            // Pick a random Tom quip and fill in the counts
+            var quip = TOM_UPSELL_QUIPS[Math.floor(Math.random() * TOM_UPSELL_QUIPS.length)];
+            quip = quip.replace('{searched}', searchHubs.length)
+                       .replace('{missed}', missedHubs.length);
+            document.getElementById('soUpsellPitch').textContent = quip;
+
+            // Build hub pills
+            var hubsContainer = document.getElementById('soUpsellMissedHubs');
+            hubsContainer.innerHTML = '';
+            for (var i = 0; i < missedHubs.length; i++) {
+                var code = missedHubs[i];
+                var city = HUB_CITY_NAMES[code] || code;
+                var pill = document.createElement('div');
+                pill.className = 'so-upsell-hub-pill';
+                pill.innerHTML = '<span class="pill-code">' + code + '</span>' +
+                                 '<span class="pill-city">' + city + '</span>';
+                hubsContainer.appendChild(pill);
+            }
+
+            // Update CTA text with hub count
+            document.getElementById('soUpsellCta').textContent =
+                'Search all ' + ALL_HUB_CODES.length + ' hubs for $1.99';
+
+            return true;
+        }
+
+        function closeOverlayClean() {
+            var overlay = document.getElementById("searchOverlay");
+            overlay.classList.remove('visible');
+            // Reset all overlay state for next search
+            document.getElementById('soCelebration').classList.remove('visible');
+            document.getElementById('soUpsell').classList.remove('visible');
+            document.getElementById('soTomCommentary').style.display = '';
+            document.getElementById('soAdSlot').style.display = '';
         }
 
         function initAnimation(origin, destination, hubs) {
@@ -3973,14 +4150,27 @@
                 }
                 celeb.classList.add('visible');
 
-                // Fade out overlay after celebration
+                // Step 1: After 2s celebration, transition to Pro upsell
                 setTimeout(function() {
-                    document.getElementById("searchOverlay").classList.remove('visible');
-                    // Reset for next search
                     celeb.classList.remove('visible');
-                    document.getElementById('soTomCommentary').style.display = '';
-                    document.getElementById('soAdSlot').style.display = '';
-                }, 2500);
+
+                    // Step 2: Show upsell card (or close if no missed hubs)
+                    var hasUpsell = showProUpsell();
+                    if (hasUpsell) {
+                        document.getElementById('soUpsell').classList.add('visible');
+
+                        // Step 3: Auto-close after 3.5s on upsell
+                        var autoCloseTimer = setTimeout(function() {
+                            closeOverlayClean();
+                        }, 3500);
+
+                        // Allow early dismiss via skip button
+                        document.getElementById('soUpsellSkip').onclick = function() {
+                            clearTimeout(autoCloseTimer);
+                            closeOverlayClean();
+                        };
+                    }
+                }, 2000);
 
                 setButtonsDisabled(false);
 
@@ -4786,17 +4976,13 @@
 
             var dateDisplay = formatShortDate(depart) + ' \u2013 ' + formatShortDate(ret);
 
-            // Auto-select best hubs for this route (free tier: top 2)
-            var autoHubs = getAutoHubs(TOM.collected.destination);
-            var freeHubs = autoHubs.slice(0, 2);
-            TOM.collected.hubs = freeHubs;
-
             hideInputArea();
             exitBigText(function() {
                 showEcho(dateDisplay, function() {
-                    showBigText('Searching via ' + freeHubs.join(' & ') + ' \u2708\uFE0F', function() {
-                        TOM.state = 'SEARCHING';
-                        setTimeout(transitionToDashboard, 1800);
+                    // Go to hub selection step
+                    TOM.state = 'HUBS';
+                    showBigText('Pick your hub airports \u2708\uFE0F', function() {
+                        showHubChips();
                     });
                 });
             });
@@ -4898,41 +5084,96 @@
 
         /* ── Hub chips ── */
 
+        var MAX_FREE_HUBS = 2; // Free tier: pick up to 2 hubs (ORD always included separately)
+
         function showHubChips() {
-            var existingChips = document.querySelectorAll('#hubCheckboxes input[type="checkbox"]');
-            var allHubCodes = [];
-            var defaultChecked = [];
-            for (var i = 0; i < existingChips.length; i++) {
-                allHubCodes.push(existingChips[i].value);
-                if (existingChips[i].checked) defaultChecked.push(existingChips[i].value);
+            // Get recommended hubs for this destination region
+            var autoHubs = getAutoHubs(TOM.collected.destination);
+            var recommended = autoHubs.slice(0, MAX_FREE_HUBS); // Pre-select top 2
+
+            // Build the full hub list (exclude ORD — it's always included automatically)
+            var allHubs = [];
+            for (var i = 0; i < ALL_HUB_CODES.length; i++) {
+                if (ALL_HUB_CODES[i] !== 'ORD' && ALL_HUB_CODES[i] !== TOM.collected.origin) {
+                    allHubs.push(ALL_HUB_CODES[i]);
+                }
             }
 
             var inputArea = document.getElementById('tomInputArea');
             inputArea.classList.remove('tom-hidden-input');
-            var html = '<div class="tom-hub-chips" id="tomHubChips">';
-            for (var i = 0; i < allHubCodes.length; i++) {
-                var hub = allHubCodes[i];
-                var isChecked = defaultChecked.indexOf(hub) !== -1;
+
+            // ORD locked indicator
+            var html = '<div style="font-size:13px;color:#6b7280;margin-bottom:8px;text-align:center;">' +
+                '<strong>ORD</strong> Chicago is always searched (comparing to MKE) ' +
+                '&mdash; pick up to <strong>' + MAX_FREE_HUBS + '</strong> more:' +
+            '</div>';
+            html += '<div class="tom-hub-chips" id="tomHubChips">';
+
+            // Sort: recommended first, then the rest
+            var sorted = [];
+            for (var i = 0; i < recommended.length; i++) {
+                if (allHubs.indexOf(recommended[i]) !== -1) sorted.push(recommended[i]);
+            }
+            for (var i = 0; i < allHubs.length; i++) {
+                if (sorted.indexOf(allHubs[i]) === -1) sorted.push(allHubs[i]);
+            }
+
+            for (var i = 0; i < sorted.length; i++) {
+                var hub = sorted[i];
+                var city = HUB_CITY_NAMES[hub] || hub;
+                var isRecommended = recommended.indexOf(hub) !== -1;
+                var isChecked = isRecommended;
                 html += '<label class="hub-chip' + (isChecked ? ' checked' : '') + '">' +
                     '<input type="checkbox" value="' + hub + '"' + (isChecked ? ' checked' : '') +
                     ' onchange="onTomHubToggle(this)">' +
                     '<span class="chip-check">' + (isChecked ? '&#10003;' : '') + '</span>' +
-                    '<span>' + hub + '</span>' +
+                    '<span>' + hub + ' <span style="color:#6b7280;font-size:12px;">' + city + '</span></span>' +
+                    (isRecommended ? '<span style="font-size:10px;color:#2563eb;margin-left:4px;">recommended</span>' : '') +
                 '</label>';
             }
             html += '</div>';
-            html += '<button class="tom-btn" onclick="confirmHubs()">Search flights \u2708\uFE0F</button>';
+            html += '<div id="tomHubCount" style="font-size:12px;color:#9ca3af;text-align:center;margin:6px 0;">' +
+                countCheckedHubs() + '/' + MAX_FREE_HUBS + ' hubs selected</div>';
+            html += '<button class="tom-btn" id="tomHubBtn" onclick="confirmHubs()">Search flights \u2708\uFE0F</button>';
             html += '<div class="tom-nav-row">' +
                 '<button class="tom-nav-btn" onclick="tomPrevStep()">\u2190 Back</button>' +
                 '<div class="tom-skip" onclick="skipToDashboard()">Skip</div>' +
             '</div>';
             inputArea.innerHTML = html;
+            updateHubCount();
             inputArea.offsetHeight;
             inputArea.classList.add('tom-visible');
         }
 
+        function countCheckedHubs() {
+            var cbs = document.querySelectorAll('#tomHubChips input[type="checkbox"]:checked');
+            return cbs ? cbs.length : 0;
+        }
+
+        function updateHubCount() {
+            var count = countCheckedHubs();
+            var el = document.getElementById('tomHubCount');
+            if (el) {
+                el.textContent = count + '/' + MAX_FREE_HUBS + ' hubs selected';
+                el.style.color = count > MAX_FREE_HUBS ? '#ef4444' : '#9ca3af';
+            }
+            var btn = document.getElementById('tomHubBtn');
+            if (btn) btn.disabled = count === 0 || count > MAX_FREE_HUBS;
+        }
+
         function onTomHubToggle(checkbox) {
             var chip = checkbox.closest('.hub-chip');
+            var count = countCheckedHubs();
+
+            // Enforce max hub limit
+            if (checkbox.checked && count > MAX_FREE_HUBS) {
+                checkbox.checked = false;
+                chip.classList.remove('checked');
+                chip.querySelector('.chip-check').innerHTML = '';
+                updateHubCount();
+                return;
+            }
+
             if (checkbox.checked) {
                 chip.classList.add('checked');
                 chip.querySelector('.chip-check').innerHTML = '&#10003;';
@@ -4940,6 +5181,7 @@
                 chip.classList.remove('checked');
                 chip.querySelector('.chip-check').innerHTML = '';
             }
+            updateHubCount();
         }
 
         function confirmHubs() {
@@ -4949,11 +5191,19 @@
                 if (checkboxes[i].checked) selected.push(checkboxes[i].value);
             }
             if (selected.length === 0) { alert('Please select at least one hub'); return; }
+            if (selected.length > MAX_FREE_HUBS) { alert('Free tier allows up to ' + MAX_FREE_HUBS + ' hubs'); return; }
+
+            // Always include ORD for the MKE comparison
+            if (selected.indexOf('ORD') === -1) {
+                selected.push('ORD');
+            }
             TOM.collected.hubs = selected;
 
             hideInputArea();
             exitBigText(function() {
-                showBigText('Finding you the best deals\u2026 \u2728', function() {
+                // Show which hubs were selected (excluding ORD from display)
+                var displayHubs = selected.filter(function(h) { return h !== 'ORD'; });
+                showBigText('Searching via ' + displayHubs.join(' & ') + ' + ORD \u2708\uFE0F', function() {
                     TOM.state = 'SEARCHING';
                     setTimeout(transitionToDashboard, 1800);
                 });
@@ -4962,7 +5212,7 @@
 
         /* ── Tom step navigation ── */
 
-        var TOM_STEPS = ['DESTINATION', 'ORIGIN', 'DATES'];
+        var TOM_STEPS = ['DESTINATION', 'ORIGIN', 'DATES', 'HUBS'];
 
         function tomPrevStep() {
             var i = TOM_STEPS.indexOf(TOM.state);
